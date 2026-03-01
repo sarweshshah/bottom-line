@@ -4,7 +4,7 @@
 
 |                    |                              |
 | ------------------ | ---------------------------- |
-| **Version**        | 1.7                          |
+| **Version**        | 1.8                          |
 | **Status**         | Draft                        |
 | **Author**         | Sarwesh                      |
 | **Date**           | February 27, 2026            |
@@ -72,6 +72,15 @@ The plugin uses the Figma REST API as its data source, authenticated via a user-
 | AI — Cloud     | Anthropic / OpenAI / Gemini / Custom (OpenAI-compatible)  | High-quality thread summaries and nuanced task extraction                                    |
 | UI Framework   | Figma Plugin UI (iframe)                                  | Custom React-based interface rendered in the plugin panel                                    |
 
+**Authentication roadmap**
+
+- **V1:** PAT-based authentication only. Users create a Personal Access Token in Figma Settings and paste it once during onboarding; it is stored in clientStorage and reused for all documents. To reduce 403 (expired/revoked token) friction, V1 includes explicit onboarding guidance (create token with no expiration and `file_comments:read` scope), a dedicated Reconnect flow on 403, and optional proactive token validation on plugin open.
+- **V2:** OAuth-based authentication (planned). Sign-in with Figma and refresh tokens will reduce re-auth prompts and 403-driven disruption. PAT may remain supported during a transition period or be deprecated in favor of OAuth.
+
+**Public Community plugin & file key (V1)**
+
+The plugin is published to the Figma Community so anyone can install it. Public plugins do not receive `figma.fileKey` from the Figma Plugin API by default. For V1 we use **Option C — Paste file URL**: the user pastes the Figma file URL (e.g. from the browser bar when the file is open); the plugin parses the file key from the URL and stores it in clientStorage so repeat use for the same file does not require pasting again. When the user switches to a different file, they paste that file’s URL or use a “Different file” control. **Option A** (requesting access to `figma.fileKey` from Figma for this use case) is being explored in parallel; if granted, we can add automatic file key detection and keep paste-URL as a fallback.
+
 ## 3.2 Scope Definition
 
 The following table clarifies what is and isn’t included in the V1 release:
@@ -84,7 +93,7 @@ The following table clarifies what is and isn’t included in the V1 release:
 | Personal view (“addressed to me”)            | Notification system / push alerts                |
 | Page-level and document-level toggle         | Comment analytics and reporting dashboards       |
 | Navigate-to-comment on canvas click          | Webhook-based real-time sync                     |
-| PAT-based REST API authentication (required) | OAuth-based authentication flow                  |
+| PAT-based REST API authentication (required) | OAuth-based authentication flow (planned for V2) |
 | Keyword search across threads                | Full-text search with ranking/relevance scoring  |
 | Export to PDF, Markdown, TXT, Figma Canvas   | Scheduled/automated exports                      |
 | User preference for AI provider              | Custom AI model fine-tuning                      |
@@ -114,7 +123,8 @@ This step is a single screen with three sections stacked vertically: instruction
 
 1. Click your profile avatar (top-left in Figma) → **Settings** → **Security**.
 2. Under “Personal access tokens,” click **Generate new token**. Name it “Bottom Line Plugin.”
-3. Copy the token (shown once) and paste it below.
+3. When creating the token, set **no expiration** (if Figma offers this option) and ensure the **file_comments:read** scope is included so the plugin can read comments. For resolving/reopening threads, write scope is also required.
+4. Copy the token (shown once) and paste it below.
 
 A “Open Figma Settings →” button links directly to https://www.figma.com/settings.
 
@@ -162,7 +172,7 @@ A “Open Figma Settings →” button links directly to https://www.figma.com/s
 
 > **EDGE CASE**
 >
-> If a user’s PAT expires mid-session, the plugin should surface a blocking notification prompting re-authentication. The user cannot continue using the plugin until a valid token is provided.
+> If a user’s PAT expires mid-session (or is revoked), the plugin should surface a blocking notification prompting re-authentication. The user cannot continue using the plugin until a valid token is provided. V1 must implement a dedicated **Reconnect** flow (not a generic error): clear copy that the token may have expired or been revoked, a link to Figma Settings to create a new token, and the same token input + validate flow as in onboarding. Optionally, the plugin may call `GET /v1/me` on open to validate the stored token and prompt re-auth before the user hits a 403 on comment fetch.
 
 ## 4.2 FR-02: Comment Fetching & Caching
 
@@ -703,6 +713,7 @@ Every export format includes the same data per thread (adapted to the format’s
 ## 5.4 Reliability & Error Handling
 
 - REST API failures surface a clear error with retry option. If the failure persists, the plugin shows a diagnostic screen with common fixes (token expired, network issue, rate limited).
+- **403 (token invalid/expired/revoked):** Show a dedicated Reconnect flow: message that the token may have expired or been revoked, link to Figma Settings, and re-enter-token flow (same as onboarding Step 2). Do not show a generic error. Optionally, on plugin open, call `GET /v1/me` to validate the stored token and prompt re-auth before any comment fetch if invalid.
 
 - Cloud AI failures trigger fallback to local summarization per-thread.
 
@@ -776,19 +787,21 @@ The comment data flows through the following pipeline:
 
 91. Plugin opens → checks clientStorage for cached PAT. If no PAT or PAT is invalid, user is directed to the setup screen.
 
-92. Fetch comments via REST API (GET /v1/files/:key/comments).
+92. Obtain file key: in V1, user pastes the Figma file URL; plugin parses the file key and stores it in clientStorage (see §3.1). If no file key is available, prompt user to paste before fetching. A “Different file” control allows re-paste when switching files.
 
-93. Raw comment data is normalized into a unified CommentThread model.
+93. Fetch comments via REST API (GET /v1/files/:key/comments).
 
-94. Threads are passed to the AI Engine (local or cloud, per user preference).
+94. Raw comment data is normalized into a unified CommentThread model.
 
-95. AI Engine returns summaries + extracted tasks, which are attached to each thread model.
+95. Threads are passed to the AI Engine (local or cloud, per user preference).
 
-96. Enriched threads are stored in the state manager and rendered by the UI.
+96. AI Engine returns summaries + extracted tasks, which are attached to each thread model.
 
-97. Filter changes operate on the in-memory enriched data (no re-fetch or re-summarization).
+97. Enriched threads are stored in the state manager and rendered by the UI.
 
-98. Manual refresh or TTL expiry triggers a re-fetch from step 2.
+98. Filter changes operate on the in-memory enriched data (no re-fetch or re-summarization).
+
+99. Manual refresh or TTL expiry triggers a re-fetch from step 93.
 
 ## 7.3 Key Data Models
 
@@ -799,7 +812,7 @@ The core data model normalized from REST API responses:
 | **Field**     | **Type**                                                           | **Source**                                     |
 | ------------- | ------------------------------------------------------------------ | ---------------------------------------------- |
 | id            | string                                                             | REST API                                       |
-| fileKey       | string                                                             | Derived from current file                      |
+| fileKey       | string                                                             | From paste file URL (V1); or current file when API available (future) |
 | pageId        | string                                                             | REST API client_meta                           |
 | parentId      | string \| null                                                     | REST API (null for top-level)                  |
 | author        | User { id, name, avatarUrl }                                       | REST API                                       |
@@ -982,6 +995,8 @@ Goal: Core infrastructure and basic comment browsing.
 
 - PAT authentication flow + clientStorage management
 
+- File key via paste file URL (Option C); Option A (request figma.fileKey from Figma) explored in parallel
+
 - REST API client with retry logic and rate limiting
 
 - Unified CommentThread data model and normalization
@@ -1084,6 +1099,8 @@ The following capabilities are intentionally deferred from V1 but represent the 
 - **Custom workflow states:** Let teams define their own intermediate states beyond the default six, tailored to their specific review process.
 
 - **Shared tags:** Allow team members to see each other’s tags on threads for collaborative categorization. Requires shared storage and conflict resolution for tag naming.
+
+- **OAuth-based authentication (V2):** Replace or supplement PAT with OAuth (Sign in with Figma) and refresh tokens to reduce 403-driven re-auth and improve reliability. Requires Figma OAuth app registration, redirect URI (e.g. small backend or hosted page), and refresh flow. PAT may be supported during transition or deprecated in favor of OAuth.
 
 - **Slack / Linear / Jira integration:** Push extracted tasks directly to project management tools. Requires OAuth and significant backend work.
 
