@@ -904,7 +904,7 @@ When using cloud AI providers, the quality of summaries and task extraction depe
 
 ## 9.1 Plugin Window
 
-- **Default size:** 340px wide × 580px tall (fits Figma’s standard plugin panel).
+- **Default size:** 420px wide × 720px tall (fits Figma’s standard plugin panel).
 
 - **Resizable:** Yes, with a minimum width of 300px.
 
