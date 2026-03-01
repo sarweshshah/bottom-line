@@ -70,7 +70,7 @@ The plugin uses the Figma REST API as its data source, authenticated via a user-
 | Authentication | Personal Access Token (PAT)                               | Stored locally in plugin clientStorage; required to use the plugin                           |
 | AI — Local     | On-device summarization (rule-based + lightweight models) | Privacy-first option; extracts key phrases and patterns without external calls               |
 | AI — Cloud     | Anthropic / OpenAI / Gemini / Custom (OpenAI-compatible)  | High-quality thread summaries and nuanced task extraction                                    |
-| UI Framework   | Figma Plugin UI (iframe)                                  | Custom React-based interface rendered in the plugin panel                                    |
+| UI Framework   | Figma Plugin UI (iframe)                                  | Custom React-based interface rendered in the plugin panel. **Lucide React** for all icons.   |
 
 **Authentication roadmap**
 
@@ -773,7 +773,7 @@ Every export format includes the same data per thread (adapted to the format’s
 
 | **Component**      | **Technology**                    | **Responsibility**                                                                                   |
 | ------------------ | --------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| Plugin UI (iframe) | React + TypeScript + Tailwind CSS | Renders all UI components, handles user interaction, manages local state                             |
+| Plugin UI (iframe) | React + TypeScript + Tailwind CSS + Lucide React | Renders all UI components, handles user interaction, manages local state. **Lucide icons** used throughout for consistency (navigation, actions, status, empty states). |
 | Plugin Sandbox     | Figma Plugin API (TypeScript)     | Communicates with Figma canvas for viewport navigation and node data. Not used for comment fetching. |
 | REST API Client    | Fetch API with retry logic        | Makes authenticated requests to Figma REST API for comment data                                      |
 | AI Engine — Local  | TypeScript module                 | Rule-based summarization, keyword extraction, pattern matching for tasks                             |
