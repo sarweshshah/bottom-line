@@ -1,6 +1,6 @@
-import { ChevronDown, X } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
-import type { StatusFilter, SortOrder } from "@shared/types";
+import type { StatusFilter, SortOrder, CommentScope } from "@shared/types";
 import { useFilterStore } from "@ui/store/filterStore";
 
 const STATUS_OPTIONS: { value: StatusFilter; label: string }[] = [
@@ -14,18 +14,27 @@ const SORT_OPTIONS: { value: SortOrder; label: string }[] = [
   { value: "oldest", label: "Oldest first" },
 ];
 
+const SCOPE_OPTIONS: { value: CommentScope; label: string }[] = [
+  { value: "current_page", label: "Current page" },
+  { value: "full_file", label: "Document" },
+];
+
 export function FilterBar() {
-  const { status, sortBy, setStatus, setSortBy, clearFilters } =
+  const { status, sortBy, commentScope, setStatus, setSortBy, setCommentScope } =
     useFilterStore();
   const [sortOpen, setSortOpen] = useState(false);
+  const [scopeOpen, setScopeOpen] = useState(false);
   const sortRef = useRef<HTMLDivElement>(null);
-
-  const hasNonDefault = status !== "open" || sortBy !== "newest";
+  const scopeRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (sortRef.current && !sortRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      if (sortRef.current && !sortRef.current.contains(target)) {
         setSortOpen(false);
+      }
+      if (scopeRef.current && !scopeRef.current.contains(target)) {
+        setScopeOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -33,7 +42,7 @@ export function FilterBar() {
   }, []);
 
   return (
-    <div className="flex items-center gap-2 px-4 py-2 border-b border-figma-border bg-figma-bg">
+    <div className="flex items-center gap-2 px-4 py-3 border-b border-figma-border bg-figma-bg">
       {/* Status chips */}
       <div className="flex items-center gap-1 flex-1">
         {STATUS_OPTIONS.map((opt) => (
@@ -41,7 +50,7 @@ export function FilterBar() {
             key={opt.value}
             type="button"
             onClick={() => setStatus(opt.value)}
-            className={`px-2.5 py-1 rounded-full text-2xs font-medium transition-colors ${
+            className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
               status === opt.value
                 ? "bg-status-open text-white"
                 : "bg-figma-bg-secondary text-figma-text-secondary hover:bg-figma-bg-tertiary"
@@ -50,16 +59,42 @@ export function FilterBar() {
             {opt.label}
           </button>
         ))}
+      </div>
 
-        {hasNonDefault && (
-          <button
-            type="button"
-            onClick={clearFilters}
-            className="ml-1 text-figma-text-tertiary hover:text-figma-text-secondary"
-            title="Clear all filters"
-          >
-            <X size={12} />
-          </button>
+      {/* Scope dropdown */}
+      <div className="relative" ref={scopeRef}>
+        <button
+          type="button"
+          onClick={() => {
+            setScopeOpen(!scopeOpen);
+            setSortOpen(false);
+          }}
+          className="flex items-center gap-1 text-xs text-figma-text-secondary hover:text-figma-text px-2 py-1 rounded bg-figma-bg-secondary"
+        >
+          {SCOPE_OPTIONS.find((o) => o.value === commentScope)?.label}
+          <ChevronDown size={10} />
+        </button>
+
+        {scopeOpen && (
+          <div className="absolute right-0 top-full mt-1 bg-figma-bg border border-figma-border rounded-md shadow-lg z-20 min-w-[130px]">
+            {SCOPE_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => {
+                  setCommentScope(opt.value);
+                  setScopeOpen(false);
+                }}
+                className={`w-full text-left px-3 py-1.5 text-xs hover:bg-figma-bg-hover transition-colors ${
+                  commentScope === opt.value
+                    ? "text-status-open font-medium"
+                    : "text-figma-text-secondary"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
         )}
       </div>
 
@@ -67,8 +102,11 @@ export function FilterBar() {
       <div className="relative" ref={sortRef}>
         <button
           type="button"
-          onClick={() => setSortOpen(!sortOpen)}
-          className="flex items-center gap-1 text-2xs text-figma-text-secondary hover:text-figma-text px-2 py-1 rounded bg-figma-bg-secondary"
+          onClick={() => {
+            setSortOpen(!sortOpen);
+            setScopeOpen(false);
+          }}
+          className="flex items-center gap-1 text-xs text-figma-text-secondary hover:text-figma-text px-2 py-1 rounded bg-figma-bg-secondary"
         >
           {SORT_OPTIONS.find((o) => o.value === sortBy)?.label}
           <ChevronDown size={10} />
@@ -84,7 +122,7 @@ export function FilterBar() {
                   setSortBy(opt.value);
                   setSortOpen(false);
                 }}
-                className={`w-full text-left px-3 py-1.5 text-2xs hover:bg-figma-bg-hover transition-colors ${
+                className={`w-full text-left px-3 py-1.5 text-xs hover:bg-figma-bg-hover transition-colors ${
                   sortBy === opt.value
                     ? "text-status-open font-medium"
                     : "text-figma-text-secondary"

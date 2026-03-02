@@ -42,7 +42,7 @@ export function EmptyState({ variant, action }: EmptyStateProps) {
         <Icon size={20} className="text-figma-icon-tertiary" />
       </div>
       <h3 className="text-sm font-medium text-figma-text mb-1">{title}</h3>
-      <p className="text-xs text-figma-text-tertiary mb-4 max-w-[240px]">
+      <p className="text-sm text-figma-text-tertiary mb-4 max-w-[240px]">
         {description}
       </p>
       {action}

@@ -76,7 +76,7 @@ export function SetupScreen() {
           <h1 className="text-lg font-semibold text-figma-text mb-1">
             Welcome to Bottom Line
           </h1>
-          <p className="text-xs text-figma-text-secondary">
+          <p className="text-sm text-figma-text-secondary">
             AI-powered comment intelligence for your design files.
             <br />
             Connect your Figma account to get started.
@@ -90,13 +90,13 @@ export function SetupScreen() {
             Figma Personal Access Token
           </h2>
 
-          <div className="text-2xs text-figma-text-secondary mb-3 space-y-1.5">
+          <div className="text-xs text-figma-text-secondary mb-3 space-y-1.5">
             <p className="font-medium text-figma-text-secondary">How to get your token:</p>
             <ol className="list-decimal list-inside space-y-0.5 text-figma-text-tertiary">
               <li>Open Figma Settings &rarr; Security</li>
               <li>Generate a new token named "Bottom Line"</li>
               <li>
-                Include the <code className="bg-figma-bg-secondary px-1 py-0.5 rounded text-2xs">file_comments:read</code> scope
+                Include the <code className="bg-figma-bg-secondary px-1 py-0.5 rounded text-xs">file_comments:read</code> scope
               </li>
               <li>Copy and paste it below</li>
             </ol>
@@ -104,7 +104,7 @@ export function SetupScreen() {
               href="https://www.figma.com/settings"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-status-open hover:underline text-2xs mt-1"
+              className="inline-flex items-center gap-1 text-status-open hover:underline text-xs mt-1"
             >
               Open Figma Settings
               <ExternalLink size={10} />
@@ -131,26 +131,26 @@ export function SetupScreen() {
 
           {/* Validation feedback */}
           {isValidating && (
-            <div className="flex items-center gap-1.5 text-2xs text-figma-text-secondary">
+            <div className="flex items-center gap-1.5 text-xs text-figma-text-secondary">
               <Loader2 size={12} className="animate-spin" />
               Validating token...
             </div>
           )}
           {tokenValid && user && (
-            <div className="flex items-center gap-1.5 text-2xs text-status-resolved">
+            <div className="flex items-center gap-1.5 text-xs text-status-resolved">
               <CheckCircle2 size={12} />
               Connected as {user.handle}
             </div>
           )}
           {validationError && (
-            <div className="flex items-center gap-1.5 text-2xs text-red-500">
+            <div className="flex items-center gap-1.5 text-xs text-red-500">
               <AlertCircle size={12} />
               {validationError}
             </div>
           )}
 
           {/* Transparency */}
-          <div className="mt-3 grid grid-cols-2 gap-2 text-2xs">
+          <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
             <div className="bg-figma-bg-secondary rounded-md p-2">
               <p className="font-medium text-figma-text-secondary mb-1 flex items-center gap-1">
                 <ShieldCheck size={10} className="text-status-resolved" />
@@ -182,7 +182,7 @@ export function SetupScreen() {
             <Link size={14} className="text-status-open" />
             Figma File URL
           </h2>
-          <p className="text-2xs text-figma-text-tertiary mb-2">
+          <p className="text-xs text-figma-text-tertiary mb-2">
             Paste the URL of the Figma file you want to analyze comments for.
           </p>
           <input
@@ -193,13 +193,13 @@ export function SetupScreen() {
             className="w-full bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2 text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-status-open focus:ring-1 focus:ring-status-open/30"
           />
           {urlError && (
-            <div className="flex items-center gap-1.5 text-2xs text-red-500 mt-1">
+            <div className="flex items-center gap-1.5 text-xs text-red-500 mt-1">
               <AlertCircle size={12} />
               {urlError}
             </div>
           )}
           {fileKey && !urlError && (
-            <div className="flex items-center gap-1.5 text-2xs text-status-resolved mt-1">
+            <div className="flex items-center gap-1.5 text-xs text-status-resolved mt-1">
               <CheckCircle2 size={12} />
               File key detected
             </div>

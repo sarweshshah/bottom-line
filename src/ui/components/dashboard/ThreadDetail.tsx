@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import {
   ArrowLeft,
+  User,
   ExternalLink,
   ChevronDown,
   ChevronRight,
@@ -13,6 +14,8 @@ import { StatusBadge } from "@ui/components/common/StatusBadge";
 import { AvatarGroup } from "@ui/components/common/AvatarGroup";
 import { showToast } from "@ui/components/common/Toast";
 import { timeAgo } from "@ui/lib/timeAgo";
+import { renderMentions } from "@ui/lib/renderMentions";
+import { useAuthStore } from "@ui/store/authStore";
 
 interface ThreadDetailProps {
   thread: CommentThread;
@@ -33,39 +36,39 @@ function CommentBubble({
   author,
   message,
   createdAt,
-  isRoot,
 }: {
   author: { handle: string; img_url: string };
   message: string;
   createdAt: string;
-  isRoot?: boolean;
 }) {
+  const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
+  const showImage = Boolean(author.img_url) && !avatarLoadFailed;
+
   return (
-    <div className={`flex gap-2.5 ${isRoot ? "" : "ml-4"}`}>
-      <div className="shrink-0 mt-0.5">
-        {author.img_url ? (
+    <div className="flex gap-2.5">
+      <div className="shrink-0 mt-0.5 w-8 h-8 rounded-full bg-figma-bg-tertiary overflow-hidden flex items-center justify-center">
+        {showImage ? (
           <img
             src={author.img_url}
             alt={author.handle}
-            className="w-6 h-6 rounded-full object-cover"
+            className="w-full h-full object-cover"
+            onError={() => setAvatarLoadFailed(true)}
           />
         ) : (
-          <div className="w-6 h-6 rounded-full bg-figma-bg-tertiary flex items-center justify-center text-2xs font-medium text-figma-text-secondary">
-            {author.handle[0]?.toUpperCase()}
-          </div>
+          <User size={14} className="text-figma-icon-tertiary" />
         )}
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline gap-2 mb-0.5">
-          <span className="text-xs font-medium text-figma-text">
+          <span className="text-sm font-medium text-figma-text">
             {author.handle}
           </span>
-          <span className="text-2xs text-figma-text-tertiary">
+          <span className="text-xs text-figma-text-tertiary">
             {timeAgo(createdAt)}
           </span>
         </div>
-        <p className="text-xs text-figma-text-secondary leading-relaxed whitespace-pre-wrap break-words">
-          {message}
+        <p className="text-[11px] text-figma-text-secondary leading-relaxed opacity-80 whitespace-pre-wrap break-words">
+          {renderMentions(message)}
         </p>
       </div>
     </div>
@@ -75,13 +78,16 @@ function CommentBubble({
 export function ThreadDetail({ thread, onBack }: ThreadDetailProps) {
   const [threadExpanded, setThreadExpanded] = useState(true);
   const [navigating, setNavigating] = useState(false);
+  const { showThreadElbows } = useAuthStore();
 
   const handleNavigate = useCallback(() => {
     if (!thread.clientMeta || navigating) return;
     setNavigating(true);
 
     const handler = (event: MessageEvent) => {
-      const msg = event.data?.pluginMessage as NavigateResultMessage | undefined;
+      const msg = event.data?.pluginMessage as
+        | NavigateResultMessage
+        | undefined;
       if (!msg || msg.type !== "NAVIGATE_RESULT") return;
 
       window.removeEventListener("message", handler);
@@ -97,6 +103,7 @@ export function ThreadDetail({ thread, onBack }: ThreadDetailProps) {
     const navMsg: NavigateToCommentMessage = {
       type: "NAVIGATE_TO_COMMENT",
       clientMeta: thread.clientMeta!,
+      commentId: thread.id,
     };
     parent.postMessage({ pluginMessage: navMsg }, "*");
 
@@ -130,15 +137,15 @@ export function ThreadDetail({ thread, onBack }: ThreadDetailProps) {
         {/* Meta */}
         <div className="px-4 py-3 border-b border-figma-border">
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-2xs text-figma-text-tertiary">
+            <span className="text-xs text-figma-text-tertiary">
               {formatDate(thread.createdAt)}
             </span>
-            <span className="text-2xs text-figma-text-disabled">&middot;</span>
-            <span className="text-2xs text-figma-text-tertiary">
+            <span className="text-xs text-figma-text-disabled">&middot;</span>
+            <span className="text-xs text-figma-text-tertiary">
               Started by {thread.author.handle}
             </span>
           </div>
-          <AvatarGroup users={thread.participants} max={8} size={24} />
+          <AvatarGroup users={thread.participants} max={8} size={30} />
         </div>
 
         {/* Full comment thread */}
@@ -157,21 +164,57 @@ export function ThreadDetail({ thread, onBack }: ThreadDetailProps) {
           </button>
 
           {threadExpanded && (
-            <div className="space-y-4">
-              <CommentBubble
-                author={thread.author}
-                message={thread.message}
-                createdAt={thread.createdAt}
-                isRoot
-              />
-              {thread.replies.map((reply: CommentReply) => (
+            <div>
+              <div className="relative">
+                {showThreadElbows && thread.replies.length > 0 && (
+                  <span
+                    aria-hidden
+                    className="pointer-events-none absolute left-4 top-9 bottom-0 border-l-2 border-figma-border"
+                  />
+                )}
                 <CommentBubble
-                  key={reply.id}
-                  author={reply.author}
-                  message={reply.message}
-                  createdAt={reply.createdAt}
+                  author={thread.author}
+                  message={thread.message}
+                  createdAt={thread.createdAt}
                 />
-              ))}
+              </div>
+              {thread.replies.length > 0 && (
+                <div className="mt-3 mb-3 space-y-3">
+                  {thread.replies.map((reply: CommentReply, index: number) => {
+                    const isLast = index === thread.replies.length - 1;
+                    return (
+                      <div key={reply.id} className="relative pl-10">
+                        {showThreadElbows && (
+                          <>
+                            {/* Connect from parent/previous segment into this reply elbow. */}
+                            <span
+                              aria-hidden
+                              className="pointer-events-none absolute left-4 -top-3 h-3 border-l-2 border-figma-border"
+                            />
+                            {/* Curved elbow branch into this reply from the parent trunk. */}
+                            <span
+                              aria-hidden
+                              className="pointer-events-none absolute left-4 top-0 h-4 w-5 rounded-bl-xl border-l-2 border-b-2 border-figma-border"
+                            />
+                            {/* Continue vertical trunk only when another reply follows. */}
+                            {!isLast && (
+                              <span
+                                aria-hidden
+                                className="pointer-events-none absolute left-4 top-4 -bottom-3 border-l-2 border-figma-border"
+                              />
+                            )}
+                          </>
+                        )}
+                        <CommentBubble
+                          author={reply.author}
+                          message={reply.message}
+                          createdAt={reply.createdAt}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
         </div>

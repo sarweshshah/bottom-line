@@ -34,11 +34,33 @@ export interface InitDataMessage {
   userName: string | null;
   userAvatarUrl: string | null;
   userId: string | null;
+  autoOpenComment: boolean;
+  showThreadElbows: boolean;
+  cacheTTLMinutes: 5 | 10 | 15 | 30;
+  currentPageId: string;
+}
+
+export interface PageChangedMessage {
+  type: "PAGE_CHANGED";
+  pageId: string;
+}
+
+export interface ResolvePageThreadsMessage {
+  type: "RESOLVE_PAGE_THREADS";
+  requestId: string;
+  threads: { threadId: string; nodeId: string }[];
+}
+
+export interface PageThreadsResolvedMessage {
+  type: "PAGE_THREADS_RESOLVED";
+  requestId: string;
+  threadIds: string[];
 }
 
 export interface NavigateToCommentMessage {
   type: "NAVIGATE_TO_COMMENT";
   clientMeta: ClientMeta;
+  commentId: string;
 }
 
 export interface NavigateResultMessage {
@@ -57,15 +79,25 @@ export interface RequestInitMessage {
   type: "REQUEST_INIT";
 }
 
+export interface ResizeUIMessage {
+  type: "RESIZE_UI";
+  width: number;
+  height: number;
+}
+
 export type SandboxMessage =
   | GetStorageMessage
   | SetStorageMessage
   | DeleteStorageMessage
   | NavigateToCommentMessage
   | NotifyMessage
-  | RequestInitMessage;
+  | RequestInitMessage
+  | ResizeUIMessage
+  | ResolvePageThreadsMessage;
 
 export type UIMessage =
   | StorageResultMessage
   | InitDataMessage
-  | NavigateResultMessage;
+  | NavigateResultMessage
+  | PageChangedMessage
+  | PageThreadsResolvedMessage;

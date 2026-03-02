@@ -3,25 +3,73 @@ import type {
   NavigateResultMessage,
   StorageResultMessage,
   InitDataMessage,
+  PageChangedMessage,
+  PageThreadsResolvedMessage,
 } from "@shared/messages";
-import type { ClientMeta } from "@shared/types";
+import type { ClientMeta, CacheTTLMinutes } from "@shared/types";
+
+const DEFAULT_UI_WIDTH = 420;
+const DEFAULT_UI_HEIGHT = 640;
+const MIN_UI_WIDTH = 420;
+const MAX_UI_WIDTH = 540;
+const MIN_UI_HEIGHT = 640;
+const MAX_UI_HEIGHT = 800;
+const DEFAULT_CACHE_TTL_MINUTES: CacheTTLMinutes = 5;
+const CACHE_TTL_OPTIONS: CacheTTLMinutes[] = [5, 10, 15, 30];
 
 figma.showUI(__html__, {
-  width: 420,
-  height: 720,
+  width: DEFAULT_UI_WIDTH,
+  height: DEFAULT_UI_HEIGHT,
   themeColors: true,
 });
 
+function clampUiSize(width: number, height: number) {
+  return {
+    width: Math.min(MAX_UI_WIDTH, Math.max(MIN_UI_WIDTH, Math.round(width))),
+    height: Math.min(MAX_UI_HEIGHT, Math.max(MIN_UI_HEIGHT, Math.round(height))),
+  };
+}
+
+function normalizeCacheTTL(value: unknown): CacheTTLMinutes {
+  if (typeof value !== "number" || Number.isNaN(value)) {
+    return DEFAULT_CACHE_TTL_MINUTES;
+  }
+
+  if (CACHE_TTL_OPTIONS.includes(value as CacheTTLMinutes)) {
+    return value as CacheTTLMinutes;
+  }
+
+  // Support legacy persisted values in milliseconds.
+  const asMinutes = Math.round(value / 60_000);
+  if (CACHE_TTL_OPTIONS.includes(asMinutes as CacheTTLMinutes)) {
+    return asMinutes as CacheTTLMinutes;
+  }
+
+  return DEFAULT_CACHE_TTL_MINUTES;
+}
+
 async function sendInitData() {
-  const [pat, fileKey, fileUrl, userName, userAvatarUrl, userId] =
-    await Promise.all([
-      figma.clientStorage.getAsync("pat"),
-      figma.clientStorage.getAsync("fileKey"),
-      figma.clientStorage.getAsync("fileUrl"),
-      figma.clientStorage.getAsync("userName"),
-      figma.clientStorage.getAsync("userAvatarUrl"),
-      figma.clientStorage.getAsync("userId"),
-    ]);
+  const [
+    pat,
+    fileKey,
+    fileUrl,
+    userName,
+    userAvatarUrl,
+    userId,
+    autoOpenComment,
+    showThreadElbows,
+    cacheTTL,
+  ] = await Promise.all([
+    figma.clientStorage.getAsync("pat"),
+    figma.clientStorage.getAsync("fileKey"),
+    figma.clientStorage.getAsync("fileUrl"),
+    figma.clientStorage.getAsync("userName"),
+    figma.clientStorage.getAsync("userAvatarUrl"),
+    figma.clientStorage.getAsync("userId"),
+    figma.clientStorage.getAsync("autoOpenComment"),
+    figma.clientStorage.getAsync("showThreadElbows"),
+    figma.clientStorage.getAsync("cacheTTL"),
+  ]);
 
   const msg: InitDataMessage = {
     type: "INIT_DATA",
@@ -31,6 +79,10 @@ async function sendInitData() {
     userName: userName ?? null,
     userAvatarUrl: userAvatarUrl ?? null,
     userId: userId ?? null,
+    autoOpenComment: autoOpenComment !== false,
+    showThreadElbows: showThreadElbows === true,
+    cacheTTLMinutes: normalizeCacheTTL(cacheTTL),
+    currentPageId: figma.currentPage.id,
   };
   figma.ui.postMessage(msg);
 }
@@ -44,7 +96,7 @@ function findPageForNode(node: BaseNode): PageNode | null {
   return null;
 }
 
-async function navigateToComment(clientMeta: ClientMeta) {
+async function navigateToComment(clientMeta: ClientMeta, commentId: string) {
   try {
     if ("node_id" in clientMeta) {
       const node = await figma.getNodeByIdAsync(clientMeta.node_id);
@@ -52,8 +104,7 @@ async function navigateToComment(clientMeta: ClientMeta) {
         const result: NavigateResultMessage = {
           type: "NAVIGATE_RESULT",
           success: false,
-          error:
-            "The element this comment was attached to no longer exists.",
+          error: "The element this comment was attached to no longer exists.",
         };
         figma.ui.postMessage(result);
         return;
@@ -68,6 +119,13 @@ async function navigateToComment(clientMeta: ClientMeta) {
     } else if ("x" in clientMeta && "y" in clientMeta) {
       figma.viewport.center = { x: clientMeta.x, y: clientMeta.y };
       figma.viewport.zoom = 1;
+    }
+
+    const autoOpen = await figma.clientStorage.getAsync("autoOpenComment");
+    if (autoOpen !== false) {
+      figma.notify("Click the comment pin on the canvas to open the thread", {
+        timeout: 4000,
+      });
     }
 
     const result: NavigateResultMessage = {
@@ -102,8 +160,7 @@ figma.ui.onmessage = async (msg: SandboxMessage) => {
           type: "STORAGE_RESULT",
           requestId: msg.requestId,
           value: null,
-          error:
-            err instanceof Error ? err.message : "Storage read failed",
+          error: err instanceof Error ? err.message : "Storage read failed",
         };
         figma.ui.postMessage(result);
       }
@@ -124,8 +181,7 @@ figma.ui.onmessage = async (msg: SandboxMessage) => {
           type: "STORAGE_RESULT",
           requestId: msg.requestId,
           value: null,
-          error:
-            err instanceof Error ? err.message : "Storage write failed",
+          error: err instanceof Error ? err.message : "Storage write failed",
         };
         figma.ui.postMessage(result);
       }
@@ -146,8 +202,7 @@ figma.ui.onmessage = async (msg: SandboxMessage) => {
           type: "STORAGE_RESULT",
           requestId: msg.requestId,
           value: null,
-          error:
-            err instanceof Error ? err.message : "Storage delete failed",
+          error: err instanceof Error ? err.message : "Storage delete failed",
         };
         figma.ui.postMessage(result);
       }
@@ -155,7 +210,7 @@ figma.ui.onmessage = async (msg: SandboxMessage) => {
     }
 
     case "NAVIGATE_TO_COMMENT": {
-      await navigateToComment(msg.clientMeta);
+      await navigateToComment(msg.clientMeta, msg.commentId);
       break;
     }
 
@@ -168,7 +223,45 @@ figma.ui.onmessage = async (msg: SandboxMessage) => {
       await sendInitData();
       break;
     }
+
+    case "RESIZE_UI": {
+      const next = clampUiSize(msg.width, msg.height);
+      figma.ui.resize(next.width, next.height);
+      break;
+    }
+
+    case "RESOLVE_PAGE_THREADS": {
+      const matched: string[] = [];
+      for (const entry of msg.threads) {
+        try {
+          const node = await figma.getNodeByIdAsync(entry.nodeId);
+          if (node) {
+            const page = findPageForNode(node);
+            if (page && page.id === figma.currentPage.id) {
+              matched.push(entry.threadId);
+            }
+          }
+        } catch {
+          // node not found, skip
+        }
+      }
+      const resolved: PageThreadsResolvedMessage = {
+        type: "PAGE_THREADS_RESOLVED",
+        requestId: msg.requestId,
+        threadIds: matched,
+      };
+      figma.ui.postMessage(resolved);
+      break;
+    }
   }
 };
+
+figma.on("currentpagechange", () => {
+  const changed: PageChangedMessage = {
+    type: "PAGE_CHANGED",
+    pageId: figma.currentPage.id,
+  };
+  figma.ui.postMessage(changed);
+});
 
 sendInitData();

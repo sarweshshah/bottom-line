@@ -771,15 +771,15 @@ Every export format includes the same data per thread (adapted to the format’s
 
 ## 7.1 System Components
 
-| **Component**      | **Technology**                    | **Responsibility**                                                                                   |
-| ------------------ | --------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| **Component**      | **Technology**                                   | **Responsibility**                                                                                                                                                      |
+| ------------------ | ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Plugin UI (iframe) | React + TypeScript + Tailwind CSS + Lucide React | Renders all UI components, handles user interaction, manages local state. **Lucide icons** used throughout for consistency (navigation, actions, status, empty states). |
-| Plugin Sandbox     | Figma Plugin API (TypeScript)     | Communicates with Figma canvas for viewport navigation and node data. Not used for comment fetching. |
-| REST API Client    | Fetch API with retry logic        | Makes authenticated requests to Figma REST API for comment data                                      |
-| AI Engine — Local  | TypeScript module                 | Rule-based summarization, keyword extraction, pattern matching for tasks                             |
-| AI Engine — Cloud  | TypeScript module                 | Formats prompts, manages API calls to Anthropic/OpenAI/Gemini/custom endpoints, parses responses     |
-| State Manager      | Zustand or similar                | Manages comment cache, filter state, task states, user preferences                                   |
-| Storage Layer      | Figma clientStorage API           | Persists tokens, preferences, task states, filter defaults                                           |
+| Plugin Sandbox     | Figma Plugin API (TypeScript)                    | Communicates with Figma canvas for viewport navigation and node data. Not used for comment fetching.                                                                    |
+| REST API Client    | Fetch API with retry logic                       | Makes authenticated requests to Figma REST API for comment data                                                                                                         |
+| AI Engine — Local  | TypeScript module                                | Rule-based summarization, keyword extraction, pattern matching for tasks                                                                                                |
+| AI Engine — Cloud  | TypeScript module                                | Formats prompts, manages API calls to Anthropic/OpenAI/Gemini/custom endpoints, parses responses                                                                        |
+| State Manager      | Zustand or similar                               | Manages comment cache, filter state, task states, user preferences                                                                                                      |
+| Storage Layer      | Figma clientStorage API                          | Persists tokens, preferences, task states, filter defaults                                                                                                              |
 
 ## 7.2 Data Flow
 
@@ -809,25 +809,25 @@ The comment data flows through the following pipeline:
 
 The core data model normalized from REST API responses:
 
-| **Field**     | **Type**                                                           | **Source**                                     |
-| ------------- | ------------------------------------------------------------------ | ---------------------------------------------- |
-| id            | string                                                             | REST API                                       |
+| **Field**     | **Type**                                                           | **Source**                                                            |
+| ------------- | ------------------------------------------------------------------ | --------------------------------------------------------------------- |
+| id            | string                                                             | REST API                                                              |
 | fileKey       | string                                                             | From paste file URL (V1); or current file when API available (future) |
-| pageId        | string                                                             | REST API client_meta                           |
-| parentId      | string \| null                                                     | REST API (null for top-level)                  |
-| author        | User { id, name, avatarUrl }                                       | REST API                                       |
-| message       | string                                                             | REST API                                       |
-| createdAt     | ISO 8601 datetime                                                  | REST API                                       |
-| resolvedAt    | ISO 8601 datetime \| null                                          | REST API                                       |
-| replies       | CommentThread[]                                                    | Derived from parentId grouping                 |
-| clientMeta    | { x, y, nodeId, nodeOffset }                                       | REST API                                       |
-| images        | string[] (CDN URLs)                                                | REST API (extracted from comment attachments)  |
-| mentions      | string[] (user handles)                                            | Parsed from message text                       |
-| workflowState | open \| read \| in_progress \| needs_review \| blocked \| resolved | Plugin state engine (synced for open/resolved) |
-| stateHistory  | StateTransition[] (last 5)                                         | Local state change log for auditability        |
-| tags          | Tag[]                                                              | User-applied tags (local only, per-user)       |
-| summary       | string \| null                                                     | AI Engine output                               |
-| tasks         | Task[]                                                             | AI Engine output                               |
+| pageId        | string                                                             | REST API client_meta                                                  |
+| parentId      | string \| null                                                     | REST API (null for top-level)                                         |
+| author        | User { id, name, avatarUrl }                                       | REST API                                                              |
+| message       | string                                                             | REST API                                                              |
+| createdAt     | ISO 8601 datetime                                                  | REST API                                                              |
+| resolvedAt    | ISO 8601 datetime \| null                                          | REST API                                                              |
+| replies       | CommentThread[]                                                    | Derived from parentId grouping                                        |
+| clientMeta    | { x, y, nodeId, nodeOffset }                                       | REST API                                                              |
+| images        | string[] (CDN URLs)                                                | REST API (extracted from comment attachments)                         |
+| mentions      | string[] (user handles)                                            | Parsed from message text                                              |
+| workflowState | open \| read \| in_progress \| needs_review \| blocked \| resolved | Plugin state engine (synced for open/resolved)                        |
+| stateHistory  | StateTransition[] (last 5)                                         | Local state change log for auditability                               |
+| tags          | Tag[]                                                              | User-applied tags (local only, per-user)                              |
+| summary       | string \| null                                                     | AI Engine output                                                      |
+| tasks         | Task[]                                                             | AI Engine output                                                      |
 
 ### Task
 

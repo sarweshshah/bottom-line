@@ -10,7 +10,7 @@ interface ThreadListProps {
 }
 
 export function ThreadList({ onSelectThread }: ThreadListProps) {
-  const { threads, isLoading, error } = useCommentsStore();
+  const { threads, isLoading, error, currentPageThreadIds } = useCommentsStore();
   const { applyFilters, clearFilters } = useFilterStore();
 
   if (isLoading && threads.length === 0) {
@@ -40,7 +40,7 @@ export function ThreadList({ onSelectThread }: ThreadListProps) {
     return <EmptyState variant="no-comments" />;
   }
 
-  const filtered = applyFilters(threads);
+  const filtered = applyFilters(threads, currentPageThreadIds);
 
   if (filtered.length === 0) {
     return (

@@ -26,9 +26,7 @@ export default {
           resolved: "#22c55e",
         },
       },
-      fontSize: {
-        "2xs": "0.6875rem",
-      },
+      fontSize: {},
     },
   },
   plugins: [],

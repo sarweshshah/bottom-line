@@ -51,7 +51,7 @@ export function ReconnectScreen() {
           <h1 className="text-lg font-semibold text-figma-text mb-1">
             Token Expired or Revoked
           </h1>
-          <p className="text-xs text-figma-text-secondary max-w-[280px]">
+          <p className="text-sm text-figma-text-secondary max-w-[280px]">
             Your Figma token is no longer valid. Generate a new one and paste it
             below to reconnect.
           </p>
@@ -87,19 +87,19 @@ export function ReconnectScreen() {
         </div>
 
         {isValidating && (
-          <div className="flex items-center gap-1.5 text-2xs text-figma-text-secondary">
+          <div className="flex items-center gap-1.5 text-xs text-figma-text-secondary">
             <Loader2 size={12} className="animate-spin" />
             Validating token...
           </div>
         )}
         {tokenValid && (
-          <div className="flex items-center gap-1.5 text-2xs text-status-resolved">
+          <div className="flex items-center gap-1.5 text-xs text-status-resolved">
             <CheckCircle2 size={12} />
             Token is valid
           </div>
         )}
         {validationError && (
-          <div className="flex items-center gap-1.5 text-2xs text-red-500">
+          <div className="flex items-center gap-1.5 text-xs text-red-500">
             <AlertCircle size={12} />
             {validationError}
           </div>

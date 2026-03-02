@@ -1,21 +1,33 @@
 import { useEffect, useState, useCallback } from "react";
-import { RefreshCw, MessageSquare, Loader2 } from "lucide-react";
+import { RefreshCw, MessageSquare, Loader2, Settings } from "lucide-react";
 import type { CommentThread } from "@shared/types";
 import { useCommentsStore } from "@ui/store/commentsStore";
 import { useFilterStore } from "@ui/store/filterStore";
+import { useAuthStore } from "@ui/store/authStore";
 import { FilterBar } from "./FilterBar";
 import { ThreadList } from "./ThreadList";
 import { ThreadDetail } from "./ThreadDetail";
 
 export function DashboardLayout() {
-  const { threads, isLoading, fetchComments, refreshComments, isCacheStale } =
+  const { threads, isLoading, fetchComments, refreshComments, cacheTTLMinutes, currentPageThreadIds } =
     useCommentsStore();
   const { applyFilters } = useFilterStore();
+  const { showSettings } = useAuthStore();
   const [selectedThread, setSelectedThread] = useState<CommentThread | null>(null);
 
   useEffect(() => {
     fetchComments();
   }, [fetchComments]);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      void refreshComments();
+    }, cacheTTLMinutes * 60_000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [cacheTTLMinutes, refreshComments]);
 
   const handleRefresh = useCallback(() => {
     refreshComments();
@@ -34,9 +46,7 @@ export function DashboardLayout() {
     return <ThreadDetail thread={freshThread} onBack={handleBack} />;
   }
 
-  const filteredCount = applyFilters(threads).length;
-  const stale = isCacheStale();
-
+  const filteredCount = applyFilters(threads, currentPageThreadIds).length;
   return (
     <div className="flex flex-col h-full bg-figma-bg">
       {/* Toolbar */}
@@ -44,16 +54,11 @@ export function DashboardLayout() {
         <div className="flex items-center gap-2">
           <MessageSquare size={16} className="text-figma-icon" />
           <span className="text-sm font-medium text-figma-text">Threads</span>
-          <span className="text-2xs text-figma-text-tertiary bg-figma-bg-secondary px-1.5 py-0.5 rounded-full">
+          <span className="text-xs text-figma-text bg-figma-bg-secondary px-1.5 py-0.5 rounded-full">
             {filteredCount}
           </span>
         </div>
         <div className="flex items-center gap-1">
-          {stale && (
-            <span className="text-2xs text-figma-text-tertiary mr-1">
-              Stale
-            </span>
-          )}
           <button
             type="button"
             onClick={handleRefresh}
@@ -66,6 +71,14 @@ export function DashboardLayout() {
             ) : (
               <RefreshCw size={14} />
             )}
+          </button>
+          <button
+            type="button"
+            onClick={showSettings}
+            className="p-1.5 rounded-md text-figma-icon-secondary hover:bg-figma-bg-secondary hover:text-figma-icon transition-colors"
+            title="Settings"
+          >
+            <Settings size={14} />
           </button>
         </div>
       </div>
