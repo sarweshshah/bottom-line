@@ -88,7 +88,7 @@ The following table clarifies what is and isn’t included in the V1 release:
 | **In Scope (V1)**                            | **Out of Scope (Future)**                        |
 | -------------------------------------------- | ------------------------------------------------ |
 | Thread listing with open/resolved filtering  | Third-party integrations (Slack, Jira, Linear)   |
-| AI-powered thread summaries (local + cloud)  | Comment creation or reply from within the plugin |
+| On-demand AI thread summaries (local + cloud) | Comment creation or reply from within the plugin |
 | Task extraction from natural language        | Cross-file comment aggregation                   |
 | Personal view (“addressed to me”)            | Notification system / push alerts                |
 | Page-level and document-level toggle         | Comment analytics and reporting dashboards       |
@@ -209,10 +209,10 @@ The plugin fetches comment data exclusively via the Figma REST API:
 The main plugin interface is a scrollable list of comment threads grouped by page under collapsible sections (current page first, expanded by default). Each thread card shows:
 
 - Last-updated timestamp + status badge (Open/Resolved)
-- AI summary (max 2 lines, truncated)
-- Participant avatar group (current user first, max 5, +N overflow) + task badge + reply count
+- Message preview (first comment text, max 2–3 lines, truncated with ellipsis)
+- Participant avatar group (current user first, max 5, +N overflow) + reply count
 
-Tapping a card opens the Thread Detail Screen with full summary, tasks list, tags, and the complete comment thread.
+Tapping a card opens the Thread Detail Screen with the complete comment thread and an option to generate an AI summary on demand.
 
 ### Filter System
 
@@ -245,13 +245,15 @@ Users can filter the thread list using the following dimensions, which are combi
 
 ### Summary Generation
 
-Each comment thread receives an AI-generated summary that distills the conversation into 1–3 actionable sentences. The summary should capture:
+Summaries are generated **on demand, per thread**. From the Thread Detail Screen the user clicks a "Summarize" button to request an AI-generated summary that distills the conversation into 1–3 actionable sentences. The summary should capture:
 
 - The core topic or feedback point
 
 - The current state of the discussion (consensus, disagreement, pending)
 
 - Any decisions made or next steps identified
+
+This on-demand model gives users full control over cost, avoids wasting tokens on trivial or very short threads, and keeps initial load fast. Generated summaries are cached in `clientStorage` keyed by `threadId + lastUpdatedAt` so they persist across sessions and auto-invalidate when new replies arrive.
 
 ### AI Provider Options
 
@@ -287,7 +289,7 @@ Image analysis is controlled by a user toggle in Settings:
 
 - When enabled but the provider does not support vision (Local, Custom), the summary includes a note: “Thread includes N image(s) not analyzed — switch to a vision-capable provider for image context.”
 
-- The cost estimation (for named providers) updates dynamically to reflect the additional image token cost when the toggle is enabled.
+- When image analysis is toggled on in Settings, a note warns the user about higher per-thread token cost for vision-capable providers.
 
 > **IMAGE HANDLING**
 >
@@ -295,17 +297,17 @@ Image analysis is controlled by a user toggle in Settings:
 
 ### Acceptance Criteria
 
-28. Summaries are generated on first load and cached alongside comment data.
+28. Summaries are generated on demand when the user clicks "Summarize" in the Thread Detail Screen. Each request covers a single thread.
 
 29. Local summaries generate in \<500ms per thread.
 
-30. Cloud summaries are batched (up to 10 threads per API call) to minimize requests and cost.
+30. Generated summaries are cached in `clientStorage` keyed by `threadId + lastUpdatedAt`. If the thread receives new replies, the cache is invalidated and a "Summary outdated — regenerate?" hint is shown.
 
-31. A loading skeleton is shown while cloud summaries are being generated.
+31. A loading state (spinner or skeleton) is shown in the summary section of the Thread Detail Screen while the AI request is in progress.
 
 32. If a cloud API call fails, the plugin falls back to local summarization for that thread and shows an info toast.
 
-33. Users can regenerate a summary for any individual thread.
+33. Users can regenerate a summary at any time via a `RefreshCw` button next to the generated summary.
 
 34. API keys and custom endpoint configurations are stored in clientStorage and never transmitted anywhere except the chosen provider’s API endpoint.
 
@@ -316,6 +318,8 @@ Image analysis is controlled by a user toggle in Settings:
 37. A maximum of 5 images per thread are sent; images are resized to max 1024px on the longest edge.
 
 38. Image analysis toggle defaults to Off and is clearly labeled with a cost warning in Settings.
+
+39. Threads with fewer than 3 total comments show a "Thread too short to summarize" note instead of the Summarize button.
 
 > **PRIVACY SAFEGUARD**
 >
@@ -337,17 +341,17 @@ The AI layer (local or cloud) scans each comment in a thread for implicit and ex
 
 ### Task Display
 
-- Each thread card shows a task badge (`ClipboardList` Lucide icon) with a count. Hovering the badge shows a tooltip with the task summary.
+- Tasks are extracted alongside the summary when the user clicks "Summarize" on the Thread Detail Screen. Threads that have not been summarized have no extracted tasks.
 
-- The full task list (assignee, description, status toggle) appears on the Thread Detail Screen.
+- The full task list (assignee, description, status toggle) appears on the Thread Detail Screen below the generated summary.
 
 - Task status is stored locally in clientStorage (not synced to Figma comments, as the API does not support custom metadata).
 
-- A dedicated “Tasks” tab in the main navigation shows all extracted tasks across threads, grouped by assignee.
+- A dedicated “Tasks” tab in the main navigation shows all extracted tasks across previously summarized threads, grouped by assignee. An empty state reads: “Summarize threads to extract tasks.”
 
 ### Acceptance Criteria
 
-39. Task extraction runs as part of the summary generation pipeline (same local/cloud toggle).
+39. Task extraction runs as part of the on-demand summary generation pipeline (same local/cloud toggle). Tasks are only available for threads the user has explicitly summarized.
 
 40. Detected tasks achieve \>80% precision (i.e., 8 out of 10 detected items are actual tasks) on design feedback corpora.
 
@@ -612,21 +616,21 @@ A search input (`Search` Lucide icon) sits above the thread list, below the filt
 
 - Results update after a 200ms debounce to avoid excessive re-renders.
 - The search query is combined with active filters using AND logic (e.g., search "spacing" + filter "Open" shows only open threads mentioning "spacing").
-- Matching terms are highlighted in the summary text on thread cards.
+- Matching terms are highlighted in the message preview on thread cards.
 - An `X` (Lucide) clear button resets the search. Empty search shows all threads (subject to active filters).
 - Search works across all page groups when scope is "Entire Document."
 
 ### Acceptance Criteria
 
 1. Search input filters the thread list in real-time with <200ms debounce.
-2. Matches against thread text, author names, AI summaries, and tag names (case-insensitive).
+2. Matches against thread text, author names, cached AI summaries (for threads that have been summarized), and tag names (case-insensitive).
 3. Search combines with active filters using AND logic.
-4. Matching terms are highlighted in card summaries.
+4. Matching terms are highlighted in card message previews.
 5. Clearing search restores the full filtered list.
 
 ## 4.12 FR-12: Export Thread List
 
-Users can export the current thread list (respecting active filters and search) via an export button (`Download` Lucide icon) in the toolbar. Export captures thread summaries, tasks, status, tags, and participant info.
+Users can export the current thread list (respecting active filters and search) via an export button (`Download` Lucide icon) in the toolbar. Export captures status, message preview, AI summary (if generated), tasks (if extracted), tags, and participant info. Threads that have not been summarized show “(not yet summarized)” in the summary field.
 
 ### Exported Fields Per Thread
 
@@ -637,8 +641,8 @@ Every export format includes the same data per thread (adapted to the format’s
 | Thread title / initiator | Name of the person who started the thread                              |
 | Status                   | Open / Resolved + workflow state (e.g., In Progress)                   |
 | Last updated             | Relative and absolute timestamp                                        |
-| AI summary               | Full summary text                                                      |
-| Tasks                    | List of tasks with: description, assignee, type, status (Pending/Done) |
+| AI summary               | Full summary text if generated; “(not yet summarized)” otherwise        |
+| Tasks                    | List of extracted tasks (if thread has been summarized); empty otherwise |
 | Tags                     | All applied tags (predefined + custom)                                 |
 | Participants             | Names of all people who commented in the thread                        |
 | Reply count              | Number of replies                                                      |
@@ -678,8 +682,8 @@ Every export format includes the same data per thread (adapted to the format’s
 | Initial load (500 comments)          | \<3 seconds                  | Time from plugin open to thread list render              |
 | Filter application                   | \<200ms                      | Time from filter change to list update                   |
 | Local summary generation             | \<500ms per thread           | Measured on average thread (5–10 comments)               |
-| Cloud summary generation             | \<5s for batch of 10 threads | Includes network round-trip                              |
-| Cloud summary with images            | \<8s for batch of 10 threads | Includes image fetch, resize, encode, and API round-trip |
+| Cloud summary generation             | \<5s per thread              | Includes network round-trip; single-thread request       |
+| Cloud summary with images            | \<8s per thread              | Includes image fetch, resize, encode, and API round-trip |
 | Navigate to comment                  | \<1 second                   | Time from click to canvas viewport settled               |
 | Intermediate state change            | \<100ms                      | Local state change (no API call)                         |
 | Keyword search filtering             | \<200ms                      | Debounce + render from keystroke to list update          |
@@ -733,15 +737,9 @@ Every export format includes the same data per thread (adapted to the format’s
 
 75. PAT setup (Step 2, mandatory): instructions to generate a token, will/won’t-do transparency, and inline validation. Token verified via `GET /v1/me`, showing user’s name on success.
 
-76. AI Provider (Step 3, skippable): user selects Local, Anthropic, OpenAI, Gemini, or Custom. If cloud provider is chosen, API key or config fields appear inline. Skipping defaults to Local.
+76. File URL (Step 3, mandatory): user pastes the Figma file URL to connect.
 
-77. Image Analysis (Step 4, conditional): only shown if a vision-capable cloud provider was selected. User toggles on/off with cost context. Skipping defaults to Off.
-
-78. Default Scope (Step 5, skippable): user chooses Current Page or Entire Document. Skipping defaults to Current Page.
-
-79. Confirmation (Step 6): summary of all choices (including defaults from skipped steps). User clicks “Launch Plugin.”
-
-80. Dashboard loads with comments based on chosen defaults.
+77. Dashboard loads immediately with comments. AI provider configuration is available in Settings whenever the user is ready to try summarization.
 
 ## 6.2 Daily Triage (Primary Flow)
 
@@ -749,11 +747,11 @@ Every export format includes the same data per thread (adapted to the format’s
 
 82. Dashboard loads with “Open + Addressed to Me” as the default filtered view.
 
-83. Each thread shows a 1–2 sentence AI summary and task badges.
+83. Each thread card shows a message preview, status, and participant avatars.
 
-84. Designer scans summaries, clicks a thread to jump to the canvas location.
+84. Designer scans previews, clicks a thread of interest to open the Thread Detail Screen.
 
-85. After addressing feedback, designer can mark tasks as done within the plugin.
+85. On the detail screen, the designer clicks “Summarize” to generate an AI summary and extract tasks. After addressing feedback, the designer can mark tasks as done within the plugin.
 
 86. Designer toggles to “Entire Document” scope to check other pages.
 
@@ -761,9 +759,9 @@ Every export format includes the same data per thread (adapted to the format’s
 
 87. Lead opens plugin and selects “Entire Document” scope.
 
-88. Filters to “With Tasks Only” to see outstanding action items.
+88. Opens threads of interest and clicks “Summarize” to generate summaries and extract tasks.
 
-89. Switches to the “Tasks” tab for an assignee-grouped task view.
+89. Switches to the “Tasks” tab for an assignee-grouped view of tasks from summarized threads.
 
 90. Identifies blockers and follows up with team members.
 
@@ -894,11 +892,9 @@ When using cloud AI providers, the quality of summaries and task extraction depe
 
 - **Max input:** Thread text is truncated to 4,000 tokens per thread to control cost and stay within context limits.
 
-- **Batching:** Up to 10 threads are sent per API call, each clearly delimited, to minimize request count.
+- **Single-thread requests:** Each summarization request covers exactly one thread. No batching is needed since summaries are generated on demand.
 
-- **Cost estimation:** The plugin displays an estimated API cost before the first cloud summarization run for named providers (Anthropic, OpenAI, Gemini) based on total comment volume. For custom providers, cost estimation is skipped with a note that the user is responsible for monitoring usage.
-
-- **Fallback:** If any individual thread in a batch fails to parse, the plugin falls back to local summarization for that thread only.
+- **Fallback:** If a cloud API call fails for a thread, the plugin falls back to local summarization for that thread and shows an info toast.
 
 # 9. UI/UX Specifications
 
@@ -931,8 +927,8 @@ Threads are grouped by page under collapsible sections:
 Each thread card is a compact, tappable row:
 
 - **Row 1:** Relative timestamp of last update (e.g., “2h ago”) aligned left + Status badge (Open/Resolved) aligned right.
-- **Row 2:** AI summary text (max 2 lines, truncated with ellipsis).
-- **Row 3:** Avatar group of all participants (current user first, max 5, `+N` overflow badge) + Task badge with count (`ClipboardList` Lucide icon; hover shows task summary tooltip) + Reply count (`MessageCircle` Lucide icon).
+- **Row 2:** Message preview (first comment text, max 2–3 lines, truncated with ellipsis).
+- **Row 3:** Avatar group of all participants (current user first, max 5, `+N` overflow badge) + Reply count (`MessageCircle` Lucide icon) + Navigate button (`Crosshair` Lucide icon, if comment has canvas coordinates).
 
 **Interactions:**
 
@@ -949,8 +945,8 @@ Tapping a card navigates to a full-width detail screen (replaces the list). A ba
 | ----------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | **Header**  | Back arrow + page name + status badge + workflow state selector (`ChevronDown`)                                              |
 | **Meta**    | Relative timestamp · thread initiator name · avatar group of all participants                                                |
-| **Summary** | Full AI summary (no truncation). `RefreshCw` (Lucide) button to regenerate.                                                  |
-| **Tasks**   | Extracted tasks: checkbox (Pending/Done), description, assignee avatar + name, type badge. Empty state: “No tasks detected.” |
+| **Summary** | On-demand AI summary section. Before generation: “Summarize” button (`Sparkles` Lucide icon) with thread length hint (e.g., “12 comments”). Threads with <3 comments show “Thread too short to summarize.” During generation: spinner/skeleton. After generation: full summary text + `RefreshCw` button to regenerate. If thread has new replies since last summary: “Summary outdated — regenerate?” hint. |
+| **Tasks**   | Extracted tasks (shown only after summary is generated): checkbox (Pending/Done), description, assignee avatar + name, type badge. Before summarization: section is hidden. Empty state after summarization: “No tasks detected.” |
 | **Tags**    | Tag chips with `Plus` (Lucide) button to add more.                                                                           |
 | **Thread**  | Collapsible full comment thread (`ChevronDown` toggle). Replies in chronological order with author, timestamp, and text.     |
 | **Actions** | “Navigate to comment” button (`ExternalLink` Lucide icon) — jumps to canvas location.                                        |
@@ -964,6 +960,7 @@ Tapping a card navigates to a full-width detail screen (replaces the list). A ba
 | No comments addressed to me | “You’re all caught up! No threads need your attention.”     | None                              |
 | API error                   | “Couldn’t fetch comments. Check your connection and token.” | "Retry" + "Open Settings" buttons |
 | No tasks detected           | “No action items found in the current threads.”             | None                              |
+| Summary not generated       | “Click Summarize to generate an AI summary for this thread.” | “Summarize” button                  |
 
 # 10. Success Metrics & KPIs
 
@@ -1021,9 +1018,9 @@ Goal: AI-powered summaries and task extraction.
 
 - Task extraction pipeline (local + cloud)
 
-- Summary display on thread cards and Thread Detail Screen
+- On-demand summary generation UI on Thread Detail Screen (Summarize button, loading state, cached result display, regenerate)
 
-- Tasks tab with assignee grouping
+- Tasks tab with assignee grouping (populated from summarized threads only)
 
 - AI provider settings UI
 
@@ -1087,7 +1084,7 @@ Goal: Production readiness, performance, and community launch.
 | Figma changes or deprecates comment API endpoints          | Low            | Critical   | Abstracted data layer that decouples UI from API specifics; monitor Figma changelog; maintain close parity with API versioning                  |
 | AI task extraction has high false-positive rate            | Medium         | Medium     | User-dismissable tasks with feedback loop; adjustable confidence threshold in settings; conservative default patterns                           |
 | Users reluctant to provide PAT for security concerns       | Medium         | High       | Clear security messaging in onboarding; link to Figma’s official docs on PAT safety; explain minimal scopes required; token stored locally only |
-| Cloud AI costs concern users                               | Low            | Medium     | Cost estimation before first run; local AI as capable default; batching to minimize API calls                                                   |
+| Cloud AI costs concern users                               | Low            | Medium     | On-demand per-thread model gives users full cost control; local AI as capable default; no batch runs                                                   |
 | Large files (1000+ comments) cause performance degradation | Medium         | High       | Virtualized list rendering; pagination; progressive summarization (visible threads first)                                                       |
 
 # 13. Future Considerations (Post-V1)
