@@ -1,0 +1,36 @@
+{
+  "name": "bottom-line",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AI-powered comment intelligence for design teams — Figma plugin",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:ui\" \"npm run dev:sandbox\"",
+    "dev:ui": "vite build --watch --mode development",
+    "dev:sandbox": "node build.mjs --watch",
+    "build": "npm run build:ui && npm run build:sandbox",
+    "build:ui": "vite build",
+    "build:sandbox": "node build.mjs",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.sandbox.json"
+  },
+  "dependencies": {
+    "lucide-react": "^0.468.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "zustand": "^5.0.3"
+  },
+  "devDependencies": {
+    "@figma/plugin-typings": "^1.106.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "concurrently": "^9.1.2",
+    "esbuild": "^0.24.2",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.3",
+    "vite": "^6.0.7",
+    "vite-plugin-singlefile": "^2.0.3"
+  }
+}

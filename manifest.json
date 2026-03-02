@@ -1,0 +1,19 @@
+{
+  "name": "Bottom Line",
+  "id": "bottom-line-dev",
+  "api": "1.0.0",
+  "main": "dist/code.js",
+  "ui": "dist/index.html",
+  "documentAccess": "dynamic-page",
+  "editorType": ["figma"],
+  "networkAccess": {
+    "allowedDomains": [
+      "https://api.figma.com",
+      "https://www.figma.com",
+      "https://api.anthropic.com",
+      "https://api.openai.com",
+      "https://generativelanguage.googleapis.com",
+      "https://*.figmausercontent.com"
+    ]
+  }
+}
