@@ -89,6 +89,36 @@ export type SortOrder = "newest" | "oldest";
 export type CommentScope = "current_page" | "full_file";
 export type CacheTTLMinutes = 5 | 10 | 15 | 30;
 
+export type AIProvider = "anthropic" | "openai" | "gemini" | "custom";
+export type TaskType = "revision" | "approval" | "blocker" | "question" | "general";
+export type TaskStatus = "pending" | "done";
+
+export interface Task {
+  id: string;
+  threadId: string;
+  description: string;
+  assignee: string | null;
+  status: TaskStatus;
+  sourceCommentId: string;
+  detectedPattern: string;
+  type: TaskType;
+}
+
+export interface SummaryResult {
+  summary: string;
+  tasks: Task[];
+  generatedAt: string;
+  threadLastUpdatedAt: string;
+  provider: AIProvider;
+  modelName: string;
+}
+
+export interface CustomProviderConfig {
+  baseUrl: string;
+  apiKey: string;
+  modelName: string;
+}
+
 export interface StoredPreferences {
   pat: string;
   fileKey: string;
@@ -101,6 +131,14 @@ export interface StoredPreferences {
   cacheTTL: CacheTTLMinutes;
   autoOpenComment: boolean;
   showThreadElbows: boolean;
+  aiProvider: AIProvider;
+  anthropicApiKey: string;
+  openaiApiKey: string;
+  geminiApiKey: string;
+  customProviderConfig: CustomProviderConfig;
+  imageAnalysisEnabled: boolean;
+  cloudAiConsented: boolean;
+  cloudAiConsentIncludesImages: boolean;
 }
 
 export type StorageKey = keyof StoredPreferences;

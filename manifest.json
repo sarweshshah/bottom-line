@@ -21,7 +21,8 @@
       "https://*.gravatar.com",
       "https://s3-alpha.figma.com",
       "https://lh3.googleusercontent.com",
-      "https://*.googleusercontent.com"
+      "https://*.googleusercontent.com",
+      "https://openrouter.ai"
     ]
   }
 }

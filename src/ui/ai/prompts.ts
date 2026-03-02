@@ -1,0 +1,130 @@
+import type { CommentThread, Task, SummaryResult, AIProvider } from "@shared/types";
+
+export const SYSTEM_PROMPT = `You are an assistant that analyzes Figma design comment threads.
+For each thread, provide:
+
+1. SUMMARY: A 1-3 sentence summary capturing the core feedback,
+   current state, and any decisions made. Write in present tense.
+   Be specific about design elements mentioned. If images are
+   attached, describe the relevant visual content and how it
+   relates to the feedback.
+
+2. TASKS: Extract any action items, requests, or assignments.
+   For each task, provide:
+   - description: What needs to be done
+   - assignee: The @mentioned person, or "Unassigned" if none
+   - type: One of [revision, approval, blocker, question, general]
+
+Respond in JSON format:
+{
+  "summary": "...",
+  "tasks": [
+    { "description": "...", "assignee": "...", "type": "..." }
+  ]
+}
+
+If no tasks are found, return an empty tasks array.
+Do not invent tasks that aren't clearly implied by the conversation.`;
+
+const MAX_CHARS = 16000;
+
+export function formatThreadForPrompt(thread: CommentThread): string {
+  const lines: string[] = [];
+  lines.push(`Thread started by @${thread.author.handle}:`);
+  lines.push(`@${thread.author.handle}: ${thread.message}`);
+
+  for (const reply of thread.replies) {
+    lines.push(`@${reply.author.handle}: ${reply.message}`);
+  }
+
+  let text = lines.join("\n");
+  if (text.length > MAX_CHARS) {
+    text = text.slice(0, MAX_CHARS) + "\n[...thread truncated due to length]";
+  }
+  return text;
+}
+
+interface RawAITask {
+  description?: string;
+  assignee?: string;
+  type?: string;
+}
+
+interface RawAIResponse {
+  summary?: string;
+  tasks?: RawAITask[];
+}
+
+const VALID_TASK_TYPES = new Set(["revision", "approval", "blocker", "question", "general"]);
+
+function extractJSON(text: string): RawAIResponse | null {
+  const fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (fenceMatch) {
+    try {
+      return JSON.parse(fenceMatch[1].trim());
+    } catch { /* fall through */ }
+  }
+
+  const braceMatch = text.match(/\{[\s\S]*\}/);
+  if (braceMatch) {
+    try {
+      return JSON.parse(braceMatch[0]);
+    } catch { /* fall through */ }
+  }
+
+  return null;
+}
+
+export function parseAIResponse(
+  raw: string,
+  threadId: string,
+  thread: CommentThread,
+  provider: AIProvider,
+  modelName: string,
+): SummaryResult {
+  const parsed = extractJSON(raw);
+
+  if (!parsed || !parsed.summary) {
+    let fallback = raw;
+    fallback = fallback.replace(/```(?:json)?[\s\S]*?```/g, "").trim();
+    fallback = fallback.replace(/\{[\s\S]*\}/g, "").trim();
+
+    if (!fallback) {
+      const summaryMatch = raw.match(/"summary"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+      fallback = summaryMatch
+        ? summaryMatch[1].replace(/\\"/g, '"').replace(/\\n/g, "\n")
+        : "Summary could not be generated. Please try again.";
+    }
+
+    return {
+      summary: fallback.slice(0, 500),
+      tasks: [],
+      generatedAt: new Date().toISOString(),
+      threadLastUpdatedAt: thread.lastUpdatedAt,
+      provider,
+      modelName,
+    };
+  }
+
+  const tasks: Task[] = (parsed.tasks ?? [])
+    .filter((t): t is RawAITask => !!t?.description)
+    .map((t, i) => ({
+      id: `task_${threadId}_${i}`,
+      threadId,
+      description: t.description!,
+      assignee: t.assignee && t.assignee !== "Unassigned" ? t.assignee : null,
+      status: "pending" as const,
+      sourceCommentId: threadId,
+      detectedPattern: "cloud_ai",
+      type: VALID_TASK_TYPES.has(t.type ?? "") ? (t.type as Task["type"]) : "general",
+    }));
+
+  return {
+    summary: parsed.summary,
+    tasks,
+    generatedAt: new Date().toISOString(),
+    threadLastUpdatedAt: thread.lastUpdatedAt,
+    provider,
+    modelName,
+  };
+}

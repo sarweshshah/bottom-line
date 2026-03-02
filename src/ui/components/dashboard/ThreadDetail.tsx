@@ -6,8 +6,14 @@ import {
   ChevronDown,
   ChevronRight,
   Loader2,
+  Sparkles,
+  RefreshCw,
+  AlertCircle,
+  CheckSquare,
+  Square,
+  X,
 } from "lucide-react";
-import type { CommentThread, CommentReply } from "@shared/types";
+import type { CommentThread, CommentReply, Task } from "@shared/types";
 import type { NavigateToCommentMessage } from "@shared/messages";
 import type { NavigateResultMessage } from "@shared/messages";
 import { StatusBadge } from "@ui/components/common/StatusBadge";
@@ -16,6 +22,9 @@ import { showToast } from "@ui/components/common/Toast";
 import { timeAgo } from "@ui/lib/timeAgo";
 import { renderMentions } from "@ui/lib/renderMentions";
 import { useAuthStore } from "@ui/store/authStore";
+import { useAIStore } from "@ui/store/aiStore";
+import { summarizeThread, isTooShort } from "@ui/ai/summarize";
+import { PROVIDER_MODEL_LABELS, formatModelName } from "@ui/ai/cloudProvider";
 
 interface ThreadDetailProps {
   thread: CommentThread;
@@ -71,6 +80,256 @@ function CommentBubble({
           {renderMentions(message)}
         </p>
       </div>
+    </div>
+  );
+}
+
+const TASK_TYPE_LABELS: Record<Task["type"], string> = {
+  revision: "Revision",
+  approval: "Approval",
+  blocker: "Blocker",
+  question: "Question",
+  general: "Task",
+};
+
+const TASK_TYPE_COLORS: Record<Task["type"], string> = {
+  revision: "bg-amber-100 text-amber-700",
+  approval: "bg-purple-100 text-purple-700",
+  blocker: "bg-red-100 text-red-700",
+  question: "bg-blue-100 text-blue-700",
+  general: "bg-gray-100 text-gray-600",
+};
+
+
+function SummarySection({ thread }: { thread: CommentThread }) {
+  const threadState = useAIStore((s) => s.threadSummaries.get(thread.id));
+  const setThreadLoading = useAIStore((s) => s.setThreadLoading);
+  const setThreadResult = useAIStore((s) => s.setThreadResult);
+  const setThreadError = useAIStore((s) => s.setThreadError);
+  const clearThreadSummary = useAIStore((s) => s.clearThreadSummary);
+  const needsConsent = useAIStore((s) => s.needsConsent);
+  const provider = useAIStore((s) => s.provider);
+  const customModelName = useAIStore((s) => s.customConfig.modelName);
+  const [expanded, setExpanded] = useState(true);
+
+  const tooShort = isTooShort(thread);
+  const isLoading = threadState?.isLoading ?? false;
+  const result = threadState?.result ?? null;
+  const error = threadState?.error ?? null;
+
+  const isOutdated =
+    result && result.threadLastUpdatedAt !== thread.lastUpdatedAt;
+
+  const handleSummarize = useCallback(async () => {
+    if (needsConsent()) {
+      const event = new CustomEvent("show-ai-consent");
+      window.dispatchEvent(event);
+      return;
+    }
+
+    setThreadLoading(thread.id);
+    try {
+      const summaryResult = await summarizeThread(thread);
+      setThreadResult(thread.id, summaryResult);
+    } catch (err) {
+      setThreadError(
+        thread.id,
+        err instanceof Error ? err.message : "Summary generation failed",
+      );
+    }
+  }, [thread, setThreadLoading, setThreadResult, setThreadError, needsConsent]);
+
+  if (tooShort) {
+    return (
+      <div className="px-4 py-3 border-b border-figma-border">
+        <div className="flex items-center gap-1.5 text-xs text-figma-text-tertiary">
+          <Sparkles size={12} />
+          Thread too short to summarize (fewer than 3 comments).
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="px-4 py-3 border-b border-figma-border">
+      <div className="flex items-center justify-between">
+        <button
+          type="button"
+          onClick={() => setExpanded(!expanded)}
+          className="flex items-center gap-1.5 text-xs font-medium text-figma-text-secondary hover:text-figma-text"
+        >
+          {expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+          <Sparkles size={12} />
+          AI Summary
+        </button>
+        {result && expanded && (
+          <div className="flex items-center gap-0.5">
+            <button
+              type="button"
+              onClick={handleSummarize}
+              disabled={isLoading}
+              className="p-1 rounded-md text-figma-icon-tertiary hover:bg-figma-bg-secondary hover:text-figma-icon transition-colors"
+              title="Regenerate summary"
+            >
+              <RefreshCw size={12} className={isLoading ? "animate-spin" : ""} />
+            </button>
+            <button
+              type="button"
+              onClick={() => clearThreadSummary(thread.id)}
+              className="p-1 rounded-md text-figma-icon-tertiary hover:bg-red-50 hover:text-red-500 transition-colors"
+              title="Clear summary"
+            >
+              <X size={12} />
+            </button>
+          </div>
+        )}
+      </div>
+
+      {expanded && (
+        <div className="mt-2">
+          {!result && !isLoading && !error && (
+            <button
+              type="button"
+              onClick={handleSummarize}
+              disabled={isLoading}
+              className="flex items-center gap-2 px-3 py-2 rounded-md text-xs font-medium bg-figma-bg-secondary text-figma-text-secondary hover:bg-figma-bg-tertiary hover:text-figma-text transition-colors"
+            >
+              <Sparkles size={13} />
+              Summarize ({thread.replyCount + 1} comments)
+              <span className="text-figma-text-disabled ml-1">
+                via {provider === "custom" ? customModelName || "custom" : PROVIDER_MODEL_LABELS[provider] ?? provider}
+              </span>
+            </button>
+          )}
+
+          {isLoading && (
+            <div className="space-y-2 animate-pulse">
+              <div className="h-3 bg-figma-bg-tertiary rounded w-full" />
+              <div className="h-3 bg-figma-bg-tertiary rounded w-4/5" />
+              <div className="h-3 bg-figma-bg-tertiary rounded w-3/5" />
+            </div>
+          )}
+
+          {error && (
+            <div className="flex items-start gap-2 p-2.5 rounded-md bg-red-50 border border-red-200">
+              <AlertCircle size={14} className="text-red-500 shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs text-red-700 mb-2">{error}</p>
+                <button
+                  type="button"
+                  onClick={handleSummarize}
+                  className="text-xs font-medium text-red-600 hover:text-red-800 transition-colors"
+                >
+                  Retry
+                </button>
+              </div>
+            </div>
+          )}
+
+          {result && (
+            <div>
+              {isOutdated && (
+                <button
+                  type="button"
+                  onClick={handleSummarize}
+                  className="flex items-center gap-1.5 text-xs text-amber-600 mb-2 hover:text-amber-700"
+                >
+                  <RefreshCw size={11} />
+                  Summary outdated — regenerate?
+                </button>
+              )}
+              <p className="text-[11px] text-figma-text-secondary leading-relaxed">
+                {result.summary}
+              </p>
+              <span className="text-[10px] text-figma-text-disabled mt-1 block">
+                Generated by {formatModelName(result.modelName ?? result.provider)} &middot; {timeAgo(result.generatedAt)}
+              </span>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TasksSection({ thread }: { thread: CommentThread }) {
+  const threadState = useAIStore((s) => s.threadSummaries.get(thread.id));
+  const updateTaskStatus = useAIStore((s) => s.updateTaskStatus);
+  const [expanded, setExpanded] = useState(true);
+
+  const result = threadState?.result ?? null;
+  if (!result) return null;
+
+  const tasks = result.tasks;
+  const doneCount = tasks.filter((t) => t.status === "done").length;
+
+  return (
+    <div className="px-4 py-3 border-b border-figma-border">
+      <button
+        type="button"
+        onClick={() => setExpanded(!expanded)}
+        className="flex items-center gap-1.5 text-xs font-medium text-figma-text-secondary hover:text-figma-text"
+      >
+        {expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+        Tasks ({doneCount}/{tasks.length})
+      </button>
+
+      {expanded && (
+        <div className="mt-2">
+          {tasks.length === 0 ? (
+            <p className="text-[11px] text-figma-text-tertiary">No tasks detected.</p>
+          ) : (
+            <div className="space-y-2">
+              {tasks.map((task) => (
+                <div
+                  key={task.id}
+                  className="flex items-start gap-2 group"
+                >
+                  <button
+                    type="button"
+                    onClick={() =>
+                      updateTaskStatus(
+                        task.id,
+                        task.status === "done" ? "pending" : "done",
+                      )
+                    }
+                    className="shrink-0 mt-0.5 text-figma-icon-secondary hover:text-figma-icon transition-colors"
+                  >
+                    {task.status === "done" ? (
+                      <CheckSquare size={14} className="text-status-resolved" />
+                    ) : (
+                      <Square size={14} />
+                    )}
+                  </button>
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className={`text-[11px] leading-relaxed ${
+                        task.status === "done"
+                          ? "text-figma-text-disabled line-through"
+                          : "text-figma-text-secondary"
+                      }`}
+                    >
+                      {task.description}
+                    </p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      {task.assignee && (
+                        <span className="text-[10px] text-figma-text-tertiary">
+                          @{task.assignee}
+                        </span>
+                      )}
+                      <span
+                        className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${TASK_TYPE_COLORS[task.type]}`}
+                      >
+                        {TASK_TYPE_LABELS[task.type]}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -147,6 +406,12 @@ export function ThreadDetail({ thread, onBack }: ThreadDetailProps) {
           </div>
           <AvatarGroup users={thread.participants} max={8} size={30} />
         </div>
+
+        {/* AI Summary */}
+        <SummarySection thread={thread} />
+
+        {/* Extracted Tasks */}
+        <TasksSection thread={thread} />
 
         {/* Full comment thread */}
         <div className="px-4 py-3">

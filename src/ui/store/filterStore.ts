@@ -15,7 +15,7 @@ interface FilterState {
 }
 
 export const useFilterStore = create<FilterState>((set, get) => ({
-  status: "open",
+  status: "all",
   sortBy: "newest",
   commentScope: "full_file",
 
@@ -34,8 +34,8 @@ export const useFilterStore = create<FilterState>((set, get) => ({
   },
 
   clearFilters: () => {
-    set({ status: "open", sortBy: "newest", commentScope: "full_file" });
-    setStorage("filterStatus", "open");
+    set({ status: "all", sortBy: "newest", commentScope: "full_file" });
+    setStorage("filterStatus", "all");
     setStorage("sortOrder", "newest");
   },
 

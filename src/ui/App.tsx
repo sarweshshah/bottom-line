@@ -12,7 +12,9 @@ import { ReconnectScreen } from "@ui/components/reconnect/ReconnectScreen";
 import { DashboardLayout } from "@ui/components/dashboard/DashboardLayout";
 import { SettingsScreen } from "@ui/components/settings/SettingsScreen";
 import { ToastContainer } from "@ui/components/common/Toast";
+import { ConsentDialog } from "@ui/components/common/ConsentDialog";
 import { LoadingSpinner } from "@ui/components/common/LoadingSpinner";
+import { useAIStore } from "@ui/store/aiStore";
 
 const MIN_UI_WIDTH = 420;
 const MAX_UI_WIDTH = 540;
@@ -88,9 +90,9 @@ export function App() {
   );
 
   useEffect(() => {
-    window.addEventListener("pointermove", handleResizeMove);
-    window.addEventListener("pointerup", stopResize);
-    window.addEventListener("pointercancel", stopResize);
+    window.addEventListener("pointermove", handleResizeMove, { passive: true });
+    window.addEventListener("pointerup", stopResize, { passive: true });
+    window.addEventListener("pointercancel", stopResize, { passive: true });
     return () => {
       window.removeEventListener("pointermove", handleResizeMove);
       window.removeEventListener("pointerup", stopResize);
@@ -134,6 +136,7 @@ export function App() {
             .getState()
             .initializeCacheTTL(msg.cacheTTLMinutes);
           useCommentsStore.getState().setCurrentPageId(msg.currentPageId);
+          useAIStore.getState().initFromStorage();
           break;
         case "PAGE_CHANGED":
           useCommentsStore.getState().setCurrentPageId(msg.pageId);
@@ -157,6 +160,7 @@ export function App() {
       {screen === "dashboard" && <DashboardLayout />}
       {screen === "settings" && <SettingsScreen onBack={showDashboard} />}
       <ToastContainer />
+      <ConsentDialog />
       <div
         aria-hidden="true"
         className="absolute right-0 top-0 z-50"

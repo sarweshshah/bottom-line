@@ -1,0 +1,242 @@
+import { create } from "zustand";
+import type {
+  AIProvider,
+  CustomProviderConfig,
+  SummaryResult,
+  Task,
+  TaskStatus,
+} from "@shared/types";
+import { getStorage, setStorage } from "@ui/lib/storage";
+
+interface ThreadSummaryState {
+  isLoading: boolean;
+  result: SummaryResult | null;
+  error: string | null;
+}
+
+interface AIState {
+  provider: AIProvider;
+  anthropicApiKey: string;
+  openaiApiKey: string;
+  geminiApiKey: string;
+  customConfig: CustomProviderConfig;
+  imageAnalysisEnabled: boolean;
+  cloudAiConsented: boolean;
+  cloudAiConsentIncludesImages: boolean;
+
+  threadSummaries: Map<string, ThreadSummaryState>;
+  allTasks: Task[];
+
+  setProvider: (provider: AIProvider) => void;
+  setAnthropicApiKey: (key: string) => void;
+  setOpenaiApiKey: (key: string) => void;
+  setGeminiApiKey: (key: string) => void;
+  setCustomConfig: (config: CustomProviderConfig) => void;
+  setImageAnalysisEnabled: (enabled: boolean) => void;
+  setCloudAiConsented: (consented: boolean, includesImages: boolean) => void;
+
+  getApiKeyForProvider: (provider?: AIProvider) => string;
+  needsConsent: () => boolean;
+
+  setThreadLoading: (threadId: string) => void;
+  setThreadResult: (threadId: string, result: SummaryResult) => void;
+  setThreadError: (threadId: string, error: string) => void;
+  clearThreadSummary: (threadId: string) => void;
+  getThreadSummary: (threadId: string) => ThreadSummaryState | undefined;
+
+  updateTaskStatus: (taskId: string, status: TaskStatus) => void;
+  refreshAllTasks: () => void;
+
+  initFromStorage: () => Promise<void>;
+}
+
+const DEFAULT_CUSTOM_CONFIG: CustomProviderConfig = {
+  baseUrl: "",
+  apiKey: "",
+  modelName: "",
+};
+
+export const useAIStore = create<AIState>((set, get) => ({
+  provider: "anthropic",
+  anthropicApiKey: "",
+  openaiApiKey: "",
+  geminiApiKey: "",
+  customConfig: { ...DEFAULT_CUSTOM_CONFIG },
+  imageAnalysisEnabled: false,
+  cloudAiConsented: false,
+  cloudAiConsentIncludesImages: false,
+
+  threadSummaries: new Map(),
+  allTasks: [],
+
+  setProvider: (provider) => {
+    set({ provider });
+    setStorage("aiProvider", provider);
+  },
+
+  setAnthropicApiKey: (key) => {
+    set({ anthropicApiKey: key });
+    setStorage("anthropicApiKey", key);
+  },
+
+  setOpenaiApiKey: (key) => {
+    set({ openaiApiKey: key });
+    setStorage("openaiApiKey", key);
+  },
+
+  setGeminiApiKey: (key) => {
+    set({ geminiApiKey: key });
+    setStorage("geminiApiKey", key);
+  },
+
+  setCustomConfig: (config) => {
+    set({ customConfig: config });
+    setStorage("customProviderConfig", config);
+  },
+
+  setImageAnalysisEnabled: (enabled) => {
+    set({ imageAnalysisEnabled: enabled });
+    setStorage("imageAnalysisEnabled", enabled);
+  },
+
+  setCloudAiConsented: (consented, includesImages) => {
+    set({ cloudAiConsented: consented, cloudAiConsentIncludesImages: includesImages });
+    setStorage("cloudAiConsented", consented);
+    setStorage("cloudAiConsentIncludesImages", includesImages);
+  },
+
+  getApiKeyForProvider: (provider) => {
+    const p = provider ?? get().provider;
+    switch (p) {
+      case "anthropic":
+        return get().anthropicApiKey;
+      case "openai":
+        return get().openaiApiKey;
+      case "gemini":
+        return get().geminiApiKey;
+      case "custom":
+        return get().customConfig.apiKey;
+      default:
+        return "";
+    }
+  },
+
+  needsConsent: () => {
+    const { cloudAiConsented, cloudAiConsentIncludesImages, imageAnalysisEnabled } = get();
+    if (!cloudAiConsented) return true;
+    if (imageAnalysisEnabled && !cloudAiConsentIncludesImages) return true;
+    return false;
+  },
+
+  setThreadLoading: (threadId) => {
+    set((state) => {
+      const next = new Map(state.threadSummaries);
+      next.set(threadId, { isLoading: true, result: null, error: null });
+      return { threadSummaries: next };
+    });
+  },
+
+  setThreadResult: (threadId, result) => {
+    set((state) => {
+      const next = new Map(state.threadSummaries);
+      next.set(threadId, { isLoading: false, result, error: null });
+      return { threadSummaries: next };
+    });
+    get().refreshAllTasks();
+    const cacheKey = `summary:${threadId}`;
+    setStorage(cacheKey, result);
+  },
+
+  setThreadError: (threadId, error) => {
+    set((state) => {
+      const next = new Map(state.threadSummaries);
+      next.set(threadId, { isLoading: false, result: null, error });
+      return { threadSummaries: next };
+    });
+  },
+
+  clearThreadSummary: (threadId) => {
+    set((state) => {
+      const next = new Map(state.threadSummaries);
+      next.delete(threadId);
+      return { threadSummaries: next };
+    });
+    get().refreshAllTasks();
+  },
+
+  getThreadSummary: (threadId) => {
+    return get().threadSummaries.get(threadId);
+  },
+
+  updateTaskStatus: (taskId, status) => {
+    set((state) => {
+      const updated = state.allTasks.map((t) =>
+        t.id === taskId ? { ...t, status } : t,
+      );
+
+      const threadSummaries = new Map(state.threadSummaries);
+      for (const [tid, entry] of threadSummaries) {
+        if (entry.result) {
+          const hasTask = entry.result.tasks.some((t) => t.id === taskId);
+          if (hasTask) {
+            threadSummaries.set(tid, {
+              ...entry,
+              result: {
+                ...entry.result,
+                tasks: entry.result.tasks.map((t) =>
+                  t.id === taskId ? { ...t, status } : t,
+                ),
+              },
+            });
+          }
+        }
+      }
+
+      return { allTasks: updated, threadSummaries };
+    });
+    setStorage(`taskStatus:${taskId}`, status);
+  },
+
+  refreshAllTasks: () => {
+    const tasks: Task[] = [];
+    for (const entry of get().threadSummaries.values()) {
+      if (entry.result) {
+        tasks.push(...entry.result.tasks);
+      }
+    }
+    set({ allTasks: tasks });
+  },
+
+  initFromStorage: async () => {
+    const [
+      provider,
+      anthropicKey,
+      openaiKey,
+      geminiKey,
+      customConfig,
+      imageEnabled,
+      consented,
+      consentImages,
+    ] = await Promise.all([
+      getStorage<AIProvider>("aiProvider"),
+      getStorage<string>("anthropicApiKey"),
+      getStorage<string>("openaiApiKey"),
+      getStorage<string>("geminiApiKey"),
+      getStorage<CustomProviderConfig>("customProviderConfig"),
+      getStorage<boolean>("imageAnalysisEnabled"),
+      getStorage<boolean>("cloudAiConsented"),
+      getStorage<boolean>("cloudAiConsentIncludesImages"),
+    ]);
+
+    set({
+      provider: provider ?? "anthropic",
+      anthropicApiKey: anthropicKey ?? "",
+      openaiApiKey: openaiKey ?? "",
+      geminiApiKey: geminiKey ?? "",
+      customConfig: customConfig ?? { ...DEFAULT_CUSTOM_CONFIG },
+      imageAnalysisEnabled: imageEnabled ?? false,
+      cloudAiConsented: consented ?? false,
+      cloudAiConsentIncludesImages: consentImages ?? false,
+    });
+  },
+}));

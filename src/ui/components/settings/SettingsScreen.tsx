@@ -14,23 +14,35 @@ import {
   Monitor,
   Settings,
   User,
+  Sparkles,
+  Image,
 } from "lucide-react";
 import { useAuthStore } from "@ui/store/authStore";
 import { useCommentsStore } from "@ui/store/commentsStore";
+import { useAIStore } from "@ui/store/aiStore";
 import { parseFileKey, isValidFigmaUrl } from "@ui/lib/parseFileUrl";
 import { showToast } from "@ui/components/common/Toast";
-import type { CacheTTLMinutes } from "@shared/types";
+import { supportsVision, PROVIDER_MODEL_LABELS } from "@ui/ai/cloudProvider";
+import type { AIProvider, CacheTTLMinutes } from "@shared/types";
 
-type SettingsTab = "general" | "behavior" | "auth" | "display";
+type SettingsTab = "general" | "ai" | "behavior" | "auth" | "display";
 
 const TABS: { id: SettingsTab; label: string }[] = [
   { id: "general", label: "General" },
+  { id: "ai", label: "AI" },
   { id: "behavior", label: "Behavior" },
-  { id: "auth", label: "Auth & Security" },
+  { id: "auth", label: "Auth" },
   { id: "display", label: "Display" },
 ];
 
 const TTL_OPTIONS: CacheTTLMinutes[] = [5, 10, 15, 30];
+
+const PROVIDER_OPTIONS: { value: AIProvider; label: string; description: string }[] = [
+  { value: "anthropic", label: "Anthropic", description: PROVIDER_MODEL_LABELS.anthropic },
+  { value: "openai", label: "OpenAI", description: PROVIDER_MODEL_LABELS.openai },
+  { value: "gemini", label: "Google", description: PROVIDER_MODEL_LABELS.gemini },
+  { value: "custom", label: "Custom", description: "OpenAI-compatible endpoint" },
+];
 
 function GeneralTab() {
   const { fileUrl, fileKey, setFileInfo } = useAuthStore();
@@ -112,7 +124,226 @@ function GeneralTab() {
           </button>
         </div>
       </section>
+    </div>
+  );
+}
 
+function AITab() {
+  const {
+    provider,
+    anthropicApiKey,
+    openaiApiKey,
+    geminiApiKey,
+    customConfig,
+    imageAnalysisEnabled,
+    setProvider,
+    setAnthropicApiKey,
+    setOpenaiApiKey,
+    setGeminiApiKey,
+    setCustomConfig,
+    setImageAnalysisEnabled,
+  } = useAIStore();
+
+  const [showKey, setShowKey] = useState(false);
+
+  const currentKey = (() => {
+    switch (provider) {
+      case "anthropic": return anthropicApiKey;
+      case "openai": return openaiApiKey;
+      case "gemini": return geminiApiKey;
+      case "custom": return customConfig.apiKey;
+      default: return "";
+    }
+  })();
+
+  const setCurrentKey = useCallback((key: string) => {
+    switch (provider) {
+      case "anthropic": setAnthropicApiKey(key); break;
+      case "openai": setOpenaiApiKey(key); break;
+      case "gemini": setGeminiApiKey(key); break;
+      case "custom": setCustomConfig({ ...customConfig, apiKey: key }); break;
+    }
+  }, [provider, customConfig, setAnthropicApiKey, setOpenaiApiKey, setGeminiApiKey, setCustomConfig]);
+
+  const maskedKey = currentKey
+    ? `${currentKey.slice(0, 8)}${"•".repeat(16)}`
+    : "";
+
+  const hasVision = supportsVision(provider);
+
+  return (
+    <div className="space-y-6">
+      <section>
+        <h3 className="text-sm font-medium text-figma-text mb-1 flex items-center gap-1.5">
+          <Sparkles size={14} className="text-status-open" />
+          AI Provider
+        </h3>
+        <p className="text-xs text-figma-text-tertiary mb-3">
+          Choose how thread summaries and tasks are generated.
+        </p>
+
+        <div className="space-y-1.5">
+          {PROVIDER_OPTIONS.map((opt) => (
+            <label
+              key={opt.value}
+              className={`flex items-center gap-3 p-2.5 rounded-md cursor-pointer border transition-colors ${
+                provider === opt.value
+                  ? "border-status-open bg-blue-50/50"
+                  : "border-transparent hover:bg-figma-bg-secondary"
+              }`}
+            >
+              <input
+                type="radio"
+                name="ai-provider"
+                value={opt.value}
+                checked={provider === opt.value}
+                onChange={() => {
+                  setProvider(opt.value);
+                  setShowKey(false);
+                }}
+                className="accent-status-open w-3.5 h-3.5 shrink-0"
+              />
+              <div>
+                <p className="text-sm text-figma-text">{opt.label}</p>
+                <p className="text-[11px] text-figma-text-tertiary">
+                  {opt.description}
+                </p>
+              </div>
+            </label>
+          ))}
+        </div>
+      </section>
+
+      {provider !== "custom" && (
+        <section>
+          <h3 className="text-sm font-medium text-figma-text mb-1">API Key</h3>
+          <p className="text-xs text-figma-text-tertiary mb-3">
+            Your key is stored locally and only sent to {provider === "anthropic" ? "Anthropic" : provider === "openai" ? "OpenAI" : "Google"}.
+          </p>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 bg-figma-bg-secondary rounded-md px-3 py-2">
+              <input
+                type={showKey ? "text" : "password"}
+                value={showKey ? currentKey : (currentKey ? maskedKey : "")}
+                onChange={(e) => setCurrentKey(e.target.value)}
+                placeholder="Paste your API key"
+                className="flex-1 bg-transparent text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none"
+              />
+              <button
+                type="button"
+                onClick={() => setShowKey(!showKey)}
+                className="text-figma-icon-tertiary hover:text-figma-icon-secondary shrink-0"
+              >
+                {showKey ? <EyeOff size={14} /> : <Eye size={14} />}
+              </button>
+            </div>
+            {currentKey && (
+              <div className="flex items-center gap-1.5 text-xs text-status-resolved">
+                <CheckCircle2 size={12} />
+                Key configured
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {provider === "custom" && (
+        <section>
+          <h3 className="text-sm font-medium text-figma-text mb-1">
+            Custom Provider
+          </h3>
+          <p className="text-xs text-figma-text-tertiary mb-3">
+            Any OpenAI-compatible endpoint (Groq, Mistral, Together AI, local
+            Ollama, etc.)
+          </p>
+          <div className="space-y-3">
+            <div>
+              <label className="text-[11px] text-figma-text-secondary mb-1 block">
+                Base URL
+              </label>
+              <input
+                type="text"
+                value={customConfig.baseUrl}
+                onChange={(e) =>
+                  setCustomConfig({ ...customConfig, baseUrl: e.target.value })
+                }
+                placeholder="https://api.example.com/v1"
+                className="w-full bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2 text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-status-open focus:ring-1 focus:ring-status-open/30"
+              />
+            </div>
+            <div>
+              <label className="text-[11px] text-figma-text-secondary mb-1 block">
+                API Key
+              </label>
+              <input
+                type="password"
+                value={customConfig.apiKey}
+                onChange={(e) =>
+                  setCustomConfig({ ...customConfig, apiKey: e.target.value })
+                }
+                placeholder="API key (if required)"
+                className="w-full bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2 text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-status-open focus:ring-1 focus:ring-status-open/30"
+              />
+            </div>
+            <div>
+              <label className="text-[11px] text-figma-text-secondary mb-1 block">
+                Model Name
+              </label>
+              <input
+                type="text"
+                value={customConfig.modelName}
+                onChange={(e) =>
+                  setCustomConfig({
+                    ...customConfig,
+                    modelName: e.target.value,
+                  })
+                }
+                placeholder="e.g., llama-3.1-8b-instant"
+                className="w-full bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2 text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-status-open focus:ring-1 focus:ring-status-open/30"
+              />
+            </div>
+          </div>
+        </section>
+      )}
+
+      <section>
+        <h3 className="text-sm font-medium text-figma-text mb-1 flex items-center gap-1.5">
+          <Image size={14} className="text-status-open" />
+          Image Analysis
+        </h3>
+        <p className="text-xs text-figma-text-tertiary mb-3">
+          Include images from comment threads in AI summaries for richer
+          context.
+        </p>
+
+        <label className="flex items-center justify-between gap-3 cursor-pointer">
+          <div>
+            <p className="text-sm text-figma-text">Enable image analysis</p>
+            {!hasVision && (
+              <p className="text-[11px] text-amber-600 mt-0.5">
+                {provider === "custom"
+                  ? "Custom providers are treated as text-only."
+                  : "Selected provider does not support vision."}
+              </p>
+            )}
+          </div>
+          <input
+            type="checkbox"
+            checked={imageAnalysisEnabled}
+            onChange={(e) => setImageAnalysisEnabled(e.target.checked)}
+            className="accent-status-open w-4 h-4 cursor-pointer shrink-0"
+          />
+        </label>
+
+        {imageAnalysisEnabled && hasVision && (
+          <div className="mt-2 p-2.5 bg-amber-50 border border-amber-200 rounded-md">
+            <p className="text-[11px] text-amber-700">
+              Image tokens are significantly more expensive than text. Up to 5
+              images per thread are sent, resized to max 1024px.
+            </p>
+          </div>
+        )}
+      </section>
     </div>
   );
 }
@@ -145,7 +376,8 @@ function BehaviorTab() {
             <div>
               <p className="text-sm text-figma-text">Auto-refresh interval</p>
               <p className="text-xs text-figma-text-tertiary">
-                Refresh thread list automatically every 5, 10, 15, or 30 minutes.
+                Refresh thread list automatically every 5, 10, 15, or 30
+                minutes.
               </p>
             </div>
             <select
@@ -359,7 +591,9 @@ function DisplayTab() {
       </section>
 
       <section>
-        <h3 className="text-sm font-medium text-figma-text mb-3">Thread view</h3>
+        <h3 className="text-sm font-medium text-figma-text mb-3">
+          Thread view
+        </h3>
         <label className="flex items-center justify-between gap-3 cursor-pointer">
           <div>
             <p className="text-sm text-figma-text">Show reply elbows</p>
@@ -422,6 +656,7 @@ export function SettingsScreen({ onBack }: SettingsScreenProps) {
       {/* Content */}
       <div className="flex-1 overflow-y-auto px-4 py-4">
         {activeTab === "general" && <GeneralTab />}
+        {activeTab === "ai" && <AITab />}
         {activeTab === "behavior" && <BehaviorTab />}
         {activeTab === "auth" && <AuthTab />}
         {activeTab === "display" && <DisplayTab />}
