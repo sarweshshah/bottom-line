@@ -13,7 +13,9 @@
       "https://api.anthropic.com",
       "https://api.openai.com",
       "https://generativelanguage.googleapis.com",
-      "https://*.figmausercontent.com"
+      "https://*.figmausercontent.com",
+      "https://www.gravatar.com",
+      "https://s3-alpha.figma.com"
     ]
   }
 }
