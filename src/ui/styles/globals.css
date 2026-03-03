@@ -2,6 +2,80 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --bl-accent: #4F46E5;
+  --bl-accent-hover: #4338CA;
+
+  --bl-status-open: #3B82F6;
+  --bl-status-open-bg: #EFF6FF;
+  --bl-status-open-text: #2563EB;
+  --bl-status-open-glow: rgba(59, 130, 246, 0.5);
+
+  --bl-status-done: #10B981;
+  --bl-status-done-bg: #D1FAE5;
+  --bl-status-done-text: #065F46;
+  --bl-status-done-glow: rgba(16, 185, 129, 0.5);
+
+  --bl-tag-revision-bg: rgba(236, 167, 44, 0.1);
+  --bl-tag-revision-text: #ECA72C;
+  --bl-tag-approval-bg: #F3E8FF;
+  --bl-tag-approval-text: #6B21A8;
+  --bl-tag-blocker-bg: rgba(238, 86, 34, 0.1);
+  --bl-tag-blocker-text: #EE5622;
+  --bl-tag-question-bg: #DBEAFE;
+  --bl-tag-question-text: #1E40AF;
+
+  --bl-red: #EE5622;
+  --bl-red-soft-bg: rgba(238, 86, 34, 0.1);
+  --bl-red-soft-border: rgba(238, 86, 34, 0.3);
+  --bl-yellow: #ECA72C;
+  --bl-yellow-soft-bg: rgba(236, 167, 44, 0.1);
+  --bl-yellow-soft-border: rgba(236, 167, 44, 0.3);
+
+  --bl-accent-ring: rgba(79, 70, 229, 0.3);
+  --bl-ai-bg: rgba(238, 242, 255, 0.6);
+  --bl-ai-bg-a: rgba(238, 242, 255, 0.5);
+  --bl-ai-bg-b: rgba(224, 231, 255, 0.4);
+  --bl-elbow: #D1D5DB;
+}
+
+.figma-dark {
+  --bl-accent: #3B82F6;
+  --bl-accent-hover: #2563EB;
+
+  --bl-status-open: #3B82F6;
+  --bl-status-open-bg: rgba(59, 130, 246, 0.12);
+  --bl-status-open-text: #60A5FA;
+  --bl-status-open-glow: rgba(59, 130, 246, 0.4);
+
+  --bl-status-done: #34D399;
+  --bl-status-done-bg: #064E3B;
+  --bl-status-done-text: #34D399;
+  --bl-status-done-glow: rgba(52, 211, 153, 0.4);
+
+  --bl-tag-revision-bg: rgba(251, 191, 36, 0.12);
+  --bl-tag-revision-text: #FBBF24;
+  --bl-tag-approval-bg: #3B0764;
+  --bl-tag-approval-text: #C084FC;
+  --bl-tag-blocker-bg: rgba(248, 113, 113, 0.12);
+  --bl-tag-blocker-text: #F87171;
+  --bl-tag-question-bg: #1E3A8A;
+  --bl-tag-question-text: #60A5FA;
+
+  --bl-red: #F87171;
+  --bl-red-soft-bg: rgba(248, 113, 113, 0.12);
+  --bl-red-soft-border: rgba(248, 113, 113, 0.3);
+  --bl-yellow: #FBBF24;
+  --bl-yellow-soft-bg: rgba(251, 191, 36, 0.12);
+  --bl-yellow-soft-border: rgba(251, 191, 36, 0.3);
+
+  --bl-accent-ring: rgba(59, 130, 246, 0.3);
+  --bl-ai-bg: rgba(99, 102, 241, 0.08);
+  --bl-ai-bg-a: rgba(99, 102, 241, 0.07);
+  --bl-ai-bg-b: rgba(79, 70, 229, 0.05);
+  --bl-elbow: #4B5563;
+}
+
 html,
 body,
 #root {
@@ -12,7 +86,7 @@ body,
   font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 14px;
   line-height: 1.4;
-  color: var(--figma-color-text, #333);
+  color: var(--figma-color-text, #221E22);
   background: var(--figma-color-bg, #fff);
   overflow: hidden;
 }
@@ -44,7 +118,7 @@ body,
   font-weight: 500;
   white-space: nowrap;
   color: #fff;
-  background: #1e1e1e;
+  background: #221E22;
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.15s;
@@ -69,4 +143,24 @@ body,
 [data-tooltip-pos="bottom"]::after {
   bottom: auto;
   top: calc(100% + 6px);
+}
+
+@keyframes ai-shimmer {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.bg-ai-shimmer {
+  background: linear-gradient(
+    135deg,
+    var(--bl-ai-bg-a) 0%,
+    var(--bl-ai-bg-b) 50%,
+    var(--bl-ai-bg-a) 100%
+  );
+  background-size: 200% 200%;
+  animation: ai-shimmer 6s ease-in-out infinite;
 }

@@ -44,11 +44,31 @@ const PLUGIN_VERSION = "0.1.0";
 
 const TTL_OPTIONS: CacheTTLMinutes[] = [5, 10, 15, 30];
 
-const PROVIDER_OPTIONS: { value: AIProvider; label: string; description: string }[] = [
-  { value: "anthropic", label: "Anthropic", description: PROVIDER_MODEL_LABELS.anthropic },
-  { value: "openai", label: "OpenAI", description: PROVIDER_MODEL_LABELS.openai },
-  { value: "gemini", label: "Google", description: PROVIDER_MODEL_LABELS.gemini },
-  { value: "custom", label: "Custom", description: "OpenAI-compatible endpoint" },
+const PROVIDER_OPTIONS: {
+  value: AIProvider;
+  label: string;
+  description: string;
+}[] = [
+  {
+    value: "anthropic",
+    label: "Anthropic",
+    description: PROVIDER_MODEL_LABELS.anthropic,
+  },
+  {
+    value: "openai",
+    label: "OpenAI",
+    description: PROVIDER_MODEL_LABELS.openai,
+  },
+  {
+    value: "gemini",
+    label: "Google",
+    description: PROVIDER_MODEL_LABELS.gemini,
+  },
+  {
+    value: "custom",
+    label: "Custom",
+    description: "OpenAI-compatible endpoint",
+  },
 ];
 
 function GeneralTab() {
@@ -82,13 +102,14 @@ function GeneralTab() {
     showToast("File updated successfully", "success");
   }, [url, setFileInfo, refreshComments]);
 
-  const detectedKey = url.trim() && isValidFigmaUrl(url) ? parseFileKey(url) : null;
+  const detectedKey =
+    url.trim() && isValidFigmaUrl(url) ? parseFileKey(url) : null;
 
   return (
     <div className="space-y-6">
       <section>
         <h3 className="text-sm font-medium text-figma-text mb-1 flex items-center gap-1.5">
-          <Link size={14} className="text-status-open" />
+          <Link size={14} className="text-accent" />
           Figma File
         </h3>
         <p className="text-xs text-figma-text-tertiary mb-3">
@@ -100,10 +121,10 @@ function GeneralTab() {
             value={url}
             onChange={(e) => handleUrlChange(e.target.value)}
             placeholder="https://www.figma.com/design/abc123/..."
-            className="w-full bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2 text-sm text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-status-open focus:ring-1 focus:ring-status-open/30"
+            className="w-full bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2 text-sm text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent-ring"
           />
           {urlError && (
-            <div className="flex items-center gap-1.5 text-xs text-red-500 bg-red-500/10 border border-red-500/30 rounded-md px-2 py-1">
+            <div className="flex items-center gap-1.5 text-xs text-danger bg-danger-bg border border-danger-border rounded-md px-2 py-1">
               <AlertCircle size={12} />
               {urlError}
             </div>
@@ -125,7 +146,7 @@ function GeneralTab() {
           <button
             type="button"
             onClick={handleSaveUrl}
-            className="px-3 py-1.5 rounded-md text-xs font-medium bg-status-open text-white hover:bg-blue-600 transition-colors"
+            className="px-3 py-1.5 rounded-md text-xs font-medium bg-accent text-white hover:bg-accent-hover transition-colors"
           >
             Update File
           </button>
@@ -155,22 +176,45 @@ function AITab() {
 
   const currentKey = (() => {
     switch (provider) {
-      case "anthropic": return anthropicApiKey;
-      case "openai": return openaiApiKey;
-      case "gemini": return geminiApiKey;
-      case "custom": return customConfig.apiKey;
-      default: return "";
+      case "anthropic":
+        return anthropicApiKey;
+      case "openai":
+        return openaiApiKey;
+      case "gemini":
+        return geminiApiKey;
+      case "custom":
+        return customConfig.apiKey;
+      default:
+        return "";
     }
   })();
 
-  const setCurrentKey = useCallback((key: string) => {
-    switch (provider) {
-      case "anthropic": setAnthropicApiKey(key); break;
-      case "openai": setOpenaiApiKey(key); break;
-      case "gemini": setGeminiApiKey(key); break;
-      case "custom": setCustomConfig({ ...customConfig, apiKey: key }); break;
-    }
-  }, [provider, customConfig, setAnthropicApiKey, setOpenaiApiKey, setGeminiApiKey, setCustomConfig]);
+  const setCurrentKey = useCallback(
+    (key: string) => {
+      switch (provider) {
+        case "anthropic":
+          setAnthropicApiKey(key);
+          break;
+        case "openai":
+          setOpenaiApiKey(key);
+          break;
+        case "gemini":
+          setGeminiApiKey(key);
+          break;
+        case "custom":
+          setCustomConfig({ ...customConfig, apiKey: key });
+          break;
+      }
+    },
+    [
+      provider,
+      customConfig,
+      setAnthropicApiKey,
+      setOpenaiApiKey,
+      setGeminiApiKey,
+      setCustomConfig,
+    ],
+  );
 
   const maskedKey = currentKey
     ? `${currentKey.slice(0, 8)}${"•".repeat(16)}`
@@ -182,7 +226,7 @@ function AITab() {
     <div className="space-y-6">
       <section>
         <h3 className="text-sm font-medium text-figma-text mb-1 flex items-center gap-1.5">
-          <Sparkles size={14} className="text-status-open" />
+          <Sparkles size={14} className="text-accent" />
           AI Provider
         </h3>
         <p className="text-xs text-figma-text-tertiary mb-3">
@@ -195,7 +239,7 @@ function AITab() {
               key={opt.value}
               className={`flex items-center gap-3 p-2.5 rounded-md cursor-pointer border transition-colors ${
                 provider === opt.value
-                  ? "border-status-open bg-figma-bg-selected"
+                  ? "border-accent bg-figma-bg-selected"
                   : "border-transparent hover:bg-figma-bg-secondary"
               }`}
             >
@@ -208,7 +252,7 @@ function AITab() {
                   setProvider(opt.value);
                   setShowKey(false);
                 }}
-                className="accent-status-open w-3.5 h-3.5 shrink-0"
+                className="accent-accent w-3.5 h-3.5 shrink-0"
               />
               <div>
                 <p className="text-sm text-figma-text">{opt.label}</p>
@@ -225,13 +269,19 @@ function AITab() {
         <section>
           <h3 className="text-sm font-medium text-figma-text mb-1">API Key</h3>
           <p className="text-xs text-figma-text-tertiary mb-3">
-            Your key is stored locally and only sent to {provider === "anthropic" ? "Anthropic" : provider === "openai" ? "OpenAI" : "Google"}.
+            Your key is stored locally and only sent to{" "}
+            {provider === "anthropic"
+              ? "Anthropic"
+              : provider === "openai"
+                ? "OpenAI"
+                : "Google"}
+            .
           </p>
           <div className="space-y-2">
             <div className="flex items-center gap-2 bg-figma-bg-secondary rounded-md px-3 py-2">
               <input
                 type={showKey ? "text" : "password"}
-                value={showKey ? currentKey : (currentKey ? maskedKey : "")}
+                value={showKey ? currentKey : currentKey ? maskedKey : ""}
                 onChange={(e) => setCurrentKey(e.target.value)}
                 placeholder="Paste your API key"
                 className="flex-1 bg-transparent text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none"
@@ -275,7 +325,7 @@ function AITab() {
                   setCustomConfig({ ...customConfig, baseUrl: e.target.value })
                 }
                 placeholder="https://api.example.com/v1"
-                className="w-full bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2 text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-status-open focus:ring-1 focus:ring-status-open/30"
+                className="w-full bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2 text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent-ring"
               />
             </div>
             <div>
@@ -289,7 +339,7 @@ function AITab() {
                   setCustomConfig({ ...customConfig, apiKey: e.target.value })
                 }
                 placeholder="API key (if required)"
-                className="w-full bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2 text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-status-open focus:ring-1 focus:ring-status-open/30"
+                className="w-full bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2 text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent-ring"
               />
             </div>
             <div>
@@ -306,7 +356,7 @@ function AITab() {
                   })
                 }
                 placeholder="e.g., llama-3.1-8b-instant"
-                className="w-full bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2 text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-status-open focus:ring-1 focus:ring-status-open/30"
+                className="w-full bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2 text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent-ring"
               />
             </div>
           </div>
@@ -315,7 +365,7 @@ function AITab() {
 
       <section>
         <h3 className="text-sm font-medium text-figma-text mb-1 flex items-center gap-1.5">
-          <Image size={14} className="text-status-open" />
+          <Image size={14} className="text-accent" />
           Image Analysis
         </h3>
         <p className="text-xs text-figma-text-tertiary mb-3">
@@ -327,7 +377,7 @@ function AITab() {
           <div>
             <p className="text-sm text-figma-text">Enable image analysis</p>
             {!hasVision && (
-              <p className="text-[11px] text-amber-500 mt-0.5">
+              <p className="text-[11px] text-warning mt-0.5">
                 {provider === "custom"
                   ? "Custom providers are treated as text-only."
                   : "Selected provider does not support vision."}
@@ -338,13 +388,13 @@ function AITab() {
             type="checkbox"
             checked={imageAnalysisEnabled}
             onChange={(e) => setImageAnalysisEnabled(e.target.checked)}
-            className="accent-status-open w-4 h-4 cursor-pointer shrink-0"
+            className="accent-accent w-4 h-4 cursor-pointer shrink-0"
           />
         </label>
 
         {imageAnalysisEnabled && hasVision && (
-          <div className="mt-2 p-2.5 bg-amber-500/10 border border-amber-500/30 rounded-md">
-            <p className="text-[11px] text-amber-500">
+          <div className="mt-2 p-2.5 bg-warning-bg border border-warning-border rounded-md">
+            <p className="text-[11px] text-warning">
               Image tokens are significantly more expensive than text. Up to 5
               images per thread are sent, resized to max 1024px.
             </p>
@@ -379,17 +429,21 @@ function ClearCacheSection() {
     <section className="pt-4 border-t border-figma-border">
       <h3 className="text-sm font-medium text-figma-text mb-1">Cache</h3>
       <p className="text-xs text-figma-text-tertiary mb-3">
-        Clear all cached summaries and tasks. They will be regenerated on
-        next request.
+        Clear all cached summaries and tasks. They will be regenerated on next
+        request.
       </p>
       <div className="flex items-center gap-3">
         <button
           type="button"
           onClick={handleClear}
           disabled={clearing || cleared}
-          className="px-3 py-1.5 rounded-md text-xs font-medium text-red-500 bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 disabled:opacity-40 transition-colors"
+          className="px-3 py-1.5 rounded-md text-xs font-medium text-danger bg-danger-bg border border-danger-border hover:opacity-80 disabled:opacity-40 transition-colors"
         >
-          {clearing ? "Clearing..." : cleared ? "Cleared" : "Clear all summaries"}
+          {clearing
+            ? "Clearing..."
+            : cleared
+              ? "Cleared"
+              : "Clear all summaries"}
         </button>
       </div>
     </section>
@@ -416,7 +470,7 @@ function BehaviorTab() {
               type="checkbox"
               checked={autoOpenComment}
               onChange={(e) => setAutoOpenComment(e.target.checked)}
-              className="accent-status-open w-4 h-4 cursor-pointer shrink-0"
+              className="accent-accent w-4 h-4 cursor-pointer shrink-0"
             />
           </label>
 
@@ -433,7 +487,7 @@ function BehaviorTab() {
               onChange={(e) =>
                 setCacheTTLMinutes(Number(e.target.value) as CacheTTLMinutes)
               }
-              className="bg-figma-bg-secondary border border-figma-border rounded-md px-2 py-1 text-xs text-figma-text focus:outline-none focus:border-status-open"
+              className="bg-figma-bg-secondary border border-figma-border rounded-md px-2 py-1 text-xs text-figma-text focus:outline-none focus:border-accent"
             >
               {TTL_OPTIONS.map((minutes) => (
                 <option key={minutes} value={minutes}>
@@ -486,7 +540,7 @@ function AuthTab() {
       {user && (
         <section>
           <h3 className="text-sm font-medium text-figma-text mb-3 flex items-center gap-1.5">
-            <User size={14} className="text-status-open" />
+            <User size={14} className="text-accent" />
             Connected Account
           </h3>
           <div className="flex items-center gap-3 bg-figma-bg-secondary rounded-md p-3">
@@ -516,7 +570,7 @@ function AuthTab() {
 
       <section>
         <h3 className="text-sm font-medium text-figma-text mb-1 flex items-center gap-1.5">
-          <ShieldCheck size={14} className="text-status-open" />
+          <ShieldCheck size={14} className="text-accent" />
           Personal Access Token
         </h3>
         <p className="text-xs text-figma-text-tertiary mb-3">
@@ -555,7 +609,7 @@ function AuthTab() {
               value={newPat}
               onChange={(e) => setNewPat(e.target.value)}
               placeholder="figd_xxxxxxxxxxxxxxxx"
-              className="w-full bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2 text-sm text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-status-open focus:ring-1 focus:ring-status-open/30"
+              className="w-full bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2 text-sm text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent-ring"
             />
             {isValidating && (
               <div className="flex items-center gap-1.5 text-xs text-figma-text-secondary">
@@ -564,7 +618,7 @@ function AuthTab() {
               </div>
             )}
             {validationError && (
-              <div className="flex items-center gap-1.5 text-xs text-red-500 bg-red-500/10 border border-red-500/30 rounded-md px-2 py-1">
+              <div className="flex items-center gap-1.5 text-xs text-danger bg-danger-bg border border-danger-border rounded-md px-2 py-1">
                 <AlertCircle size={12} />
                 {validationError}
               </div>
@@ -574,7 +628,7 @@ function AuthTab() {
                 type="button"
                 onClick={handleSaveToken}
                 disabled={!newPat.trim() || isValidating}
-                className="px-3 py-1.5 rounded-md text-xs font-medium bg-status-open text-white hover:bg-blue-600 disabled:opacity-40 transition-colors"
+                className="px-3 py-1.5 rounded-md text-xs font-medium bg-accent text-white hover:bg-accent-hover disabled:opacity-40 transition-colors"
               >
                 Save
               </button>
@@ -596,7 +650,7 @@ function AuthTab() {
           href="https://www.figma.com/settings"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 text-status-open hover:underline text-xs mt-3"
+          className="inline-flex items-center gap-1 text-accent hover:underline text-xs mt-3"
         >
           Open Figma Settings
           <ExternalLink size={12} />
@@ -607,7 +661,7 @@ function AuthTab() {
         <button
           type="button"
           onClick={logout}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium text-red-500 hover:bg-red-500/10 transition-colors"
+          className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium text-danger hover:bg-danger-bg transition-colors"
         >
           <LogOut size={14} />
           Disconnect &amp; Logout
@@ -624,7 +678,7 @@ function DisplayTab() {
     <div className="space-y-6">
       <section>
         <h3 className="text-sm font-medium text-figma-text mb-1 flex items-center gap-1.5">
-          <Monitor size={14} className="text-status-open" />
+          <Monitor size={14} className="text-accent" />
           Appearance
         </h3>
         <p className="text-xs text-figma-text-tertiary mb-3">
@@ -653,7 +707,7 @@ function DisplayTab() {
             type="checkbox"
             checked={showThreadElbows}
             onChange={(e) => setShowThreadElbows(e.target.checked)}
-            className="accent-status-open w-4 h-4 cursor-pointer shrink-0"
+            className="accent-accent w-4 h-4 cursor-pointer shrink-0"
           />
         </label>
       </section>
@@ -666,7 +720,7 @@ function AboutTab() {
     <div className="space-y-6">
       <section>
         <h3 className="text-sm font-medium text-figma-text mb-1 flex items-center gap-1.5">
-          <Info size={14} className="text-status-open" />
+          <Info size={14} className="text-accent" />
           About
         </h3>
         <p className="text-xs text-figma-text-tertiary mb-3">
@@ -675,7 +729,9 @@ function AboutTab() {
         <div className="bg-figma-bg-secondary border border-figma-border rounded-md p-3 space-y-2">
           <div className="flex items-center justify-between gap-3">
             <span className="text-xs text-figma-text-tertiary">Plugin</span>
-            <span className="text-xs text-figma-text font-medium">{PLUGIN_NAME}</span>
+            <span className="text-xs text-figma-text font-medium">
+              {PLUGIN_NAME}
+            </span>
           </div>
           <div className="flex items-center justify-between gap-3">
             <span className="text-xs text-figma-text-tertiary">Version</span>
@@ -726,7 +782,7 @@ export function SettingsScreen({ onBack }: SettingsScreenProps) {
             onClick={() => setActiveTab(tab.id)}
             className={`px-3 py-2 text-xs font-medium border-b-2 transition-colors ${
               activeTab === tab.id
-                ? "border-status-open text-status-open"
+                ? "border-accent text-accent"
                 : "border-transparent text-figma-text-secondary hover:text-figma-text"
             }`}
           >

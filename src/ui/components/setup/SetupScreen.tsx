@@ -86,7 +86,7 @@ export function SetupScreen() {
         {/* Section 1: Figma Token */}
         <section className="mb-5">
           <h2 className="text-sm font-medium text-figma-text mb-2 flex items-center gap-1.5">
-            <ShieldCheck size={14} className="text-status-open" />
+            <ShieldCheck size={14} className="text-accent" />
             Figma Personal Access Token
           </h2>
 
@@ -104,7 +104,7 @@ export function SetupScreen() {
               href="https://www.figma.com/settings"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-status-open hover:underline text-xs mt-1"
+              className="inline-flex items-center gap-1 text-accent hover:underline text-xs mt-1"
             >
               Open Figma Settings
               <ExternalLink size={10} />
@@ -118,7 +118,7 @@ export function SetupScreen() {
               value={pat}
               onChange={(e) => handleTokenChange(e.target.value)}
               placeholder="figd_xxxxxxxxxxxxxxxx"
-              className="w-full bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2 pr-9 text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-status-open focus:ring-1 focus:ring-status-open/30"
+              className="w-full bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2 pr-9 text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent-ring"
             />
             <button
               type="button"
@@ -143,7 +143,7 @@ export function SetupScreen() {
             </div>
           )}
           {validationError && (
-            <div className="flex items-center gap-1.5 text-xs text-red-500 bg-red-500/10 border border-red-500/30 rounded-md px-2 py-1">
+            <div className="flex items-center gap-1.5 text-xs text-danger bg-danger-bg border border-danger-border rounded-md px-2 py-1">
               <AlertCircle size={12} />
               {validationError}
             </div>
@@ -164,7 +164,7 @@ export function SetupScreen() {
             </div>
             <div className="bg-figma-bg-secondary rounded-md p-2">
               <p className="font-medium text-figma-text-secondary mb-1 flex items-center gap-1">
-                <ShieldX size={10} className="text-red-400" />
+                <ShieldX size={10} className="text-danger" />
                 Will never do
               </p>
               <ul className="text-figma-text-tertiary space-y-0.5">
@@ -179,7 +179,7 @@ export function SetupScreen() {
         {/* Section 2: File URL */}
         <section className="mb-5">
           <h2 className="text-sm font-medium text-figma-text mb-2 flex items-center gap-1.5">
-            <Link size={14} className="text-status-open" />
+            <Link size={14} className="text-accent" />
             Figma File URL
           </h2>
           <p className="text-xs text-figma-text-tertiary mb-2">
@@ -190,10 +190,10 @@ export function SetupScreen() {
             value={fileUrl}
             onChange={(e) => handleUrlChange(e.target.value)}
             placeholder="https://www.figma.com/design/abc123/..."
-            className="w-full bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2 text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-status-open focus:ring-1 focus:ring-status-open/30"
+            className="w-full bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2 text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent-ring"
           />
           {urlError && (
-            <div className="flex items-center gap-1.5 text-xs text-red-500 bg-red-500/10 border border-red-500/30 rounded-md px-2 py-1 mt-1">
+            <div className="flex items-center gap-1.5 text-xs text-danger bg-danger-bg border border-danger-border rounded-md px-2 py-1 mt-1">
               <AlertCircle size={12} />
               {urlError}
             </div>
@@ -213,7 +213,7 @@ export function SetupScreen() {
           type="button"
           disabled={!canSubmit}
           onClick={handleSubmit}
-          className="w-full py-2.5 rounded-md text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed bg-status-open text-white hover:bg-blue-600 active:bg-blue-700"
+          className="w-full py-2.5 rounded-md text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed bg-accent text-white hover:bg-accent-hover active:bg-accent-hover"
         >
           Get Started
         </button>

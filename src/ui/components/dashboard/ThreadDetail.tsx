@@ -171,7 +171,7 @@ function SummarySection({ thread }: { thread: CommentThread }) {
 
   if (tooShort) {
     return (
-      <div className="px-4 py-3 border-b border-figma-border">
+      <div className="pl-4 pr-3.5 py-3 border-b border-figma-border bg-ai-shimmer">
         <div className="flex items-center gap-1.5 text-xs text-figma-text-secondary">
           <Sparkles size={12} />
           Thread too short to summarize (fewer than 3 comments).
@@ -181,7 +181,7 @@ function SummarySection({ thread }: { thread: CommentThread }) {
   }
 
   return (
-    <div className="px-4 py-3 border-b border-figma-border">
+    <div className="pl-4 pr-3.5 py-3 border-b border-figma-border bg-ai-shimmer">
       <div className="flex items-center justify-between">
         <button
           type="button"
@@ -224,7 +224,7 @@ function SummarySection({ thread }: { thread: CommentThread }) {
                 clearCachedSummary(thread.id, thread.lastUpdatedAt);
                 clearThreadSummary(thread.id);
               }}
-              className="p-1 rounded-md text-figma-icon-tertiary hover:bg-red-500/10 hover:text-red-500 transition-colors"
+              className="p-1 rounded-md text-figma-icon-tertiary hover:bg-danger-bg hover:text-danger transition-colors"
               data-tooltip="Clear summary"
               data-tooltip-align="right"
             >
@@ -263,14 +263,14 @@ function SummarySection({ thread }: { thread: CommentThread }) {
           )}
 
           {error && (
-            <div className="flex items-start gap-2 p-2.5 rounded-md bg-red-500/10 border border-red-500/30">
-              <AlertCircle size={14} className="text-red-500 shrink-0 mt-0.5" />
+            <div className="flex items-start gap-2 p-2.5 rounded-md bg-danger-bg border border-danger-border">
+              <AlertCircle size={14} className="text-danger shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
-                <p className="text-xs text-red-500 mb-2">{error}</p>
+                <p className="text-xs text-danger mb-2">{error}</p>
                 <button
                   type="button"
                   onClick={() => handleSummarize()}
-                  className="text-xs font-medium text-red-500 hover:text-red-400 transition-colors"
+                  className="text-xs font-medium text-danger hover:opacity-80 transition-colors"
                 >
                   Retry
                 </button>
@@ -284,9 +284,9 @@ function SummarySection({ thread }: { thread: CommentThread }) {
                 <button
                   type="button"
                   onClick={() => handleSummarize(true)}
-                  className="flex items-center gap-1.5 text-xs text-amber-500 mb-2 hover:text-amber-400"
+                  className="flex items-center gap-1.5 text-xs text-warning mb-2 hover:opacity-80"
                 >
-                  <RefreshCw size={11} className="text-amber-500" />
+                  <RefreshCw size={11} className="text-warning" />
                   Summary outdated — regenerate?
                 </button>
               )}
@@ -457,7 +457,7 @@ export function ThreadDetail({ thread, onBack }: ThreadDetailProps) {
                 {showThreadElbows && thread.replies.length > 0 && (
                   <span
                     aria-hidden
-                    className="pointer-events-none absolute left-4 top-9 bottom-0 border-l-2 border-figma-border"
+                    className="pointer-events-none absolute left-4 top-9 bottom-0 border-l-[1.5px] border-elbow"
                   />
                 )}
                 <CommentBubble
@@ -474,21 +474,18 @@ export function ThreadDetail({ thread, onBack }: ThreadDetailProps) {
                       <div key={reply.id} className="relative pl-10">
                         {showThreadElbows && (
                           <>
-                            {/* Connect from parent/previous segment into this reply elbow. */}
                             <span
                               aria-hidden
-                              className="pointer-events-none absolute left-4 -top-3 h-3 border-l-2 border-figma-border"
+                              className="pointer-events-none absolute left-4 -top-3 h-3 border-l-[1.5px] border-elbow"
                             />
-                            {/* Curved elbow branch into this reply from the parent trunk. */}
                             <span
                               aria-hidden
-                              className="pointer-events-none absolute left-4 top-0 h-4 w-5 rounded-bl-xl border-l-2 border-b-2 border-figma-border"
+                              className="pointer-events-none absolute left-4 top-0 h-4 w-5 rounded-bl-xl border-l-[1.5px] border-b-[1.5px] border-elbow"
                             />
-                            {/* Continue vertical trunk only when another reply follows. */}
                             {!isLast && (
                               <span
                                 aria-hidden
-                                className="pointer-events-none absolute left-4 top-4 -bottom-3 border-l-2 border-figma-border"
+                                className="pointer-events-none absolute left-4 top-4 -bottom-3 border-l-[1.5px] border-elbow"
                               />
                             )}
                           </>
@@ -515,7 +512,7 @@ export function ThreadDetail({ thread, onBack }: ThreadDetailProps) {
             type="button"
             onClick={handleNavigate}
             disabled={navigating}
-            className="w-full flex items-center justify-center gap-2 py-2 rounded-md text-xs font-medium bg-status-open text-white hover:bg-blue-600 disabled:opacity-40 transition-colors"
+            className="w-full flex items-center justify-center gap-2 py-2 rounded-md text-xs font-medium bg-accent text-white hover:bg-accent-hover disabled:opacity-40 transition-colors"
           >
             {navigating ? (
               <Loader2 size={13} className="animate-spin" />

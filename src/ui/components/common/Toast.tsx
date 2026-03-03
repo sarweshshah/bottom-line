@@ -23,7 +23,7 @@ const icons: Record<ToastType, typeof Info> = {
 
 const styles: Record<ToastType, string> = {
   success: "border-green-500/30 bg-green-500/10 text-green-500",
-  error: "border-red-500/30 bg-red-500/10 text-red-500",
+  error: "border-danger-border bg-danger-bg text-danger",
   info: "border-blue-500/30 bg-blue-500/10 text-blue-500",
 };
 

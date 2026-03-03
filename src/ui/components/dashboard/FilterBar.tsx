@@ -22,8 +22,15 @@ const SCOPE_OPTIONS: { value: CommentScope; label: string }[] = [
 ];
 
 export function FilterBar() {
-  const { status, sortField, sortDirection, commentScope, setStatus, toggleSort, setCommentScope } =
-    useFilterStore();
+  const {
+    status,
+    sortField,
+    sortDirection,
+    commentScope,
+    setStatus,
+    toggleSort,
+    setCommentScope,
+  } = useFilterStore();
   const [sortOpen, setSortOpen] = useState(false);
   const [scopeOpen, setScopeOpen] = useState(false);
   const sortRef = useRef<HTMLDivElement>(null);
@@ -39,7 +46,9 @@ export function FilterBar() {
         setScopeOpen(false);
       }
     }
-    document.addEventListener("mousedown", handleClickOutside, { passive: true });
+    document.addEventListener("mousedown", handleClickOutside, {
+      passive: true,
+    });
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
@@ -57,7 +66,7 @@ export function FilterBar() {
             onClick={() => setStatus(opt.value)}
             className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
               status === opt.value
-                ? "bg-status-open text-white"
+                ? "bg-accent text-white"
                 : "bg-figma-bg-secondary text-figma-text-secondary hover:bg-figma-bg-tertiary"
             }`}
           >
@@ -92,7 +101,7 @@ export function FilterBar() {
                 }}
                 className={`w-full text-left px-3 py-1.5 text-xs hover:bg-figma-bg-hover transition-colors ${
                   commentScope === opt.value
-                    ? "text-status-open font-medium"
+                    ? "text-accent font-medium"
                     : "text-figma-text-secondary"
                 }`}
               >
@@ -131,14 +140,12 @@ export function FilterBar() {
                   }}
                   className={`w-full flex items-center justify-between px-3 py-1.5 text-xs hover:bg-figma-bg-hover transition-colors ${
                     isActive
-                      ? "text-status-open font-medium"
+                      ? "text-accent font-medium"
                       : "text-figma-text-secondary"
                   }`}
                 >
                   {opt.label}
-                  {isActive && (
-                    <DirIcon size={10} className="text-status-open" />
-                  )}
+                  {isActive && <DirIcon size={10} className="text-accent" />}
                 </button>
               );
             })}

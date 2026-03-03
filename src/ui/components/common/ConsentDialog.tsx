@@ -37,7 +37,7 @@ export function ConsentDialog() {
       <div className="bg-figma-bg rounded-lg shadow-xl w-[340px] max-w-[90vw] border border-figma-border">
         <div className="flex items-center justify-between px-4 py-3 border-b border-figma-border">
           <div className="flex items-center gap-2">
-            <ShieldAlert size={16} className="text-amber-500" />
+            <ShieldAlert size={16} className="text-warning" />
             <span className="text-sm font-medium text-figma-text">
               Cloud AI Consent
             </span>
@@ -85,7 +85,7 @@ export function ConsentDialog() {
           <button
             type="button"
             onClick={handleAccept}
-            className="px-3 py-1.5 rounded-md text-xs font-medium bg-status-open text-white hover:bg-blue-600 transition-colors"
+            className="px-3 py-1.5 rounded-md text-xs font-medium bg-accent text-white hover:bg-accent-hover transition-colors"
           >
             I understand, continue
           </button>

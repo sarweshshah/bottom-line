@@ -10,6 +10,22 @@ const MAX_IMAGES = 5;
 
 const IMAGE_URL_REGEX = /https?:\/\/[^\s"')]+\.(?:png|jpg|jpeg|gif|webp)(?:\?[^\s"')]*)?/gi;
 
+export function threadHasImages(thread: CommentThread): boolean {
+  if (IMAGE_URL_REGEX.test(thread.message)) {
+    IMAGE_URL_REGEX.lastIndex = 0;
+    return true;
+  }
+  IMAGE_URL_REGEX.lastIndex = 0;
+  for (const reply of thread.replies) {
+    if (IMAGE_URL_REGEX.test(reply.message)) {
+      IMAGE_URL_REGEX.lastIndex = 0;
+      return true;
+    }
+    IMAGE_URL_REGEX.lastIndex = 0;
+  }
+  return false;
+}
+
 export function extractImageUrls(thread: CommentThread): string[] {
   const urls: string[] = [];
 

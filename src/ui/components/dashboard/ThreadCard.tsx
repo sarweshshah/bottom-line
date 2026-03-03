@@ -1,10 +1,11 @@
-import { MessageCircle, Crosshair, Loader2 } from "lucide-react";
+import { MessageCircle, Crosshair, Loader2, Image } from "lucide-react";
 import type { CommentThread } from "@shared/types";
 import { StatusBadge } from "@ui/components/common/StatusBadge";
 import { AvatarGroup } from "@ui/components/common/AvatarGroup";
 import { timeAgo } from "@ui/lib/timeAgo";
 import { renderMentions } from "@ui/lib/renderMentions";
 import { useNavigateToComment } from "@ui/lib/useNavigateToComment";
+import { threadHasImages } from "@ui/ai/imageProcessor";
 
 interface ThreadCardProps {
   thread: CommentThread;
@@ -41,6 +42,9 @@ export function ThreadCard({ thread, onSelect }: ThreadCardProps) {
         <div className="flex items-center justify-between">
           <AvatarGroup users={thread.participants} max={5} size={26} />
           <div className="flex items-center gap-2">
+            {threadHasImages(thread) && (
+              <Image size={11} className="text-figma-text-tertiary" />
+            )}
             {thread.replyCount > 0 && (
               <span className="flex items-center gap-1 text-xs text-figma-text-tertiary">
                 <MessageCircle size={11} />
@@ -52,7 +56,7 @@ export function ThreadCard({ thread, onSelect }: ThreadCardProps) {
                 type="button"
                 onClick={handleNavigate}
                 disabled={navigating}
-                className="p-1 rounded-md text-figma-icon-tertiary hover:text-status-open hover:bg-figma-bg-secondary disabled:opacity-40 transition-colors"
+                className="p-1 rounded-md text-figma-icon-tertiary hover:text-accent hover:bg-figma-bg-secondary disabled:opacity-40 transition-colors"
                 data-tooltip="Navigate to comment"
                 data-tooltip-align="right"
               >

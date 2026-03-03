@@ -49,7 +49,7 @@ export function TasksView() {
 
   if (allTasks.length === 0) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
+      <div className="flex-1 flex flex-col items-center px-6 text-center" style={{ paddingTop: "33%" }}>
         <Sparkles size={32} className="text-figma-icon-tertiary mb-3" />
         <p className="text-sm font-medium text-figma-text-secondary mb-1">
           No tasks yet

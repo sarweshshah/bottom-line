@@ -45,8 +45,8 @@ export function ReconnectScreen() {
     <div className="flex flex-col h-full bg-figma-bg">
       <div className="flex-1 overflow-y-auto px-5 py-6">
         <div className="flex flex-col items-center text-center mb-6">
-          <div className="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center mb-3">
-            <ShieldAlert size={24} className="text-red-500" />
+          <div className="w-12 h-12 rounded-full bg-danger-bg border border-danger-border flex items-center justify-center mb-3">
+            <ShieldAlert size={24} className="text-danger" />
           </div>
           <h1 className="text-lg font-semibold text-figma-text mb-1">
             Token Expired or Revoked
@@ -62,7 +62,7 @@ export function ReconnectScreen() {
             href="https://www.figma.com/settings"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-status-open hover:underline text-xs"
+            className="inline-flex items-center gap-1 text-accent hover:underline text-xs"
           >
             Open Figma Settings to create a new token
             <ExternalLink size={12} />
@@ -75,7 +75,7 @@ export function ReconnectScreen() {
             value={pat}
             onChange={(e) => handleTokenChange(e.target.value)}
             placeholder="Paste your new token here"
-            className="w-full bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2 pr-9 text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-status-open focus:ring-1 focus:ring-status-open/30"
+            className="w-full bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2 pr-9 text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent-ring"
           />
           <button
             type="button"
@@ -99,7 +99,7 @@ export function ReconnectScreen() {
           </div>
         )}
         {validationError && (
-          <div className="flex items-center gap-1.5 text-xs text-red-500 bg-red-500/10 border border-red-500/30 rounded-md px-2 py-1">
+          <div className="flex items-center gap-1.5 text-xs text-danger bg-danger-bg border border-danger-border rounded-md px-2 py-1">
             <AlertCircle size={12} />
             {validationError}
           </div>
@@ -111,7 +111,7 @@ export function ReconnectScreen() {
           type="button"
           disabled={!tokenValid || isValidating}
           onClick={handleReconnect}
-          className="w-full py-2.5 rounded-md text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed bg-status-open text-white hover:bg-blue-600 active:bg-blue-700"
+          className="w-full py-2.5 rounded-md text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed bg-accent text-white hover:bg-accent-hover active:bg-accent-hover"
         >
           Reconnect
         </button>
