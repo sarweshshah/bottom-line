@@ -9,9 +9,9 @@ export const TASK_TYPE_LABELS: Record<Task["type"], string> = {
 };
 
 export const TASK_TYPE_COLORS: Record<Task["type"], string> = {
-  revision: "bg-amber-100 text-amber-700",
-  approval: "bg-purple-100 text-purple-700",
-  blocker: "bg-red-100 text-red-700",
-  question: "bg-blue-100 text-blue-700",
-  general: "bg-gray-100 text-gray-600",
+  revision: "bg-amber-500/10 text-amber-500",
+  approval: "bg-purple-500/10 text-purple-500",
+  blocker: "bg-red-500/10 text-red-500",
+  question: "bg-blue-500/10 text-blue-500",
+  general: "bg-figma-bg-secondary text-figma-text-secondary",
 };

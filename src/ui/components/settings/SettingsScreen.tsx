@@ -16,6 +16,7 @@ import {
   User,
   Sparkles,
   Image,
+  Info,
 } from "lucide-react";
 import { useAuthStore } from "@ui/store/authStore";
 import { useCommentsStore } from "@ui/store/commentsStore";
@@ -26,7 +27,7 @@ import { supportsVision, PROVIDER_MODEL_LABELS } from "@ui/ai/cloudProvider";
 import { clearAllCachedSummaries } from "@ui/ai/summarize";
 import type { AIProvider, CacheTTLMinutes } from "@shared/types";
 
-type SettingsTab = "general" | "ai" | "behavior" | "auth" | "display";
+type SettingsTab = "general" | "ai" | "behavior" | "auth" | "display" | "about";
 
 const TABS: { id: SettingsTab; label: string }[] = [
   { id: "general", label: "General" },
@@ -34,7 +35,12 @@ const TABS: { id: SettingsTab; label: string }[] = [
   { id: "behavior", label: "Behavior" },
   { id: "auth", label: "Auth" },
   { id: "display", label: "Display" },
+  { id: "about", label: "About" },
 ];
+
+const PLUGIN_NAME = "Bottom Line";
+const PLUGIN_ID = "bottom-line-dev";
+const PLUGIN_VERSION = "0.1.0";
 
 const TTL_OPTIONS: CacheTTLMinutes[] = [5, 10, 15, 30];
 
@@ -97,7 +103,7 @@ function GeneralTab() {
             className="w-full bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2 text-sm text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-status-open focus:ring-1 focus:ring-status-open/30"
           />
           {urlError && (
-            <div className="flex items-center gap-1.5 text-xs text-red-500">
+            <div className="flex items-center gap-1.5 text-xs text-red-500 bg-red-500/10 border border-red-500/30 rounded-md px-2 py-1">
               <AlertCircle size={12} />
               {urlError}
             </div>
@@ -189,7 +195,7 @@ function AITab() {
               key={opt.value}
               className={`flex items-center gap-3 p-2.5 rounded-md cursor-pointer border transition-colors ${
                 provider === opt.value
-                  ? "border-status-open bg-blue-50/50"
+                  ? "border-status-open bg-figma-bg-selected"
                   : "border-transparent hover:bg-figma-bg-secondary"
               }`}
             >
@@ -321,7 +327,7 @@ function AITab() {
           <div>
             <p className="text-sm text-figma-text">Enable image analysis</p>
             {!hasVision && (
-              <p className="text-[11px] text-amber-600 mt-0.5">
+              <p className="text-[11px] text-amber-500 mt-0.5">
                 {provider === "custom"
                   ? "Custom providers are treated as text-only."
                   : "Selected provider does not support vision."}
@@ -337,8 +343,8 @@ function AITab() {
         </label>
 
         {imageAnalysisEnabled && hasVision && (
-          <div className="mt-2 p-2.5 bg-amber-50 border border-amber-200 rounded-md">
-            <p className="text-[11px] text-amber-700">
+          <div className="mt-2 p-2.5 bg-amber-500/10 border border-amber-500/30 rounded-md">
+            <p className="text-[11px] text-amber-500">
               Image tokens are significantly more expensive than text. Up to 5
               images per thread are sent, resized to max 1024px.
             </p>
@@ -353,13 +359,14 @@ function AITab() {
 
 function ClearCacheSection() {
   const threads = useCommentsStore((s) => s.threads);
-  const summaryCount = useAIStore((s) => s.threadSummaries.size);
   const [clearing, setClearing] = useState(false);
+  const [cleared, setCleared] = useState(false);
 
   const handleClear = useCallback(async () => {
     setClearing(true);
     try {
       await clearAllCachedSummaries(threads);
+      setCleared(true);
       showToast("Summary cache cleared", "success");
     } catch {
       showToast("Failed to clear cache", "error");
@@ -379,16 +386,11 @@ function ClearCacheSection() {
         <button
           type="button"
           onClick={handleClear}
-          disabled={clearing || summaryCount === 0}
-          className="px-3 py-1.5 rounded-md text-xs font-medium text-red-500 bg-red-50 hover:bg-red-100 disabled:opacity-40 transition-colors"
+          disabled={clearing || cleared}
+          className="px-3 py-1.5 rounded-md text-xs font-medium text-red-500 bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 disabled:opacity-40 transition-colors"
         >
-          {clearing ? "Clearing..." : "Clear all summaries"}
+          {clearing ? "Clearing..." : cleared ? "Cleared" : "Clear all summaries"}
         </button>
-        {summaryCount > 0 && (
-          <span className="text-xs text-figma-text-tertiary">
-            {summaryCount} cached
-          </span>
-        )}
       </div>
     </section>
   );
@@ -562,7 +564,7 @@ function AuthTab() {
               </div>
             )}
             {validationError && (
-              <div className="flex items-center gap-1.5 text-xs text-red-500">
+              <div className="flex items-center gap-1.5 text-xs text-red-500 bg-red-500/10 border border-red-500/30 rounded-md px-2 py-1">
                 <AlertCircle size={12} />
                 {validationError}
               </div>
@@ -605,7 +607,7 @@ function AuthTab() {
         <button
           type="button"
           onClick={logout}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium text-red-500 hover:bg-red-50 transition-colors"
+          className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium text-red-500 hover:bg-red-500/10 transition-colors"
         >
           <LogOut size={14} />
           Disconnect &amp; Logout
@@ -659,6 +661,40 @@ function DisplayTab() {
   );
 }
 
+function AboutTab() {
+  return (
+    <div className="space-y-6">
+      <section>
+        <h3 className="text-sm font-medium text-figma-text mb-1 flex items-center gap-1.5">
+          <Info size={14} className="text-status-open" />
+          About
+        </h3>
+        <p className="text-xs text-figma-text-tertiary mb-3">
+          AI-powered comment intelligence for design teams.
+        </p>
+        <div className="bg-figma-bg-secondary border border-figma-border rounded-md p-3 space-y-2">
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-xs text-figma-text-tertiary">Plugin</span>
+            <span className="text-xs text-figma-text font-medium">{PLUGIN_NAME}</span>
+          </div>
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-xs text-figma-text-tertiary">Version</span>
+            <code className="text-xs text-figma-text-secondary bg-figma-bg px-1.5 py-0.5 rounded">
+              v{PLUGIN_VERSION}
+            </code>
+          </div>
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-xs text-figma-text-tertiary">Plugin ID</span>
+            <code className="text-xs text-figma-text-secondary bg-figma-bg px-1.5 py-0.5 rounded">
+              {PLUGIN_ID}
+            </code>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 interface SettingsScreenProps {
   onBack: () => void;
 }
@@ -706,6 +742,7 @@ export function SettingsScreen({ onBack }: SettingsScreenProps) {
         {activeTab === "behavior" && <BehaviorTab />}
         {activeTab === "auth" && <AuthTab />}
         {activeTab === "display" && <DisplayTab />}
+        {activeTab === "about" && <AboutTab />}
       </div>
     </div>
   );

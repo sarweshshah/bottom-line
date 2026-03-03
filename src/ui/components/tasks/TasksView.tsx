@@ -9,11 +9,17 @@ interface TaskGroup {
   tasks: Task[];
 }
 
+function normalizeAssignee(assignee: string | null): string | null {
+  if (!assignee) return null;
+  const cleaned = assignee.trim().replace(/^@+/, "");
+  return cleaned || null;
+}
+
 function groupByAssignee(tasks: Task[]): TaskGroup[] {
   const groups = new Map<string, Task[]>();
 
   for (const task of tasks) {
-    const key = task.assignee ?? "Unassigned";
+    const key = normalizeAssignee(task.assignee) ?? "Unassigned";
     const existing = groups.get(key);
     if (existing) {
       existing.push(task);

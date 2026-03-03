@@ -45,7 +45,7 @@ export function ReconnectScreen() {
     <div className="flex flex-col h-full bg-figma-bg">
       <div className="flex-1 overflow-y-auto px-5 py-6">
         <div className="flex flex-col items-center text-center mb-6">
-          <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mb-3">
+          <div className="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center mb-3">
             <ShieldAlert size={24} className="text-red-500" />
           </div>
           <h1 className="text-lg font-semibold text-figma-text mb-1">
@@ -99,7 +99,7 @@ export function ReconnectScreen() {
           </div>
         )}
         {validationError && (
-          <div className="flex items-center gap-1.5 text-xs text-red-500">
+          <div className="flex items-center gap-1.5 text-xs text-red-500 bg-red-500/10 border border-red-500/30 rounded-md px-2 py-1">
             <AlertCircle size={12} />
             {validationError}
           </div>

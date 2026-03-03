@@ -1,13 +1,18 @@
-import type { CommentThread, Task, SummaryResult, AIProvider } from "@shared/types";
+import type {
+  CommentThread,
+  Task,
+  SummaryResult,
+  AIProvider,
+} from "@shared/types";
 
 export const SYSTEM_PROMPT = `You are an assistant that analyzes Figma design comment threads.
 For each thread, provide:
 
-1. SUMMARY: A 1-3 sentence summary capturing the core feedback,
-   current state, and any decisions made. Write in present tense.
-   Be specific about design elements mentioned. If images are
-   attached, describe the relevant visual content and how it
-   relates to the feedback.
+1. SUMMARY: A 2-6 sentence summary capturing the core feedback,
+   current state, decisions made, and key discussion points.
+   Write in present tense. Be specific about design elements
+   mentioned. If images are attached, describe the relevant
+   visual content and how it relates to the feedback.
 
 2. TASKS: Extract any action items, requests, or assignments.
    For each task, provide:
@@ -55,21 +60,39 @@ interface RawAIResponse {
   tasks?: RawAITask[];
 }
 
-const VALID_TASK_TYPES = new Set(["revision", "approval", "blocker", "question", "general"]);
+const VALID_TASK_TYPES = new Set([
+  "revision",
+  "approval",
+  "blocker",
+  "question",
+  "general",
+]);
 
+function normalizeAssignee(assignee?: string): string | null {
+  if (!assignee) return null;
+  const cleaned = assignee.trim().replace(/^@+/, "");
+  if (!cleaned || cleaned.toLowerCase() === "unassigned") {
+    return null;
+  }
+  return cleaned;
+}
 function extractJSON(text: string): RawAIResponse | null {
   const fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
   if (fenceMatch) {
     try {
       return JSON.parse(fenceMatch[1].trim());
-    } catch { /* fall through */ }
+    } catch {
+      /* fall through */
+    }
   }
 
   const braceMatch = text.match(/\{[\s\S]*\}/);
   if (braceMatch) {
     try {
       return JSON.parse(braceMatch[0]);
-    } catch { /* fall through */ }
+    } catch {
+      /* fall through */
+    }
   }
 
   // Handle truncated JSON where closing braces/backticks are missing
@@ -102,10 +125,12 @@ export function parseAIResponse(
   const parsed = extractJSON(raw);
 
   if (!parsed || !parsed.summary) {
-    const fallback = cleanSummaryText(raw) || "Summary could not be generated. Please try again.";
+    const fallback =
+      cleanSummaryText(raw) ||
+      "Summary could not be generated. Please try again.";
 
     return {
-      summary: fallback.slice(0, 500),
+      summary: fallback,
       tasks: [],
       generatedAt: new Date().toISOString(),
       threadLastUpdatedAt: thread.lastUpdatedAt,
@@ -120,11 +145,13 @@ export function parseAIResponse(
       id: `task_${threadId}_${i}`,
       threadId,
       description: t.description!,
-      assignee: t.assignee && t.assignee !== "Unassigned" ? t.assignee : null,
+      assignee: normalizeAssignee(t.assignee),
       status: "pending" as const,
       sourceCommentId: threadId,
       detectedPattern: "cloud_ai",
-      type: VALID_TASK_TYPES.has(t.type ?? "") ? (t.type as Task["type"]) : "general",
+      type: VALID_TASK_TYPES.has(t.type ?? "")
+        ? (t.type as Task["type"])
+        : "general",
     }));
 
   return {

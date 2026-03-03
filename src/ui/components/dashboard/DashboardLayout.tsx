@@ -112,6 +112,7 @@ export function DashboardLayout() {
               className="p-1.5 rounded-md text-figma-icon-secondary hover:bg-figma-bg-secondary hover:text-figma-icon disabled:opacity-40 transition-colors"
               data-tooltip="Refresh comments"
               data-tooltip-align="right"
+              data-tooltip-pos="bottom"
             >
               {isLoading ? (
                 <Loader2 size={14} className="animate-spin" />
@@ -126,6 +127,7 @@ export function DashboardLayout() {
             className="p-1.5 rounded-md text-figma-icon-secondary hover:bg-figma-bg-secondary hover:text-figma-icon transition-colors"
             data-tooltip="Settings"
             data-tooltip-align="right"
+            data-tooltip-pos="bottom"
           >
             <Settings size={14} />
           </button>

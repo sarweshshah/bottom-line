@@ -3,6 +3,8 @@ import {
   ArrowLeft,
   User,
   Crosshair,
+  Copy,
+  Check,
   ChevronDown,
   ChevronRight,
   Loader2,
@@ -20,6 +22,7 @@ import {
   TASK_TYPE_LABELS,
   TASK_TYPE_COLORS,
 } from "@ui/components/common/taskTypeConfig";
+import { showToast } from "@ui/components/common/Toast";
 import { timeAgo } from "@ui/lib/timeAgo";
 import { renderMentions } from "@ui/lib/renderMentions";
 import { useNavigateToComment } from "@ui/lib/useNavigateToComment";
@@ -90,6 +93,12 @@ function CommentBubble({
   );
 }
 
+function normalizeAssignee(assignee: string | null): string | null {
+  if (!assignee) return null;
+  const cleaned = assignee.trim().replace(/^@+/, "");
+  return cleaned || null;
+}
+
 function SummarySection({ thread }: { thread: CommentThread }) {
   const threadState = useAIStore((s) => s.threadSummaries.get(thread.id));
   const setThreadLoading = useAIStore((s) => s.setThreadLoading);
@@ -100,6 +109,7 @@ function SummarySection({ thread }: { thread: CommentThread }) {
   const provider = useAIStore((s) => s.provider);
   const customModelName = useAIStore((s) => s.customConfig.modelName);
   const [expanded, setExpanded] = useState(true);
+  const [copiedSummary, setCopiedSummary] = useState(false);
 
   const tooShort = isTooShort(thread);
   const isLoading = threadState?.isLoading ?? false;
@@ -135,6 +145,30 @@ function SummarySection({ thread }: { thread: CommentThread }) {
     [thread, setThreadLoading, setThreadResult, setThreadError, needsConsent],
   );
 
+  const handleCopySummary = useCallback(async () => {
+    if (!result?.summary) return;
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(result.summary);
+      } else {
+        const textarea = document.createElement("textarea");
+        textarea.value = result.summary;
+        textarea.setAttribute("readonly", "");
+        textarea.style.position = "absolute";
+        textarea.style.left = "-9999px";
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+      }
+      setCopiedSummary(true);
+      showToast("Summary copied", "success");
+      window.setTimeout(() => setCopiedSummary(false), 1500);
+    } catch {
+      showToast("Could not copy summary", "error");
+    }
+  }, [result?.summary]);
+
   if (tooShort) {
     return (
       <div className="px-4 py-3 border-b border-figma-border">
@@ -162,10 +196,22 @@ function SummarySection({ thread }: { thread: CommentThread }) {
           <div className="flex items-center gap-0.5">
             <button
               type="button"
+              onClick={handleCopySummary}
+              className="p-1 rounded-md text-figma-icon-tertiary hover:bg-figma-bg-secondary hover:text-figma-icon transition-colors"
+              data-tooltip={copiedSummary ? "Copied" : "Copy summary"}
+              data-tooltip-align="right"
+              data-tooltip-pos="bottom"
+            >
+              {copiedSummary ? <Check size={12} /> : <Copy size={12} />}
+            </button>
+            <button
+              type="button"
               onClick={() => handleSummarize(true)}
               disabled={isLoading}
               className="p-1 rounded-md text-figma-icon-tertiary hover:bg-figma-bg-secondary hover:text-figma-icon transition-colors"
               data-tooltip="Regenerate summary"
+              data-tooltip-align="right"
+              data-tooltip-pos="bottom"
             >
               <RefreshCw
                 size={12}
@@ -178,7 +224,7 @@ function SummarySection({ thread }: { thread: CommentThread }) {
                 clearCachedSummary(thread.id, thread.lastUpdatedAt);
                 clearThreadSummary(thread.id);
               }}
-              className="p-1 rounded-md text-figma-icon-tertiary hover:bg-red-50 hover:text-red-500 transition-colors"
+              className="p-1 rounded-md text-figma-icon-tertiary hover:bg-red-500/10 hover:text-red-500 transition-colors"
               data-tooltip="Clear summary"
               data-tooltip-align="right"
             >
@@ -217,14 +263,14 @@ function SummarySection({ thread }: { thread: CommentThread }) {
           )}
 
           {error && (
-            <div className="flex items-start gap-2 p-2.5 rounded-md bg-red-50 border border-red-200">
+            <div className="flex items-start gap-2 p-2.5 rounded-md bg-red-500/10 border border-red-500/30">
               <AlertCircle size={14} className="text-red-500 shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
-                <p className="text-xs text-red-700 mb-2">{error}</p>
+                <p className="text-xs text-red-500 mb-2">{error}</p>
                 <button
                   type="button"
                   onClick={() => handleSummarize()}
-                  className="text-xs font-medium text-red-600 hover:text-red-800 transition-colors"
+                  className="text-xs font-medium text-red-500 hover:text-red-400 transition-colors"
                 >
                   Retry
                 </button>
@@ -238,9 +284,9 @@ function SummarySection({ thread }: { thread: CommentThread }) {
                 <button
                   type="button"
                   onClick={() => handleSummarize(true)}
-                  className="flex items-center gap-1.5 text-xs text-amber-600 mb-2 hover:text-amber-700"
+                  className="flex items-center gap-1.5 text-xs text-amber-500 mb-2 hover:text-amber-400"
                 >
-                  <RefreshCw size={11} />
+                  <RefreshCw size={11} className="text-amber-500" />
                   Summary outdated — regenerate?
                 </button>
               )}
@@ -319,9 +365,9 @@ function TasksSection({ thread }: { thread: CommentThread }) {
                       {task.description}
                     </p>
                     <div className="flex items-center gap-2 mt-0.5">
-                      {task.assignee && (
+                      {normalizeAssignee(task.assignee) && (
                         <span className="text-[10px] text-figma-text-secondary">
-                          @{task.assignee}
+                          @{normalizeAssignee(task.assignee)}
                         </span>
                       )}
                       <span
@@ -469,7 +515,7 @@ export function ThreadDetail({ thread, onBack }: ThreadDetailProps) {
             type="button"
             onClick={handleNavigate}
             disabled={navigating}
-            className="w-full flex items-center justify-center gap-2 py-2 rounded-md text-xs font-medium bg-figma-bg-secondary text-figma-text-secondary hover:bg-figma-bg-tertiary hover:text-figma-text disabled:opacity-40 transition-colors"
+            className="w-full flex items-center justify-center gap-2 py-2 rounded-md text-xs font-medium bg-status-open text-white hover:bg-blue-600 disabled:opacity-40 transition-colors"
           >
             {navigating ? (
               <Loader2 size={13} className="animate-spin" />

@@ -107,7 +107,7 @@ async function callAnthropic(
     },
     body: JSON.stringify({
       model: "claude-3-5-haiku-latest",
-      max_tokens: 1024,
+      max_tokens: 4096,
       system: SYSTEM_PROMPT,
       messages: [{ role: "user", content: userContent }],
     }),
@@ -144,7 +144,7 @@ async function callOpenAI(
     },
     body: JSON.stringify({
       model,
-      max_tokens: 1024,
+      max_tokens: 4096,
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
         { role: "user", content: userContent },
@@ -185,7 +185,7 @@ async function callGemini(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       contents: [{ parts }],
-      generationConfig: { maxOutputTokens: 1024 },
+      generationConfig: { maxOutputTokens: 4096 },
     }),
   });
 

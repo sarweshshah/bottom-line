@@ -143,7 +143,7 @@ export function SetupScreen() {
             </div>
           )}
           {validationError && (
-            <div className="flex items-center gap-1.5 text-xs text-red-500">
+            <div className="flex items-center gap-1.5 text-xs text-red-500 bg-red-500/10 border border-red-500/30 rounded-md px-2 py-1">
               <AlertCircle size={12} />
               {validationError}
             </div>
@@ -193,7 +193,7 @@ export function SetupScreen() {
             className="w-full bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2 text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-status-open focus:ring-1 focus:ring-status-open/30"
           />
           {urlError && (
-            <div className="flex items-center gap-1.5 text-xs text-red-500 mt-1">
+            <div className="flex items-center gap-1.5 text-xs text-red-500 bg-red-500/10 border border-red-500/30 rounded-md px-2 py-1 mt-1">
               <AlertCircle size={12} />
               {urlError}
             </div>
