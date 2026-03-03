@@ -40,13 +40,13 @@
 }
 
 .figma-dark {
-  --bl-accent: #3B82F6;
-  --bl-accent-hover: #2563EB;
+  --bl-accent: #3730A3;
+  --bl-accent-hover: #312E81;
 
-  --bl-status-open: #3B82F6;
-  --bl-status-open-bg: rgba(59, 130, 246, 0.12);
-  --bl-status-open-text: #60A5FA;
-  --bl-status-open-glow: rgba(59, 130, 246, 0.4);
+  --bl-status-open: #3730A3;
+  --bl-status-open-bg: rgba(55, 48, 163, 0.12);
+  --bl-status-open-text: #A5B4FC;
+  --bl-status-open-glow: rgba(55, 48, 163, 0.4);
 
   --bl-status-done: #34D399;
   --bl-status-done-bg: #064E3B;
@@ -59,8 +59,8 @@
   --bl-tag-approval-text: #C084FC;
   --bl-tag-blocker-bg: rgba(248, 113, 113, 0.12);
   --bl-tag-blocker-text: #F87171;
-  --bl-tag-question-bg: #1E3A8A;
-  --bl-tag-question-text: #60A5FA;
+  --bl-tag-question-bg: rgba(99, 102, 241, 0.15);
+  --bl-tag-question-text: #A5B4FC;
 
   --bl-red: #F87171;
   --bl-red-soft-bg: rgba(248, 113, 113, 0.12);
@@ -69,7 +69,7 @@
   --bl-yellow-soft-bg: rgba(251, 191, 36, 0.12);
   --bl-yellow-soft-border: rgba(251, 191, 36, 0.3);
 
-  --bl-accent-ring: rgba(59, 130, 246, 0.3);
+  --bl-accent-ring: rgba(55, 48, 163, 0.3);
   --bl-ai-bg: rgba(99, 102, 241, 0.08);
   --bl-ai-bg-a: rgba(99, 102, 241, 0.07);
   --bl-ai-bg-b: rgba(79, 70, 229, 0.05);
