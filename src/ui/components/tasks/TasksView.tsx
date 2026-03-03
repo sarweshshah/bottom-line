@@ -2,22 +2,7 @@ import { useMemo } from "react";
 import { CheckSquare, Square, Sparkles } from "lucide-react";
 import type { Task } from "@shared/types";
 import { useAIStore } from "@ui/store/aiStore";
-
-const TASK_TYPE_LABELS: Record<Task["type"], string> = {
-  revision: "Revision",
-  approval: "Approval",
-  blocker: "Blocker",
-  question: "Question",
-  general: "Task",
-};
-
-const TASK_TYPE_COLORS: Record<Task["type"], string> = {
-  revision: "bg-amber-100 text-amber-700",
-  approval: "bg-purple-100 text-purple-700",
-  blocker: "bg-red-100 text-red-700",
-  question: "bg-blue-100 text-blue-700",
-  general: "bg-gray-100 text-gray-600",
-};
+import { TASK_TYPE_LABELS, TASK_TYPE_COLORS } from "@ui/components/common/taskTypeConfig";
 
 interface TaskGroup {
   assignee: string;

@@ -1,15 +1,10 @@
-import { useState, useCallback } from "react";
 import { MessageCircle, Crosshair, Loader2 } from "lucide-react";
 import type { CommentThread } from "@shared/types";
-import type {
-  NavigateToCommentMessage,
-  NavigateResultMessage,
-} from "@shared/messages";
 import { StatusBadge } from "@ui/components/common/StatusBadge";
 import { AvatarGroup } from "@ui/components/common/AvatarGroup";
-import { showToast } from "@ui/components/common/Toast";
 import { timeAgo } from "@ui/lib/timeAgo";
 import { renderMentions } from "@ui/lib/renderMentions";
+import { useNavigateToComment } from "@ui/lib/useNavigateToComment";
 
 interface ThreadCardProps {
   thread: CommentThread;
@@ -17,41 +12,9 @@ interface ThreadCardProps {
 }
 
 export function ThreadCard({ thread, onSelect }: ThreadCardProps) {
-  const [navigating, setNavigating] = useState(false);
-
-  const handleNavigate = useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation();
-      if (!thread.clientMeta || navigating) return;
-      setNavigating(true);
-
-      const handler = (event: MessageEvent) => {
-        const msg = event.data?.pluginMessage as
-          | NavigateResultMessage
-          | undefined;
-        if (!msg || msg.type !== "NAVIGATE_RESULT") return;
-        window.removeEventListener("message", handler);
-        setNavigating(false);
-        if (!msg.success && msg.error) {
-          showToast(msg.error, "error");
-        }
-      };
-
-      window.addEventListener("message", handler);
-
-      const navMsg: NavigateToCommentMessage = {
-        type: "NAVIGATE_TO_COMMENT",
-        clientMeta: thread.clientMeta!,
-        commentId: thread.id,
-      };
-      parent.postMessage({ pluginMessage: navMsg }, "*");
-
-      setTimeout(() => {
-        window.removeEventListener("message", handler);
-        setNavigating(false);
-      }, 5000);
-    },
-    [thread.clientMeta, thread.id, navigating],
+  const { navigating, navigate: handleNavigate } = useNavigateToComment(
+    thread.clientMeta,
+    thread.id,
   );
 
   return (

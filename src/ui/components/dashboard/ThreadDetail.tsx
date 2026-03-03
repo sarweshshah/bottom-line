@@ -13,14 +13,13 @@ import {
   Square,
   X,
 } from "lucide-react";
-import type { CommentThread, CommentReply, Task } from "@shared/types";
-import type { NavigateToCommentMessage } from "@shared/messages";
-import type { NavigateResultMessage } from "@shared/messages";
+import type { CommentThread, CommentReply } from "@shared/types";
 import { StatusBadge } from "@ui/components/common/StatusBadge";
 import { AvatarGroup } from "@ui/components/common/AvatarGroup";
-import { showToast } from "@ui/components/common/Toast";
+import { TASK_TYPE_LABELS, TASK_TYPE_COLORS } from "@ui/components/common/taskTypeConfig";
 import { timeAgo } from "@ui/lib/timeAgo";
 import { renderMentions } from "@ui/lib/renderMentions";
+import { useNavigateToComment } from "@ui/lib/useNavigateToComment";
 import { useAuthStore } from "@ui/store/authStore";
 import { useAIStore } from "@ui/store/aiStore";
 import { summarizeThread, isTooShort } from "@ui/ai/summarize";
@@ -83,23 +82,6 @@ function CommentBubble({
     </div>
   );
 }
-
-const TASK_TYPE_LABELS: Record<Task["type"], string> = {
-  revision: "Revision",
-  approval: "Approval",
-  blocker: "Blocker",
-  question: "Question",
-  general: "Task",
-};
-
-const TASK_TYPE_COLORS: Record<Task["type"], string> = {
-  revision: "bg-amber-100 text-amber-700",
-  approval: "bg-purple-100 text-purple-700",
-  blocker: "bg-red-100 text-red-700",
-  question: "bg-blue-100 text-blue-700",
-  general: "bg-gray-100 text-gray-600",
-};
-
 
 function SummarySection({ thread }: { thread: CommentThread }) {
   const threadState = useAIStore((s) => s.threadSummaries.get(thread.id));
@@ -336,41 +318,11 @@ function TasksSection({ thread }: { thread: CommentThread }) {
 
 export function ThreadDetail({ thread, onBack }: ThreadDetailProps) {
   const [threadExpanded, setThreadExpanded] = useState(true);
-  const [navigating, setNavigating] = useState(false);
   const { showThreadElbows } = useAuthStore();
-
-  const handleNavigate = useCallback(() => {
-    if (!thread.clientMeta || navigating) return;
-    setNavigating(true);
-
-    const handler = (event: MessageEvent) => {
-      const msg = event.data?.pluginMessage as
-        | NavigateResultMessage
-        | undefined;
-      if (!msg || msg.type !== "NAVIGATE_RESULT") return;
-
-      window.removeEventListener("message", handler);
-      setNavigating(false);
-
-      if (!msg.success && msg.error) {
-        showToast(msg.error, "error");
-      }
-    };
-
-    window.addEventListener("message", handler);
-
-    const navMsg: NavigateToCommentMessage = {
-      type: "NAVIGATE_TO_COMMENT",
-      clientMeta: thread.clientMeta!,
-      commentId: thread.id,
-    };
-    parent.postMessage({ pluginMessage: navMsg }, "*");
-
-    setTimeout(() => {
-      window.removeEventListener("message", handler);
-      setNavigating(false);
-    }, 5000);
-  }, [thread.clientMeta, navigating]);
+  const { navigating, navigate: handleNavigate } = useNavigateToComment(
+    thread.clientMeta,
+    thread.id,
+  );
 
   return (
     <div className="flex flex-col h-full bg-figma-bg">

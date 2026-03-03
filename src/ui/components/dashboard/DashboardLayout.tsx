@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import {
   RefreshCw,
   MessageSquare,
@@ -49,17 +49,13 @@ export function DashboardLayout() {
     };
   }, [cacheTTLMinutes, refreshComments]);
 
-  const handleRefresh = useCallback(() => {
-    refreshComments();
-  }, [refreshComments]);
-
-  const handleSelectThread = useCallback((thread: CommentThread) => {
+  const handleSelectThread = (thread: CommentThread) => {
     setSelectedThread(thread);
-  }, []);
+  };
 
-  const handleBack = useCallback(() => {
+  const handleBack = () => {
     setSelectedThread(null);
-  }, []);
+  };
 
   if (selectedThread) {
     const freshThread =
@@ -111,7 +107,7 @@ export function DashboardLayout() {
           {activeTab === "threads" && (
             <button
               type="button"
-              onClick={handleRefresh}
+              onClick={refreshComments}
               disabled={isLoading}
               className="p-1.5 rounded-md text-figma-icon-secondary hover:bg-figma-bg-secondary hover:text-figma-icon disabled:opacity-40 transition-colors"
               title="Refresh comments"

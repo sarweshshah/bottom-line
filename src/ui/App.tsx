@@ -5,6 +5,12 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from "react";
 import type { InitDataMessage, UIMessage } from "@shared/messages";
+import {
+  MIN_UI_WIDTH,
+  MAX_UI_WIDTH,
+  MIN_UI_HEIGHT,
+  MAX_UI_HEIGHT,
+} from "@shared/constants";
 import { useAuthStore } from "@ui/store/authStore";
 import { useCommentsStore } from "@ui/store/commentsStore";
 import { SetupScreen } from "@ui/components/setup/SetupScreen";
@@ -16,10 +22,6 @@ import { ConsentDialog } from "@ui/components/common/ConsentDialog";
 import { LoadingSpinner } from "@ui/components/common/LoadingSpinner";
 import { useAIStore } from "@ui/store/aiStore";
 
-const MIN_UI_WIDTH = 420;
-const MAX_UI_WIDTH = 540;
-const MIN_UI_HEIGHT = 640;
-const MAX_UI_HEIGHT = 800;
 const RESIZE_HIT_AREA_PX = 8;
 
 type ResizeDirection = "width" | "height" | "both";

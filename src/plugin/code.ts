@@ -7,13 +7,8 @@ import type {
   PageThreadsResolvedMessage,
 } from "@shared/messages";
 import type { ClientMeta, CacheTTLMinutes } from "@shared/types";
+import { DEFAULT_UI_WIDTH, DEFAULT_UI_HEIGHT, clampUiSize } from "@shared/constants";
 
-const DEFAULT_UI_WIDTH = 420;
-const DEFAULT_UI_HEIGHT = 640;
-const MIN_UI_WIDTH = 420;
-const MAX_UI_WIDTH = 540;
-const MIN_UI_HEIGHT = 640;
-const MAX_UI_HEIGHT = 800;
 const DEFAULT_CACHE_TTL_MINUTES: CacheTTLMinutes = 5;
 const CACHE_TTL_OPTIONS: CacheTTLMinutes[] = [5, 10, 15, 30];
 
@@ -22,13 +17,6 @@ figma.showUI(__html__, {
   height: DEFAULT_UI_HEIGHT,
   themeColors: true,
 });
-
-function clampUiSize(width: number, height: number) {
-  return {
-    width: Math.min(MAX_UI_WIDTH, Math.max(MIN_UI_WIDTH, Math.round(width))),
-    height: Math.min(MAX_UI_HEIGHT, Math.max(MIN_UI_HEIGHT, Math.round(height))),
-  };
-}
 
 function normalizeCacheTTL(value: unknown): CacheTTLMinutes {
   if (typeof value !== "number" || Number.isNaN(value)) {

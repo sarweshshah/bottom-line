@@ -1,4 +1,4 @@
-import type { AIProvider, CommentThread, SummaryResult } from "@shared/types";
+import type { CommentThread, SummaryResult } from "@shared/types";
 import { useAIStore } from "@ui/store/aiStore";
 import { cloudSummarize, supportsVision, CloudAIError } from "./cloudProvider";
 import { processThreadImages } from "./imageProcessor";
@@ -72,11 +72,8 @@ export async function summarizeThread(
     provider === "custom" ? store.customConfig : undefined,
   );
 
-  if (imageAnalysisEnabled && !supportsVision(provider)) {
-    const imgCount = thread.replies.length + 1;
-    if (result.summary && imgCount > 0) {
-      result.summary += ` Thread includes image(s) not analyzed — switch to a vision-capable provider for image context.`;
-    }
+  if (imageAnalysisEnabled && !supportsVision(provider) && result.summary) {
+    result.summary += ` Thread includes image(s) not analyzed — switch to a vision-capable provider for image context.`;
   }
 
   await cacheSummary(result, thread.id);
