@@ -72,7 +72,24 @@ function extractJSON(text: string): RawAIResponse | null {
     } catch { /* fall through */ }
   }
 
+  // Handle truncated JSON where closing braces/backticks are missing
+  const summaryMatch = text.match(/"summary"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+  if (summaryMatch) {
+    const summary = summaryMatch[1].replace(/\\"/g, '"').replace(/\\n/g, "\n");
+    return { summary };
+  }
+
   return null;
+}
+
+function cleanSummaryText(text: string): string {
+  let cleaned = text;
+  cleaned = cleaned.replace(/```(?:json)?/g, "").replace(/```/g, "");
+  cleaned = cleaned.replace(/^\s*\{\s*"summary"\s*:\s*"?/i, "");
+  cleaned = cleaned.replace(/"?\s*,?\s*"tasks"\s*:[\s\S]*$/i, "");
+  cleaned = cleaned.replace(/\\"/g, '"').replace(/\\n/g, "\n");
+  cleaned = cleaned.replace(/"\s*\}\s*$/, "");
+  return cleaned.trim();
 }
 
 export function parseAIResponse(
@@ -85,16 +102,7 @@ export function parseAIResponse(
   const parsed = extractJSON(raw);
 
   if (!parsed || !parsed.summary) {
-    let fallback = raw;
-    fallback = fallback.replace(/```(?:json)?[\s\S]*?```/g, "").trim();
-    fallback = fallback.replace(/\{[\s\S]*\}/g, "").trim();
-
-    if (!fallback) {
-      const summaryMatch = raw.match(/"summary"\s*:\s*"((?:[^"\\]|\\.)*)"/);
-      fallback = summaryMatch
-        ? summaryMatch[1].replace(/\\"/g, '"').replace(/\\n/g, "\n")
-        : "Summary could not be generated. Please try again.";
-    }
+    const fallback = cleanSummaryText(raw) || "Summary could not be generated. Please try again.";
 
     return {
       summary: fallback.slice(0, 500),

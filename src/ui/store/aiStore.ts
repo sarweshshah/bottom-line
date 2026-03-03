@@ -42,6 +42,7 @@ interface AIState {
   setThreadResult: (threadId: string, result: SummaryResult) => void;
   setThreadError: (threadId: string, error: string) => void;
   clearThreadSummary: (threadId: string) => void;
+  clearAllSummaries: () => void;
   getThreadSummary: (threadId: string) => ThreadSummaryState | undefined;
 
   updateTaskStatus: (taskId: string, status: TaskStatus) => void;
@@ -162,6 +163,10 @@ export const useAIStore = create<AIState>((set, get) => ({
       return { threadSummaries: next };
     });
     get().refreshAllTasks();
+  },
+
+  clearAllSummaries: () => {
+    set({ threadSummaries: new Map(), allTasks: [] });
   },
 
   getThreadSummary: (threadId) => {

@@ -2,7 +2,7 @@ import type { CommentThread, SummaryResult } from "@shared/types";
 import { useAIStore } from "@ui/store/aiStore";
 import { cloudSummarize, supportsVision, CloudAIError } from "./cloudProvider";
 import { processThreadImages } from "./imageProcessor";
-import { getStorage, setStorage } from "@ui/lib/storage";
+import { getStorage, setStorage, deleteStorage } from "@ui/lib/storage";
 
 const MIN_COMMENTS_FOR_SUMMARY = 3;
 const VALID_PROVIDERS = new Set<string>([
@@ -40,15 +40,35 @@ async function cacheSummary(
   await setStorage(key, result);
 }
 
+export async function clearCachedSummary(
+  threadId: string,
+  lastUpdatedAt: string,
+): Promise<void> {
+  const key = cacheKey(threadId, lastUpdatedAt);
+  await deleteStorage(key);
+}
+
+export async function clearAllCachedSummaries(
+  threads: CommentThread[],
+): Promise<void> {
+  await Promise.all(
+    threads.map((t) => deleteStorage(cacheKey(t.id, t.lastUpdatedAt))),
+  );
+  useAIStore.getState().clearAllSummaries();
+}
+
 export async function summarizeThread(
   thread: CommentThread,
+  skipCache = false,
 ): Promise<SummaryResult> {
   const store = useAIStore.getState();
   const { provider, imageAnalysisEnabled } = store;
 
-  const cached = await getCachedSummary(thread.id, thread.lastUpdatedAt);
-  if (cached) {
-    return cached;
+  if (!skipCache) {
+    const cached = await getCachedSummary(thread.id, thread.lastUpdatedAt);
+    if (cached) {
+      return cached;
+    }
   }
 
   const apiKey = store.getApiKeyForProvider(provider);

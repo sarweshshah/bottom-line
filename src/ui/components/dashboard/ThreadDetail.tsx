@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import {
   ArrowLeft,
   User,
-  ExternalLink,
+  Crosshair,
   ChevronDown,
   ChevronRight,
   Loader2,
@@ -16,13 +16,20 @@ import {
 import type { CommentThread, CommentReply } from "@shared/types";
 import { StatusBadge } from "@ui/components/common/StatusBadge";
 import { AvatarGroup } from "@ui/components/common/AvatarGroup";
-import { TASK_TYPE_LABELS, TASK_TYPE_COLORS } from "@ui/components/common/taskTypeConfig";
+import {
+  TASK_TYPE_LABELS,
+  TASK_TYPE_COLORS,
+} from "@ui/components/common/taskTypeConfig";
 import { timeAgo } from "@ui/lib/timeAgo";
 import { renderMentions } from "@ui/lib/renderMentions";
 import { useNavigateToComment } from "@ui/lib/useNavigateToComment";
 import { useAuthStore } from "@ui/store/authStore";
 import { useAIStore } from "@ui/store/aiStore";
-import { summarizeThread, isTooShort } from "@ui/ai/summarize";
+import {
+  summarizeThread,
+  clearCachedSummary,
+  isTooShort,
+} from "@ui/ai/summarize";
 import { PROVIDER_MODEL_LABELS, formatModelName } from "@ui/ai/cloudProvider";
 
 interface ThreadDetailProps {
@@ -71,11 +78,11 @@ function CommentBubble({
           <span className="text-sm font-medium text-figma-text">
             {author.handle}
           </span>
-          <span className="text-xs text-figma-text-tertiary">
+          <span className="text-xs text-figma-text-secondary">
             {timeAgo(createdAt)}
           </span>
         </div>
-        <p className="text-[11px] text-figma-text-secondary leading-relaxed opacity-80 whitespace-pre-wrap break-words">
+        <p className="text-[11px] text-figma-text leading-relaxed whitespace-pre-wrap break-words">
           {renderMentions(message)}
         </p>
       </div>
@@ -102,29 +109,36 @@ function SummarySection({ thread }: { thread: CommentThread }) {
   const isOutdated =
     result && result.threadLastUpdatedAt !== thread.lastUpdatedAt;
 
-  const handleSummarize = useCallback(async () => {
-    if (needsConsent()) {
-      const event = new CustomEvent("show-ai-consent");
-      window.dispatchEvent(event);
-      return;
-    }
+  const handleSummarize = useCallback(
+    async (skipCache = false) => {
+      if (needsConsent()) {
+        const event = new CustomEvent("show-ai-consent");
+        window.dispatchEvent(event);
+        return;
+      }
 
-    setThreadLoading(thread.id);
-    try {
-      const summaryResult = await summarizeThread(thread);
-      setThreadResult(thread.id, summaryResult);
-    } catch (err) {
-      setThreadError(
-        thread.id,
-        err instanceof Error ? err.message : "Summary generation failed",
-      );
-    }
-  }, [thread, setThreadLoading, setThreadResult, setThreadError, needsConsent]);
+      if (skipCache) {
+        await clearCachedSummary(thread.id, thread.lastUpdatedAt);
+      }
+
+      setThreadLoading(thread.id);
+      try {
+        const summaryResult = await summarizeThread(thread, skipCache);
+        setThreadResult(thread.id, summaryResult);
+      } catch (err) {
+        setThreadError(
+          thread.id,
+          err instanceof Error ? err.message : "Summary generation failed",
+        );
+      }
+    },
+    [thread, setThreadLoading, setThreadResult, setThreadError, needsConsent],
+  );
 
   if (tooShort) {
     return (
       <div className="px-4 py-3 border-b border-figma-border">
-        <div className="flex items-center gap-1.5 text-xs text-figma-text-tertiary">
+        <div className="flex items-center gap-1.5 text-xs text-figma-text-secondary">
           <Sparkles size={12} />
           Thread too short to summarize (fewer than 3 comments).
         </div>
@@ -148,18 +162,25 @@ function SummarySection({ thread }: { thread: CommentThread }) {
           <div className="flex items-center gap-0.5">
             <button
               type="button"
-              onClick={handleSummarize}
+              onClick={() => handleSummarize(true)}
               disabled={isLoading}
               className="p-1 rounded-md text-figma-icon-tertiary hover:bg-figma-bg-secondary hover:text-figma-icon transition-colors"
-              title="Regenerate summary"
+              data-tooltip="Regenerate summary"
             >
-              <RefreshCw size={12} className={isLoading ? "animate-spin" : ""} />
+              <RefreshCw
+                size={12}
+                className={isLoading ? "animate-spin" : ""}
+              />
             </button>
             <button
               type="button"
-              onClick={() => clearThreadSummary(thread.id)}
+              onClick={() => {
+                clearCachedSummary(thread.id, thread.lastUpdatedAt);
+                clearThreadSummary(thread.id);
+              }}
               className="p-1 rounded-md text-figma-icon-tertiary hover:bg-red-50 hover:text-red-500 transition-colors"
-              title="Clear summary"
+              data-tooltip="Clear summary"
+              data-tooltip-align="right"
             >
               <X size={12} />
             </button>
@@ -172,14 +193,17 @@ function SummarySection({ thread }: { thread: CommentThread }) {
           {!result && !isLoading && !error && (
             <button
               type="button"
-              onClick={handleSummarize}
+              onClick={() => handleSummarize()}
               disabled={isLoading}
               className="flex items-center gap-2 px-3 py-2 rounded-md text-xs font-medium bg-figma-bg-secondary text-figma-text-secondary hover:bg-figma-bg-tertiary hover:text-figma-text transition-colors"
             >
               <Sparkles size={13} />
               Summarize ({thread.replyCount + 1} comments)
               <span className="text-figma-text-disabled ml-1">
-                via {provider === "custom" ? customModelName || "custom" : PROVIDER_MODEL_LABELS[provider] ?? provider}
+                via{" "}
+                {provider === "custom"
+                  ? customModelName || "custom"
+                  : (PROVIDER_MODEL_LABELS[provider] ?? provider)}
               </span>
             </button>
           )}
@@ -199,7 +223,7 @@ function SummarySection({ thread }: { thread: CommentThread }) {
                 <p className="text-xs text-red-700 mb-2">{error}</p>
                 <button
                   type="button"
-                  onClick={handleSummarize}
+                  onClick={() => handleSummarize()}
                   className="text-xs font-medium text-red-600 hover:text-red-800 transition-colors"
                 >
                   Retry
@@ -213,18 +237,20 @@ function SummarySection({ thread }: { thread: CommentThread }) {
               {isOutdated && (
                 <button
                   type="button"
-                  onClick={handleSummarize}
+                  onClick={() => handleSummarize(true)}
                   className="flex items-center gap-1.5 text-xs text-amber-600 mb-2 hover:text-amber-700"
                 >
                   <RefreshCw size={11} />
                   Summary outdated — regenerate?
                 </button>
               )}
-              <p className="text-[11px] text-figma-text-secondary leading-relaxed">
+              <p className="text-[11px] text-figma-text leading-relaxed">
                 {result.summary}
               </p>
-              <span className="text-[10px] text-figma-text-disabled mt-1 block">
-                Generated by {formatModelName(result.modelName ?? result.provider)} &middot; {timeAgo(result.generatedAt)}
+              <span className="text-[10px] text-figma-text-tertiary mt-1 block">
+                Generated by{" "}
+                {formatModelName(result.modelName ?? result.provider)} &middot;{" "}
+                {timeAgo(result.generatedAt)}
               </span>
             </div>
           )}
@@ -250,7 +276,7 @@ function TasksSection({ thread }: { thread: CommentThread }) {
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
-        className="flex items-center gap-1.5 text-xs font-medium text-figma-text-secondary hover:text-figma-text"
+        className="flex items-center gap-1.5 text-xs font-medium text-figma-text hover:text-figma-text"
       >
         {expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
         Tasks ({doneCount}/{tasks.length})
@@ -259,14 +285,13 @@ function TasksSection({ thread }: { thread: CommentThread }) {
       {expanded && (
         <div className="mt-2">
           {tasks.length === 0 ? (
-            <p className="text-[11px] text-figma-text-tertiary">No tasks detected.</p>
+            <p className="text-[11px] text-figma-text-secondary">
+              No tasks detected.
+            </p>
           ) : (
             <div className="space-y-2">
               {tasks.map((task) => (
-                <div
-                  key={task.id}
-                  className="flex items-start gap-2 group"
-                >
+                <div key={task.id} className="flex items-start gap-2 group">
                   <button
                     type="button"
                     onClick={() =>
@@ -288,14 +313,14 @@ function TasksSection({ thread }: { thread: CommentThread }) {
                       className={`text-[11px] leading-relaxed ${
                         task.status === "done"
                           ? "text-figma-text-disabled line-through"
-                          : "text-figma-text-secondary"
+                          : "text-figma-text"
                       }`}
                     >
                       {task.description}
                     </p>
                     <div className="flex items-center gap-2 mt-0.5">
                       {task.assignee && (
-                        <span className="text-[10px] text-figma-text-tertiary">
+                        <span className="text-[10px] text-figma-text-secondary">
                           @{task.assignee}
                         </span>
                       )}
@@ -348,11 +373,11 @@ export function ThreadDetail({ thread, onBack }: ThreadDetailProps) {
         {/* Meta */}
         <div className="px-4 py-3 border-b border-figma-border">
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-xs text-figma-text-tertiary">
+            <span className="text-xs text-figma-text-secondary">
               {formatDate(thread.createdAt)}
             </span>
             <span className="text-xs text-figma-text-disabled">&middot;</span>
-            <span className="text-xs text-figma-text-tertiary">
+            <span className="text-xs text-figma-text-secondary">
               Started by {thread.author.handle}
             </span>
           </div>
@@ -370,7 +395,7 @@ export function ThreadDetail({ thread, onBack }: ThreadDetailProps) {
           <button
             type="button"
             onClick={() => setThreadExpanded(!threadExpanded)}
-            className="flex items-center gap-1.5 text-xs font-medium text-figma-text-secondary mb-3 hover:text-figma-text"
+            className="flex items-center gap-1.5 text-xs font-medium text-figma-text mb-3 hover:text-figma-text"
           >
             {threadExpanded ? (
               <ChevronDown size={12} />
@@ -449,7 +474,7 @@ export function ThreadDetail({ thread, onBack }: ThreadDetailProps) {
             {navigating ? (
               <Loader2 size={13} className="animate-spin" />
             ) : (
-              <ExternalLink size={13} />
+              <Crosshair size={13} />
             )}
             Navigate to comment
           </button>

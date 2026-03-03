@@ -23,6 +23,7 @@ import { useAIStore } from "@ui/store/aiStore";
 import { parseFileKey, isValidFigmaUrl } from "@ui/lib/parseFileUrl";
 import { showToast } from "@ui/components/common/Toast";
 import { supportsVision, PROVIDER_MODEL_LABELS } from "@ui/ai/cloudProvider";
+import { clearAllCachedSummaries } from "@ui/ai/summarize";
 import type { AIProvider, CacheTTLMinutes } from "@shared/types";
 
 type SettingsTab = "general" | "ai" | "behavior" | "auth" | "display";
@@ -344,7 +345,52 @@ function AITab() {
           </div>
         )}
       </section>
+
+      <ClearCacheSection />
     </div>
+  );
+}
+
+function ClearCacheSection() {
+  const threads = useCommentsStore((s) => s.threads);
+  const summaryCount = useAIStore((s) => s.threadSummaries.size);
+  const [clearing, setClearing] = useState(false);
+
+  const handleClear = useCallback(async () => {
+    setClearing(true);
+    try {
+      await clearAllCachedSummaries(threads);
+      showToast("Summary cache cleared", "success");
+    } catch {
+      showToast("Failed to clear cache", "error");
+    } finally {
+      setClearing(false);
+    }
+  }, [threads]);
+
+  return (
+    <section className="pt-4 border-t border-figma-border">
+      <h3 className="text-sm font-medium text-figma-text mb-1">Cache</h3>
+      <p className="text-xs text-figma-text-tertiary mb-3">
+        Clear all cached summaries and tasks. They will be regenerated on
+        next request.
+      </p>
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={handleClear}
+          disabled={clearing || summaryCount === 0}
+          className="px-3 py-1.5 rounded-md text-xs font-medium text-red-500 bg-red-50 hover:bg-red-100 disabled:opacity-40 transition-colors"
+        >
+          {clearing ? "Clearing..." : "Clear all summaries"}
+        </button>
+        {summaryCount > 0 && (
+          <span className="text-xs text-figma-text-tertiary">
+            {summaryCount} cached
+          </span>
+        )}
+      </div>
+    </section>
   );
 }
 

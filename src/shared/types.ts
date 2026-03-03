@@ -85,7 +85,8 @@ export interface CommentThread {
 }
 
 export type StatusFilter = "all" | "open" | "resolved";
-export type SortOrder = "newest" | "oldest";
+export type SortField = "replies" | "participants" | "last_updated" | "created_at";
+export type SortDirection = "asc" | "desc";
 export type CommentScope = "current_page" | "full_file";
 export type CacheTTLMinutes = 5 | 10 | 15 | 30;
 
@@ -127,7 +128,8 @@ export interface StoredPreferences {
   userAvatarUrl: string;
   userId: string;
   filterStatus: StatusFilter;
-  sortOrder: SortOrder;
+  sortField: SortField;
+  sortDirection: SortDirection;
   cacheTTL: CacheTTLMinutes;
   autoOpenComment: boolean;
   showThreadElbows: boolean;

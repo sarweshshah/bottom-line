@@ -1,6 +1,6 @@
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, ArrowUp, ArrowDown } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
-import type { StatusFilter, SortOrder, CommentScope } from "@shared/types";
+import type { StatusFilter, SortField, CommentScope } from "@shared/types";
 import { useFilterStore } from "@ui/store/filterStore";
 
 const STATUS_OPTIONS: { value: StatusFilter; label: string }[] = [
@@ -9,9 +9,11 @@ const STATUS_OPTIONS: { value: StatusFilter; label: string }[] = [
   { value: "resolved", label: "Resolved" },
 ];
 
-const SORT_OPTIONS: { value: SortOrder; label: string }[] = [
-  { value: "newest", label: "Newest first" },
-  { value: "oldest", label: "Oldest first" },
+const SORT_OPTIONS: { value: SortField; label: string }[] = [
+  { value: "replies", label: "Replies" },
+  { value: "participants", label: "Participants" },
+  { value: "last_updated", label: "Last updated" },
+  { value: "created_at", label: "Created" },
 ];
 
 const SCOPE_OPTIONS: { value: CommentScope; label: string }[] = [
@@ -20,7 +22,7 @@ const SCOPE_OPTIONS: { value: CommentScope; label: string }[] = [
 ];
 
 export function FilterBar() {
-  const { status, sortBy, commentScope, setStatus, setSortBy, setCommentScope } =
+  const { status, sortField, sortDirection, commentScope, setStatus, toggleSort, setCommentScope } =
     useFilterStore();
   const [sortOpen, setSortOpen] = useState(false);
   const [scopeOpen, setScopeOpen] = useState(false);
@@ -40,6 +42,9 @@ export function FilterBar() {
     document.addEventListener("mousedown", handleClickOutside, { passive: true });
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const activeSort = SORT_OPTIONS.find((o) => o.value === sortField);
+  const DirIcon = sortDirection === "asc" ? ArrowUp : ArrowDown;
 
   return (
     <div className="flex items-center gap-2 px-4 py-3 border-b border-figma-border bg-figma-bg">
@@ -108,29 +113,35 @@ export function FilterBar() {
           }}
           className="flex items-center gap-1 text-xs text-figma-text-secondary hover:text-figma-text px-2 py-1 rounded bg-figma-bg-secondary"
         >
-          {SORT_OPTIONS.find((o) => o.value === sortBy)?.label}
-          <ChevronDown size={10} />
+          {activeSort?.label}
+          <DirIcon size={10} />
         </button>
 
         {sortOpen && (
-          <div className="absolute right-0 top-full mt-1 bg-figma-bg border border-figma-border rounded-md shadow-lg z-20 min-w-[120px]">
-            {SORT_OPTIONS.map((opt) => (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => {
-                  setSortBy(opt.value);
-                  setSortOpen(false);
-                }}
-                className={`w-full text-left px-3 py-1.5 text-xs hover:bg-figma-bg-hover transition-colors ${
-                  sortBy === opt.value
-                    ? "text-status-open font-medium"
-                    : "text-figma-text-secondary"
-                }`}
-              >
-                {opt.label}
-              </button>
-            ))}
+          <div className="absolute right-0 top-full mt-1 bg-figma-bg border border-figma-border rounded-md shadow-lg z-20 min-w-[140px]">
+            {SORT_OPTIONS.map((opt) => {
+              const isActive = sortField === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => {
+                    toggleSort(opt.value);
+                    if (!isActive) setSortOpen(false);
+                  }}
+                  className={`w-full flex items-center justify-between px-3 py-1.5 text-xs hover:bg-figma-bg-hover transition-colors ${
+                    isActive
+                      ? "text-status-open font-medium"
+                      : "text-figma-text-secondary"
+                  }`}
+                >
+                  {opt.label}
+                  {isActive && (
+                    <DirIcon size={10} className="text-status-open" />
+                  )}
+                </button>
+              );
+            })}
           </div>
         )}
       </div>

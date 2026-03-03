@@ -53,7 +53,8 @@ export function ThreadCard({ thread, onSelect }: ThreadCardProps) {
                 onClick={handleNavigate}
                 disabled={navigating}
                 className="p-1 rounded-md text-figma-icon-tertiary hover:text-status-open hover:bg-figma-bg-secondary disabled:opacity-40 transition-colors"
-                title="Navigate to comment"
+                data-tooltip="Navigate to comment"
+                data-tooltip-align="right"
               >
                 {navigating ? (
                   <Loader2 size={13} className="animate-spin" />
