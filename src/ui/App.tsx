@@ -22,6 +22,66 @@ import { ConsentDialog } from "@ui/components/common/ConsentDialog";
 import { LoadingSpinner } from "@ui/components/common/LoadingSpinner";
 import { useAIStore } from "@ui/store/aiStore";
 
+const THEME_COLORS_LIGHT: Record<string, string> = {
+  "--figma-color-bg": "#ffffff",
+  "--figma-color-bg-secondary": "#f5f5f5",
+  "--figma-color-bg-tertiary": "#e6e6e6",
+  "--figma-color-bg-hover": "#ebebeb",
+  "--figma-color-bg-selected": "#daebf7",
+  "--figma-color-text": "#333333",
+  "--figma-color-text-secondary": "#7f7f7f",
+  "--figma-color-text-tertiary": "#9F9F9F",
+  "--figma-color-text-disabled": "#cccccc",
+  "--figma-color-border": "#e6e6e6",
+  "--figma-color-border-strong": "#cccccc",
+  "--figma-color-icon": "#333333",
+  "--figma-color-icon-secondary": "#7f7f7f",
+  "--figma-color-icon-tertiary": "#b3b3b3",
+};
+
+const THEME_COLORS_DARK: Record<string, string> = {
+  "--figma-color-bg": "#2c2c2c",
+  "--figma-color-bg-secondary": "#383838",
+  "--figma-color-bg-tertiary": "#4d4d4d",
+  "--figma-color-bg-hover": "#444444",
+  "--figma-color-bg-selected": "#0d4880",
+  "--figma-color-text": "#ffffff",
+  "--figma-color-text-secondary": "#b3b3b3",
+  "--figma-color-text-tertiary": "#909090",
+  "--figma-color-text-disabled": "#5c5c5c",
+  "--figma-color-border": "#444444",
+  "--figma-color-border-strong": "#5c5c5c",
+  "--figma-color-icon": "#ffffff",
+  "--figma-color-icon-secondary": "#b3b3b3",
+  "--figma-color-icon-tertiary": "#7f7f7f",
+};
+
+const ALL_THEME_VARS = Object.keys(THEME_COLORS_LIGHT);
+
+function applyTheme(pref: "system" | "light" | "dark") {
+  const root = document.documentElement;
+
+  if (pref === "system") {
+    ALL_THEME_VARS.forEach((v) => root.style.removeProperty(v));
+    root.classList.remove("theme-override");
+    return;
+  }
+
+  const colors = pref === "dark" ? THEME_COLORS_DARK : THEME_COLORS_LIGHT;
+  for (const [prop, value] of Object.entries(colors)) {
+    root.style.setProperty(prop, value);
+  }
+
+  root.classList.add("theme-override");
+  if (pref === "dark") {
+    root.classList.add("figma-dark");
+    root.classList.remove("figma-light");
+  } else {
+    root.classList.add("figma-light");
+    root.classList.remove("figma-dark");
+  }
+}
+
 const RESIZE_HIT_AREA_PX = 8;
 
 type ResizeDirection = "width" | "height" | "both";
@@ -36,8 +96,13 @@ interface ResizeDragState {
 }
 
 export function App() {
-  const { screen, initFromSandbox, showDashboard } = useAuthStore();
+  const { screen, initFromSandbox, showDashboard, themePreference } =
+    useAuthStore();
   const resizeDragStateRef = useRef<ResizeDragState | null>(null);
+
+  useEffect(() => {
+    applyTheme(themePreference);
+  }, [themePreference]);
 
   const sendResize = useCallback((width: number, height: number) => {
     parent.postMessage(
@@ -134,9 +199,7 @@ export function App() {
       switch (msg.type) {
         case "INIT_DATA":
           initFromSandbox(msg as InitDataMessage);
-          useCommentsStore
-            .getState()
-            .initializeCacheTTL(msg.cacheTTLMinutes);
+          useCommentsStore.getState().initializeCacheTTL(msg.cacheTTLMinutes);
           useCommentsStore.getState().setCurrentPageId(msg.currentPageId);
           useAIStore.getState().initFromStorage();
           break;

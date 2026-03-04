@@ -46,6 +46,7 @@ async function sendInitData() {
     userId,
     autoOpenComment,
     showThreadElbows,
+    themePreference,
     cacheTTL,
   ] = await Promise.all([
     figma.clientStorage.getAsync("pat"),
@@ -56,6 +57,7 @@ async function sendInitData() {
     figma.clientStorage.getAsync("userId"),
     figma.clientStorage.getAsync("autoOpenComment"),
     figma.clientStorage.getAsync("showThreadElbows"),
+    figma.clientStorage.getAsync("themePreference"),
     figma.clientStorage.getAsync("cacheTTL"),
   ]);
 
@@ -69,6 +71,7 @@ async function sendInitData() {
     userId: userId ?? null,
     autoOpenComment: autoOpenComment !== false,
     showThreadElbows: showThreadElbows === true,
+    themePreference: (["system", "light", "dark"].includes(themePreference) ? themePreference : "system") as "system" | "light" | "dark",
     cacheTTLMinutes: normalizeCacheTTL(cacheTTL),
     currentPageId: figma.currentPage.id,
   };

@@ -36,6 +36,7 @@ export interface InitDataMessage {
   userId: string | null;
   autoOpenComment: boolean;
   showThreadElbows: boolean;
+  themePreference: "system" | "light" | "dark";
   cacheTTLMinutes: 5 | 10 | 15 | 30;
   currentPageId: string;
 }

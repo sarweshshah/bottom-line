@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { FigmaUser } from "@shared/types";
+import type { FigmaUser, ThemePreference } from "@shared/types";
 import type { InitDataMessage } from "@shared/messages";
 import { setStorage } from "@ui/lib/storage";
 import { validateToken, FigmaApiError } from "@ui/api/figmaApi";
@@ -16,12 +16,14 @@ interface AuthState {
   validationError: string | null;
   autoOpenComment: boolean;
   showThreadElbows: boolean;
+  themePreference: ThemePreference;
 
   initFromSandbox: (data: InitDataMessage) => void;
   validateAndSetToken: (pat: string) => Promise<FigmaUser>;
   setFileInfo: (url: string, key: string) => Promise<void>;
   setAutoOpenComment: (enabled: boolean) => void;
   setShowThreadElbows: (enabled: boolean) => void;
+  setThemePreference: (pref: ThemePreference) => void;
   completeSetup: () => void;
   showReconnect: () => void;
   showSettings: () => void;
@@ -39,6 +41,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   validationError: null,
   autoOpenComment: true,
   showThreadElbows: false,
+  themePreference: "system",
 
   initFromSandbox: (data) => {
     const hasPat = !!data.pat;
@@ -57,6 +60,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         },
         autoOpenComment: data.autoOpenComment,
         showThreadElbows: data.showThreadElbows === true,
+        themePreference: data.themePreference ?? "system",
         screen: "dashboard",
       });
     } else {
@@ -69,6 +73,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           : null,
         autoOpenComment: data.autoOpenComment,
         showThreadElbows: data.showThreadElbows === true,
+        themePreference: data.themePreference ?? "system",
         screen: "setup",
       });
     }
@@ -109,6 +114,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   setShowThreadElbows: (enabled: boolean) => {
     set({ showThreadElbows: enabled });
     setStorage("showThreadElbows", enabled);
+  },
+
+  setThemePreference: (pref: ThemePreference) => {
+    set({ themePreference: pref });
+    setStorage("themePreference", pref);
   },
 
   completeSetup: () => {

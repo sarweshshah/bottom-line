@@ -90,6 +90,7 @@ export type SortDirection = "asc" | "desc";
 export type CommentScope = "current_page" | "full_file";
 export type CacheTTLMinutes = 5 | 10 | 15 | 30;
 
+export type ThemePreference = "system" | "light" | "dark";
 export type AIProvider = "anthropic" | "openai" | "gemini" | "custom";
 export type TaskType = "revision" | "approval" | "blocker" | "question" | "general";
 export type TaskStatus = "pending" | "done";
@@ -133,6 +134,7 @@ export interface StoredPreferences {
   cacheTTL: CacheTTLMinutes;
   autoOpenComment: boolean;
   showThreadElbows: boolean;
+  themePreference: ThemePreference;
   aiProvider: AIProvider;
   anthropicApiKey: string;
   openaiApiKey: string;

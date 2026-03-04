@@ -18,6 +18,8 @@ import {
   Info,
   MessageSquare,
   ChevronDown,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { useAuthStore } from "@ui/store/authStore";
 import { useCommentsStore } from "@ui/store/commentsStore";
@@ -26,7 +28,7 @@ import { parseFileKey, isValidFigmaUrl } from "@ui/lib/parseFileUrl";
 import { showToast } from "@ui/components/common/Toast";
 import { supportsVision, PROVIDER_MODEL_LABELS } from "@ui/ai/cloudProvider";
 import { clearAllCachedSummaries } from "@ui/ai/summarize";
-import type { AIProvider, CacheTTLMinutes } from "@shared/types";
+import type { AIProvider, CacheTTLMinutes, ThemePreference } from "@shared/types";
 
 type SettingsTab = "general" | "ai" | "behavior" | "auth" | "display" | "about";
 
@@ -681,28 +683,45 @@ function AuthTab() {
   );
 }
 
+const THEME_OPTIONS: { value: ThemePreference; label: string; icon: typeof Monitor }[] = [
+  { value: "system", label: "System", icon: Monitor },
+  { value: "light", label: "Light", icon: Sun },
+  { value: "dark", label: "Dark", icon: Moon },
+];
+
 function DisplayTab() {
-  const { showThreadElbows, setShowThreadElbows } = useAuthStore();
+  const { showThreadElbows, setShowThreadElbows, themePreference, setThemePreference } = useAuthStore();
 
   return (
     <div className="space-y-5">
       <section>
         <h3 className="text-sm font-medium text-figma-text mb-1 flex items-center gap-1.5">
           <Monitor size={14} className="text-accent" />
-          Appearance
+          Theme
         </h3>
         <p className="text-xs text-figma-text-tertiary mb-3">
-          Display settings are inherited from your Figma theme.
+          Override the appearance or follow Figma's theme.
         </p>
-        <div className="bg-figma-bg-secondary border border-figma-border rounded-md p-3 flex items-start gap-2">
-          <Info
-            size={14}
-            className="text-figma-icon-tertiary shrink-0 mt-0.5"
-          />
-          <p className="text-xs text-figma-text-secondary leading-relaxed">
-            The plugin automatically adapts to your Figma appearance settings
-            (light/dark mode).
-          </p>
+        <div className="flex gap-2">
+          {THEME_OPTIONS.map((opt) => {
+            const Icon = opt.icon;
+            const isActive = themePreference === opt.value;
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setThemePreference(opt.value)}
+                className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium border transition-colors ${
+                  isActive
+                    ? "bg-accent-subtle border-accent text-accent"
+                    : "bg-figma-bg-secondary border-figma-border text-figma-text-secondary hover:bg-figma-bg-tertiary hover:border-figma-border-strong"
+                }`}
+              >
+                <Icon size={13} />
+                {opt.label}
+              </button>
+            );
+          })}
         </div>
       </section>
 
@@ -714,7 +733,7 @@ function DisplayTab() {
         <p className="text-xs text-figma-text-tertiary mb-3">
           Customize how comment threads are displayed.
         </p>
-        <label className="flex items-center justify-between gap-3 p-3 bg-figma-bg-secondary border border-figma-border rounded-md cursor-pointer transition-colors hover:border-figma-border-hover">
+        <label className="flex items-center justify-between gap-3 p-3 bg-figma-bg-secondary border border-figma-border rounded-md cursor-pointer transition-colors hover:bg-figma-bg-tertiary hover:border-figma-border-strong">
           <div>
             <p className="text-sm font-medium text-figma-text">
               Show reply elbows
