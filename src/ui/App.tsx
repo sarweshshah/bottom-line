@@ -58,12 +58,29 @@ const THEME_COLORS_DARK: Record<string, string> = {
 
 const ALL_THEME_VARS = Object.keys(THEME_COLORS_LIGHT);
 
+let figmaOriginalThemeClass: "figma-dark" | "figma-light" | null = null;
+
+function snapshotFigmaTheme() {
+  if (figmaOriginalThemeClass !== null) return;
+  const root = document.documentElement;
+  if (root.classList.contains("figma-dark")) {
+    figmaOriginalThemeClass = "figma-dark";
+  } else {
+    figmaOriginalThemeClass = "figma-light";
+  }
+}
+
 function applyTheme(pref: "system" | "light" | "dark") {
   const root = document.documentElement;
+  snapshotFigmaTheme();
 
   if (pref === "system") {
     ALL_THEME_VARS.forEach((v) => root.style.removeProperty(v));
     root.classList.remove("theme-override");
+    root.classList.remove("figma-dark", "figma-light");
+    if (figmaOriginalThemeClass) {
+      root.classList.add(figmaOriginalThemeClass);
+    }
     return;
   }
 
