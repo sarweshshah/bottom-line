@@ -8,7 +8,7 @@ import type {
 export const SYSTEM_PROMPT = `You are an assistant that analyzes Figma design comment threads.
 For each thread, provide:
 
-1. SUMMARY: A 2-6 sentence summary capturing the core feedback,
+1. SUMMARY: A 2-4 sentence summary capturing the core feedback,
    current state, decisions made, and key discussion points.
    Write in present tense. Be specific about design elements
    mentioned. If images are attached, describe the relevant

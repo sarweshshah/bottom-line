@@ -66,7 +66,7 @@ export function FilterBar() {
             onClick={() => setStatus(opt.value)}
             className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
               status === opt.value
-                ? "bg-accent text-white"
+                ? "bg-accent-bg text-white"
                 : "bg-figma-bg-secondary text-figma-text-secondary hover:bg-figma-bg-tertiary"
             }`}
           >

@@ -512,7 +512,7 @@ export function ThreadDetail({ thread, onBack }: ThreadDetailProps) {
             type="button"
             onClick={handleNavigate}
             disabled={navigating}
-            className="w-full flex items-center justify-center gap-2 py-2 rounded-md text-xs font-medium bg-accent text-white hover:bg-accent-hover disabled:opacity-40 transition-colors"
+            className="w-full flex items-center justify-center gap-2 py-2 rounded-md text-xs font-medium bg-accent-bg text-white hover:bg-accent-hover disabled:opacity-40 transition-colors"
           >
             {navigating ? (
               <Loader2 size={13} className="animate-spin" />

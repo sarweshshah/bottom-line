@@ -31,6 +31,7 @@ export default {
         },
         accent: {
           DEFAULT: "var(--bl-accent)",
+          bg: "var(--bl-accent-bg)",
           hover: "var(--bl-accent-hover)",
           ring: "var(--bl-accent-ring)",
         },

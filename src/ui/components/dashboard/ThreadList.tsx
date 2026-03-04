@@ -26,7 +26,7 @@ export function ThreadList({ onSelectThread }: ThreadListProps) {
             <button
               type="button"
               onClick={() => useCommentsStore.getState().refreshComments()}
-              className="px-3 py-1.5 rounded-md text-xs font-medium bg-accent text-white hover:bg-accent-hover"
+              className="px-3 py-1.5 rounded-md text-xs font-medium bg-accent-bg text-white hover:bg-accent-hover"
             >
               Retry
             </button>

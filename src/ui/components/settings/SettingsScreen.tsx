@@ -156,7 +156,7 @@ function GeneralTab() {
           <button
             type="button"
             onClick={handleSaveUrl}
-            className="px-3 py-1.5 rounded-md text-xs font-medium bg-accent text-white hover:bg-accent-hover transition-colors"
+            className="px-3 py-1.5 rounded-md text-xs font-medium bg-accent-bg text-white hover:bg-accent-hover transition-colors"
           >
             {fileKey ? "Update File" : "Connect File"}
           </button>
@@ -673,7 +673,7 @@ function AuthTab() {
                 type="button"
                 onClick={handleSaveToken}
                 disabled={!newPat.trim() || isValidating}
-                className="px-3 py-1.5 rounded-md text-xs font-medium bg-accent text-white hover:bg-accent-hover disabled:opacity-40 transition-colors"
+                className="px-3 py-1.5 rounded-md text-xs font-medium bg-accent-bg text-white hover:bg-accent-hover disabled:opacity-40 transition-colors"
               >
                 Save
               </button>

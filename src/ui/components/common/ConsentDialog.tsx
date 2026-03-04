@@ -85,7 +85,7 @@ export function ConsentDialog() {
           <button
             type="button"
             onClick={handleAccept}
-            className="px-3 py-1.5 rounded-md text-xs font-medium bg-accent text-white hover:bg-accent-hover transition-colors"
+            className="px-3 py-1.5 rounded-md text-xs font-medium bg-accent-bg text-white hover:bg-accent-hover transition-colors"
           >
             I understand, continue
           </button>

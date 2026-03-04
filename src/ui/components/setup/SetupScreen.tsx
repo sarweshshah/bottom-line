@@ -213,7 +213,7 @@ export function SetupScreen() {
           type="button"
           disabled={!canSubmit}
           onClick={handleSubmit}
-          className="w-full py-2.5 rounded-md text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed bg-accent text-white hover:bg-accent-hover active:bg-accent-hover"
+          className="w-full py-2.5 rounded-md text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed bg-accent-bg text-white hover:bg-accent-hover active:bg-accent-hover"
         >
           Get Started
         </button>
