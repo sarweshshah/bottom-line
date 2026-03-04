@@ -20,7 +20,7 @@ export function isTooShort(thread: CommentThread): boolean {
   return thread.replyCount + 1 < MIN_COMMENTS_FOR_SUMMARY;
 }
 
-async function getCachedSummary(
+export async function getCachedSummary(
   threadId: string,
   lastUpdatedAt: string,
 ): Promise<SummaryResult | null> {

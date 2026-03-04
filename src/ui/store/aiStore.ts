@@ -6,7 +6,9 @@ import type {
   Task,
   TaskStatus,
 } from "@shared/types";
+import type { CommentThread } from "@shared/types";
 import { getStorage, setStorage } from "@ui/lib/storage";
+import { getCachedSummary, isTooShort } from "@ui/ai/summarize";
 
 interface ThreadSummaryState {
   isLoading: boolean;
@@ -49,6 +51,7 @@ interface AIState {
   refreshAllTasks: () => void;
 
   initFromStorage: () => Promise<void>;
+  restoreCachedSummaries: (threads: CommentThread[]) => Promise<void>;
 }
 
 const DEFAULT_CUSTOM_CONFIG: CustomProviderConfig = {
@@ -243,5 +246,27 @@ export const useAIStore = create<AIState>((set, get) => ({
       cloudAiConsented: consented ?? false,
       cloudAiConsentIncludesImages: consentImages ?? false,
     });
+  },
+
+  restoreCachedSummaries: async (threads) => {
+    const eligible = threads.filter((t) => !isTooShort(t));
+    const existing = get().threadSummaries;
+    const toFetch = eligible.filter((t) => !existing.has(t.id));
+    if (toFetch.length === 0) return;
+
+    const results = await Promise.all(
+      toFetch.map((t) => getCachedSummary(t.id, t.lastUpdatedAt)),
+    );
+
+    const next = new Map(get().threadSummaries);
+    for (let i = 0; i < toFetch.length; i++) {
+      const cached = results[i];
+      if (cached) {
+        next.set(toFetch[i].id, { isLoading: false, result: cached, error: null });
+      }
+    }
+
+    set({ threadSummaries: next });
+    get().refreshAllTasks();
   },
 }));

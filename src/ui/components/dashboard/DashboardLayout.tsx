@@ -35,9 +35,17 @@ export function DashboardLayout() {
   );
   const [activeTab, setActiveTab] = useState<DashboardTab>("threads");
 
+  const restoreCachedSummaries = useAIStore((s) => s.restoreCachedSummaries);
+
   useEffect(() => {
     fetchComments();
   }, [fetchComments]);
+
+  useEffect(() => {
+    if (threads.length > 0) {
+      restoreCachedSummaries(threads);
+    }
+  }, [threads, restoreCachedSummaries]);
 
   useEffect(() => {
     const intervalId = window.setInterval(() => {
