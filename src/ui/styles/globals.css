@@ -34,6 +34,7 @@
   --bl-yellow-soft-border: rgba(236, 167, 44, 0.3);
 
   --bl-accent-ring: rgba(79, 70, 229, 0.3);
+  --bl-accent-subtle: rgba(79, 70, 229, 0.08);
   --bl-ai-bg: rgba(238, 242, 255, 0.6);
   --bl-ai-bg-a: rgba(238, 242, 255, 0.5);
   --bl-ai-bg-b: rgba(224, 231, 255, 0.4);
@@ -72,6 +73,7 @@
   --bl-yellow-soft-border: rgba(251, 191, 36, 0.3);
 
   --bl-accent-ring: rgba(129, 140, 248, 0.3);
+  --bl-accent-subtle: rgba(129, 140, 248, 0.1);
   --bl-ai-bg: rgba(99, 102, 241, 0.08);
   --bl-ai-bg-a: rgba(99, 102, 241, 0.07);
   --bl-ai-bg-b: rgba(79, 70, 229, 0.05);
@@ -145,6 +147,11 @@ body,
 [data-tooltip-pos="bottom"]::after {
   bottom: auto;
   top: calc(100% + 6px);
+}
+
+.figma-dark input[type="radio"],
+.figma-dark input[type="checkbox"] {
+  color-scheme: dark;
 }
 
 @keyframes ai-shimmer {

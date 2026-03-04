@@ -34,6 +34,7 @@ export default {
           bg: "var(--bl-accent-bg)",
           hover: "var(--bl-accent-hover)",
           ring: "var(--bl-accent-ring)",
+          subtle: "var(--bl-accent-subtle)",
         },
         tag: {
           "revision-bg": "var(--bl-tag-revision-bg)",

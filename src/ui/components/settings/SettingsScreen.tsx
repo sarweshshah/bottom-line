@@ -17,6 +17,7 @@ import {
   Image,
   Info,
   MessageSquare,
+  ChevronDown,
 } from "lucide-react";
 import { useAuthStore } from "@ui/store/authStore";
 import { useCommentsStore } from "@ui/store/commentsStore";
@@ -156,7 +157,7 @@ function GeneralTab() {
           <button
             type="button"
             onClick={handleSaveUrl}
-            className="px-3 py-1.5 rounded-md text-xs font-medium bg-accent-bg text-white hover:bg-accent-hover transition-colors"
+            className="px-3 py-1.5 rounded-md text-xs font-medium bg-figma-bg-secondary border border-figma-border text-figma-text hover:bg-figma-bg-tertiary hover:border-figma-border-strong transition-colors"
           >
             {fileKey ? "Update File" : "Connect File"}
           </button>
@@ -243,180 +244,160 @@ function AITab() {
           Choose how thread summaries and tasks are generated.
         </p>
 
-        <div className="bg-figma-bg-secondary border border-figma-border rounded-md divide-y divide-figma-border">
-          {PROVIDER_OPTIONS.map((opt) => (
-            <label
-              key={opt.value}
-              className={`flex items-center gap-3 p-3 cursor-pointer transition-colors ${
-                provider === opt.value
-                  ? "bg-figma-bg-selected"
-                  : "hover:bg-figma-bg-hover"
-              }`}
-            >
-              <input
-                type="radio"
-                name="ai-provider"
-                value={opt.value}
-                checked={provider === opt.value}
-                onChange={() => {
-                  setProvider(opt.value);
-                  setShowKey(false);
-                }}
-                className="accent-accent w-3.5 h-3.5 shrink-0"
-              />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-figma-text">{opt.label}</p>
-                <p className="text-[11px] text-figma-text-tertiary">
-                  {opt.description}
-                </p>
+        <div className="border border-figma-border rounded-md overflow-hidden">
+          {PROVIDER_OPTIONS.map((opt) => {
+            const isSelected = provider === opt.value;
+            return (
+              <div key={opt.value}>
+                <label
+                  className={`flex items-center gap-2.5 px-3 py-2 cursor-pointer transition-colors ${
+                    isSelected
+                      ? "bg-accent-subtle"
+                      : "bg-figma-bg hover:bg-figma-bg-secondary"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="ai-provider"
+                    value={opt.value}
+                    checked={isSelected}
+                    onChange={() => {
+                      setProvider(opt.value);
+                      setShowKey(false);
+                    }}
+                    className="accent-accent w-3.5 h-3.5 shrink-0"
+                  />
+                  <span className="text-xs font-medium text-figma-text">
+                    {opt.label}
+                  </span>
+                  <span className="text-[11px] text-figma-text-tertiary ml-auto flex items-center gap-1.5">
+                    {opt.description}
+                    <ChevronDown
+                      size={12}
+                      className={`transition-transform duration-200 ${isSelected ? "rotate-180" : ""}`}
+                    />
+                  </span>
+                </label>
+
+                <div
+                  className={`grid transition-[grid-template-rows] duration-200 ease-out ${
+                    isSelected ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+                  }`}
+                >
+                  <div className="overflow-hidden">
+                    <div className="px-3 pb-2.5 pt-1.5 bg-accent-subtle space-y-2.5">
+                      {opt.value !== "custom" ? (
+                        <div>
+                          <div className="flex items-center gap-2 bg-figma-bg border border-figma-border rounded px-2.5 py-1.5">
+                            <input
+                              type={showKey ? "text" : "password"}
+                              value={
+                                showKey
+                                  ? currentKey
+                                  : currentKey
+                                    ? maskedKey
+                                    : ""
+                              }
+                              onChange={(e) => setCurrentKey(e.target.value)}
+                              placeholder="Paste your API key"
+                              className="flex-1 bg-transparent text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none min-w-0"
+                            />
+                            {currentKey && (
+                              <CheckCircle2
+                                size={11}
+                                className="text-status-resolved shrink-0"
+                              />
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => setShowKey(!showKey)}
+                              className="text-figma-icon-tertiary hover:text-figma-icon-secondary shrink-0 p-0.5 rounded transition-colors"
+                              title={showKey ? "Hide key" : "Show key"}
+                            >
+                              {showKey ? (
+                                <EyeOff size={12} />
+                              ) : (
+                                <Eye size={12} />
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          <input
+                            type="text"
+                            value={customConfig.baseUrl}
+                            onChange={(e) =>
+                              setCustomConfig({
+                                ...customConfig,
+                                baseUrl: e.target.value,
+                              })
+                            }
+                            placeholder="Base URL (https://api.example.com/v1)"
+                            className="w-full bg-figma-bg border border-figma-border rounded px-2.5 py-1.5 text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-accent"
+                          />
+                          <input
+                            type="password"
+                            value={customConfig.apiKey}
+                            onChange={(e) =>
+                              setCustomConfig({
+                                ...customConfig,
+                                apiKey: e.target.value,
+                              })
+                            }
+                            placeholder="API key (optional)"
+                            className="w-full bg-figma-bg border border-figma-border rounded px-2.5 py-1.5 text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-accent"
+                          />
+                          <input
+                            type="text"
+                            value={customConfig.modelName}
+                            onChange={(e) =>
+                              setCustomConfig({
+                                ...customConfig,
+                                modelName: e.target.value,
+                              })
+                            }
+                            placeholder="Model name (e.g., llama-3.1-8b-instant)"
+                            className="w-full bg-figma-bg border border-figma-border rounded px-2.5 py-1.5 text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-accent"
+                          />
+                        </div>
+                      )}
+
+                      <label className="flex items-center justify-between gap-2 cursor-pointer">
+                        <span className="text-[11px] text-figma-text-secondary flex items-center gap-1.5">
+                          <Image size={11} className="shrink-0" />
+                          Image analysis
+                          {!hasVision && (
+                            <span className="text-warning flex items-center gap-0.5">
+                              <AlertCircle size={9} />
+                              {provider === "custom"
+                                ? "text-only"
+                                : "unsupported"}
+                            </span>
+                          )}
+                          {imageAnalysisEnabled && hasVision && (
+                            <span className="text-warning flex items-center gap-0.5">
+                              <AlertCircle size={9} />
+                              Costs more tokens
+                            </span>
+                          )}
+                        </span>
+                        <input
+                          type="checkbox"
+                          checked={imageAnalysisEnabled}
+                          onChange={(e) =>
+                            setImageAnalysisEnabled(e.target.checked)
+                          }
+                          className="accent-accent w-3.5 h-3.5 cursor-pointer shrink-0"
+                        />
+                      </label>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </label>
-          ))}
+            );
+          })}
         </div>
-      </section>
-
-      {provider !== "custom" && (
-        <section>
-          <h3 className="text-sm font-medium text-figma-text mb-1 flex items-center gap-1.5">
-            <ShieldCheck size={14} className="text-accent" />
-            API Key
-          </h3>
-          <p className="text-xs text-figma-text-tertiary mb-3">
-            Your key is stored locally and only sent to{" "}
-            {provider === "anthropic"
-              ? "Anthropic"
-              : provider === "openai"
-                ? "OpenAI"
-                : "Google"}
-            .
-          </p>
-          <div className="space-y-2.5">
-            <div className="flex items-center gap-2 bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2">
-              <input
-                type={showKey ? "text" : "password"}
-                value={showKey ? currentKey : currentKey ? maskedKey : ""}
-                onChange={(e) => setCurrentKey(e.target.value)}
-                placeholder="Paste your API key"
-                className="flex-1 bg-transparent text-sm text-figma-text placeholder:text-figma-text-disabled focus:outline-none"
-              />
-              <button
-                type="button"
-                onClick={() => setShowKey(!showKey)}
-                className="text-figma-icon-tertiary hover:text-figma-icon-secondary shrink-0 p-0.5 rounded transition-colors"
-                title={showKey ? "Hide key" : "Show key"}
-              >
-                {showKey ? <EyeOff size={14} /> : <Eye size={14} />}
-              </button>
-            </div>
-            {currentKey && (
-              <div className="flex items-center gap-1.5 text-xs text-figma-text-tertiary">
-                <CheckCircle2 size={11} className="text-status-resolved shrink-0" />
-                <span>Key configured</span>
-              </div>
-            )}
-          </div>
-        </section>
-      )}
-
-      {provider === "custom" && (
-        <section>
-          <h3 className="text-sm font-medium text-figma-text mb-1 flex items-center gap-1.5">
-            <Settings size={14} className="text-accent" />
-            Custom Provider
-          </h3>
-          <p className="text-xs text-figma-text-tertiary mb-3">
-            Any OpenAI-compatible endpoint (Groq, Mistral, Together AI, local
-            Ollama, etc.)
-          </p>
-          <div className="space-y-3 bg-figma-bg-secondary border border-figma-border rounded-md p-3">
-            <div>
-              <label className="text-[11px] font-medium text-figma-text-secondary mb-1.5 block">
-                Base URL
-              </label>
-              <input
-                type="text"
-                value={customConfig.baseUrl}
-                onChange={(e) =>
-                  setCustomConfig({ ...customConfig, baseUrl: e.target.value })
-                }
-                placeholder="https://api.example.com/v1"
-                className="w-full bg-figma-bg border border-figma-border rounded-md px-3 py-2 text-sm text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent-ring"
-              />
-            </div>
-            <div>
-              <label className="text-[11px] font-medium text-figma-text-secondary mb-1.5 block">
-                API Key <span className="text-figma-text-disabled font-normal">(optional)</span>
-              </label>
-              <input
-                type="password"
-                value={customConfig.apiKey}
-                onChange={(e) =>
-                  setCustomConfig({ ...customConfig, apiKey: e.target.value })
-                }
-                placeholder="API key (if required)"
-                className="w-full bg-figma-bg border border-figma-border rounded-md px-3 py-2 text-sm text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent-ring"
-              />
-            </div>
-            <div>
-              <label className="text-[11px] font-medium text-figma-text-secondary mb-1.5 block">
-                Model Name
-              </label>
-              <input
-                type="text"
-                value={customConfig.modelName}
-                onChange={(e) =>
-                  setCustomConfig({
-                    ...customConfig,
-                    modelName: e.target.value,
-                  })
-                }
-                placeholder="e.g., llama-3.1-8b-instant"
-                className="w-full bg-figma-bg border border-figma-border rounded-md px-3 py-2 text-sm text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent-ring"
-              />
-            </div>
-          </div>
-        </section>
-      )}
-
-      <section>
-        <h3 className="text-sm font-medium text-figma-text mb-1 flex items-center gap-1.5">
-          <Image size={14} className="text-accent" />
-          Image Analysis
-        </h3>
-        <p className="text-xs text-figma-text-tertiary mb-3">
-          Include images from comment threads in AI summaries for richer
-          context.
-        </p>
-
-        <label className="flex items-center justify-between gap-3 p-3 bg-figma-bg-secondary border border-figma-border rounded-md cursor-pointer transition-colors hover:border-figma-border-hover">
-          <div>
-            <p className="text-sm font-medium text-figma-text">Enable image analysis</p>
-            {!hasVision && (
-              <p className="text-[11px] text-warning mt-1 flex items-center gap-1">
-                <AlertCircle size={10} />
-                {provider === "custom"
-                  ? "Custom providers are treated as text-only."
-                  : "Selected provider does not support vision."}
-              </p>
-            )}
-          </div>
-          <input
-            type="checkbox"
-            checked={imageAnalysisEnabled}
-            onChange={(e) => setImageAnalysisEnabled(e.target.checked)}
-            className="accent-accent w-4 h-4 cursor-pointer shrink-0"
-          />
-        </label>
-
-        {imageAnalysisEnabled && hasVision && (
-          <div className="mt-2.5 p-2.5 bg-warning-bg border border-warning-border rounded-md flex items-start gap-1.5">
-            <AlertCircle size={12} className="text-warning shrink-0 mt-0.5" />
-            <p className="text-[11px] text-warning leading-relaxed">
-              Image tokens are significantly more expensive than text. Up to 5
-              images per thread are sent, resized to max 1024px.
-            </p>
-          </div>
-        )}
       </section>
 
       <ClearCacheSection />
@@ -443,7 +424,7 @@ function ClearCacheSection() {
   }, [threads]);
 
   return (
-    <section className="pt-5 border-t border-figma-border">
+    <section>
       <h3 className="text-sm font-medium text-figma-text mb-1 flex items-center gap-1.5">
         <Loader2 size={14} className="text-accent" />
         Cache
@@ -457,7 +438,7 @@ function ClearCacheSection() {
           type="button"
           onClick={handleClear}
           disabled={clearing || cleared}
-          className="px-3 py-1.5 rounded-md text-xs font-medium text-danger bg-danger-bg border border-danger-border hover:opacity-80 disabled:opacity-40 transition-colors"
+          className="px-3 py-1.5 rounded-md text-xs font-medium text-danger bg-danger-bg border border-danger-border hover:border-danger disabled:opacity-40 transition-colors"
         >
           {clearing
             ? "Clearing..."
@@ -488,7 +469,9 @@ function BehaviorTab() {
         <div className="space-y-3">
           <label className="flex items-center justify-between gap-3 p-3 bg-figma-bg-secondary border border-figma-border rounded-md cursor-pointer transition-colors hover:border-figma-border-hover">
             <div>
-              <p className="text-sm font-medium text-figma-text">Show comment reminder</p>
+              <p className="text-sm font-medium text-figma-text">
+                Show comment reminder
+              </p>
               <p className="text-xs text-figma-text-tertiary mt-0.5">
                 Show a notification to click the comment pin after navigating.
               </p>
@@ -503,7 +486,9 @@ function BehaviorTab() {
 
           <label className="flex items-center justify-between gap-3 p-3 bg-figma-bg-secondary border border-figma-border rounded-md cursor-pointer transition-colors hover:border-figma-border-hover">
             <div>
-              <p className="text-sm font-medium text-figma-text">Auto-refresh interval</p>
+              <p className="text-sm font-medium text-figma-text">
+                Auto-refresh interval
+              </p>
               <p className="text-xs text-figma-text-tertiary mt-0.5">
                 Refresh thread list automatically.
               </p>
@@ -513,7 +498,8 @@ function BehaviorTab() {
               onChange={(e) =>
                 setCacheTTLMinutes(Number(e.target.value) as CacheTTLMinutes)
               }
-              className="bg-figma-bg border border-figma-border rounded-md px-2 py-1.5 text-xs font-medium text-figma-text focus:outline-none focus:border-accent cursor-pointer"
+              className="bg-figma-bg border border-figma-border rounded-md pl-2 pr-6 py-1.5 text-xs font-medium text-figma-text focus:outline-none focus:border-accent cursor-pointer appearance-none bg-[length:12px] bg-[right_6px_center] bg-no-repeat"
+              style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")" }}
             >
               {TTL_OPTIONS.map((minutes) => (
                 <option key={minutes} value={minutes}>
@@ -641,7 +627,7 @@ function AuthTab() {
                 setEditing(true);
                 setNewPat("");
               }}
-              className="px-3 py-1.5 rounded-md text-xs font-medium bg-figma-bg-secondary border border-figma-border text-figma-text hover:bg-figma-bg-hover transition-colors"
+              className="px-3 py-1.5 rounded-md text-xs font-medium bg-figma-bg-secondary border border-figma-border text-figma-text hover:bg-figma-bg-tertiary hover:border-figma-border-strong transition-colors"
             >
               Change Token
             </button>
@@ -683,7 +669,7 @@ function AuthTab() {
                   setEditing(false);
                   setNewPat("");
                 }}
-                className="px-3 py-1.5 rounded-md text-xs font-medium bg-figma-bg-secondary border border-figma-border text-figma-text hover:bg-figma-bg-hover transition-colors"
+                className="px-3 py-1.5 rounded-md text-xs font-medium bg-figma-bg-secondary border border-figma-border text-figma-text hover:bg-figma-bg-tertiary hover:border-figma-border-strong transition-colors"
               >
                 Cancel
               </button>
@@ -709,7 +695,10 @@ function DisplayTab() {
           Display settings are inherited from your Figma theme.
         </p>
         <div className="bg-figma-bg-secondary border border-figma-border rounded-md p-3 flex items-start gap-2">
-          <Info size={14} className="text-figma-icon-tertiary shrink-0 mt-0.5" />
+          <Info
+            size={14}
+            className="text-figma-icon-tertiary shrink-0 mt-0.5"
+          />
           <p className="text-xs text-figma-text-secondary leading-relaxed">
             The plugin automatically adapts to your Figma appearance settings
             (light/dark mode).
@@ -727,7 +716,9 @@ function DisplayTab() {
         </p>
         <label className="flex items-center justify-between gap-3 p-3 bg-figma-bg-secondary border border-figma-border rounded-md cursor-pointer transition-colors hover:border-figma-border-hover">
           <div>
-            <p className="text-sm font-medium text-figma-text">Show reply elbows</p>
+            <p className="text-sm font-medium text-figma-text">
+              Show reply elbows
+            </p>
             <p className="text-xs text-figma-text-tertiary mt-0.5">
               Show connector lines between parent and reply comments.
             </p>
