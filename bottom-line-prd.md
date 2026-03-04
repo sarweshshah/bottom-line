@@ -15,7 +15,7 @@
 
 Bottom Line is a plugin that brings order to the often chaotic world of design feedback. As design files grow in complexity and team size, the native Figma comment panel becomes increasingly difficult to navigate — critical feedback gets buried, tasks go untracked, and designers waste time scrolling through resolved threads looking for what still needs attention.
 
-This plugin solves that by providing an intelligent, filterable comment dashboard directly inside Figma. Powered by AI (with user-configurable local or cloud processing), it summarizes lengthy threads into actionable digests, extracts implicit tasks from natural language, and surfaces what matters most to each user based on their role and mentions.
+This plugin solves that by providing an intelligent, filterable comment dashboard directly inside Figma. Powered by AI (Anthropic, OpenAI, Gemini, or any OpenAI-compatible endpoint), it summarizes lengthy threads into actionable digests, extracts implicit tasks from natural language, and surfaces what matters most to each user based on their role and mentions.
 
 ## 1.1 Value Proposition
 
@@ -68,7 +68,6 @@ The plugin uses the Figma REST API as its data source, authenticated via a user-
 | -------------- | --------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
 | Data Source    | Figma REST API                                            | Full comment data with thread metadata, timestamps, reactions, resolved state, and user info |
 | Authentication | Personal Access Token (PAT)                               | Stored locally in plugin clientStorage; required to use the plugin                           |
-| AI — Local     | On-device summarization (rule-based + lightweight models) | Privacy-first option; extracts key phrases and patterns without external calls               |
 | AI — Cloud     | Anthropic / OpenAI / Gemini / Custom (OpenAI-compatible)  | High-quality thread summaries and nuanced task extraction                                    |
 | UI Framework   | Figma Plugin UI (iframe)                                  | Custom React-based interface rendered in the plugin panel. **Lucide React** for all icons.   |
 
@@ -88,7 +87,7 @@ The following table clarifies what is and isn’t included in the V1 release:
 | **In Scope (V1)**                            | **Out of Scope (Future)**                        |
 | -------------------------------------------- | ------------------------------------------------ |
 | Thread listing with open/resolved filtering  | Third-party integrations (Slack, Jira, Linear)   |
-| On-demand AI thread summaries (local + cloud) | Comment creation or reply from within the plugin |
+| On-demand AI thread summaries                 | Comment creation or reply from within the plugin |
 | Task extraction from natural language        | Cross-file comment aggregation                   |
 | Personal view (“addressed to me”)            | Notification system / push alerts                |
 | Page-level and document-level toggle         | Comment analytics and reporting dashboards       |
@@ -110,7 +109,7 @@ The plugin presents a multi-step onboarding wizard on first launch, designed to 
 | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- | -------------------------------------------------------- |
 | **1. Welcome**           | Single-screen value proposition: what the plugin does and why it needs setup.                                                                                                                  | Yes (view only)     | —                                                        |
 | **2. Figma Token (PAT)** | Walks user through generating a PAT, explains what the plugin will and won’t do with it, and validates the token inline. See details below.                                                    | **Yes — mandatory** | Cannot skip. Plugin cannot function without a valid PAT. |
-| **3. AI Provider**       | User selects their preferred AI engine: Local, Anthropic, OpenAI, Gemini, or Custom. If a cloud provider is selected, the relevant API key / config fields are shown inline.                   | No                  | Local (rule-based, no API key needed)                    |
+| **3. AI Provider**       | User selects their preferred AI engine: Anthropic, OpenAI, Gemini, or Custom. The relevant API key / config fields are shown inline for the selected provider.                                 | No                  | Anthropic                                                |
 | **4. Image Analysis**    | Toggle for including images in AI summaries. Shows a brief explanation of cost implications and provider compatibility. Only shown if user selected a vision-capable cloud provider in Step 3. | No                  | Off                                                      |
 | **5. Default Scope**     | User chooses whether the plugin defaults to Current Page or Entire Document on each launch.                                                                                                    | No                  | Current Page                                             |
 | **6. Done**              | Confirmation screen summarizing all choices. Shows a “You can change these anytime in Settings” note. “Launch Plugin” button.                                                                  | Yes (view only)     | —                                                        |
@@ -150,9 +149,9 @@ A “Open Figma Settings →” button links directly to https://www.figma.com/s
 
 - **Back navigation:** Users can go back to any previous step to change their selection.
 
-- **Skip behavior:** Skippable steps show a “Skip → use default” button alongside the primary action. The skip button shows what the default is (e.g., “Skip → use Local AI”).
+- **Skip behavior:** Skippable steps show a “Skip → use default” button alongside the primary action. The skip button shows what the default is (e.g., “Skip → use Anthropic”).
 
-- **Conditional steps:** Step 4 (Image Analysis) is only shown if a vision-capable cloud provider was selected in Step 3. If the user selected Local or Custom, Step 4 is skipped automatically.
+- **Conditional steps:** Step 4 (Image Analysis) is only shown if a vision-capable provider was selected in Step 3. If the user selected Custom, Step 4 is skipped automatically.
 
 - **Inline validation:** PAT and API keys are validated as soon as the user pastes them, with real-time success/error feedback.
 
@@ -261,11 +260,10 @@ Users choose their preferred AI processing method in Settings:
 
 | **Option**            | **How It Works**                                                                                                                                                                                             | **Trade-offs**                                                                                                                           |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| **Local (Default)**   | Rule-based extraction + lightweight heuristics. Identifies key sentences, frequent terms, and thread structure to produce a summary.                                                                         | Fully private, no API key needed, instant. Lower quality on complex/nuanced threads.                                                     |
-| **Cloud — Anthropic** | Sends thread text to Claude API. User provides their own API key. Prompt-engineered for design feedback context.                                                                                             | High-quality, nuanced summaries. Requires API key, incurs cost, depends on network.                                                      |
-| **Cloud — OpenAI**    | Sends thread text to GPT API. User provides their own API key. Same prompt structure adapted for OpenAI format.                                                                                              | High-quality. Requires API key, incurs cost, depends on network.                                                                         |
-| **Cloud — Gemini**    | Sends thread text to Google Gemini API. User provides their own API key. Prompt adapted for Gemini’s format.                                                                                                 | High-quality. Requires API key, incurs cost, depends on network.                                                                         |
-| **Cloud — Custom**    | User configures a Base URL, API key, and model name for any OpenAI-compatible endpoint (e.g., Groq, Mistral, Together AI, local Ollama). The plugin sends requests using the OpenAI chat completions format. | Maximum flexibility. User is responsible for endpoint reliability, cost, and model quality. Local endpoints (Ollama) offer full privacy. |
+| **Anthropic** | Sends thread text to Claude API. User provides their own API key. Prompt-engineered for design feedback context.                                                                                             | High-quality, nuanced summaries. Requires API key, incurs cost, depends on network.                                                      |
+| **OpenAI**    | Sends thread text to GPT API. User provides their own API key. Same prompt structure adapted for OpenAI format.                                                                                              | High-quality. Requires API key, incurs cost, depends on network.                                                                         |
+| **Gemini**    | Sends thread text to Google Gemini API. User provides their own API key. Prompt adapted for Gemini’s format.                                                                                                 | High-quality. Requires API key, incurs cost, depends on network.                                                                         |
+| **Custom**    | User configures a Base URL, API key, and model name for any OpenAI-compatible endpoint (e.g., Groq, Mistral, Together AI, local Ollama). The plugin sends requests using the OpenAI chat completions format. | Maximum flexibility. User is responsible for endpoint reliability, cost, and model quality. Local endpoints (Ollama) offer full privacy. |
 
 ### Multimodal Image Analysis
 
@@ -287,7 +285,7 @@ Image analysis is controlled by a user toggle in Settings:
 
 - A maximum of 5 images per thread are sent to avoid excessive token usage. If a thread has more, only the 5 most recent are included, with a note in the summary.
 
-- When enabled but the provider does not support vision (Local, Custom), the summary includes a note: “Thread includes N image(s) not analyzed — switch to a vision-capable provider for image context.”
+- When enabled but the provider does not support vision (Custom), the summary includes a note: “Thread includes N image(s) not analyzed — switch to a vision-capable provider for image context.”
 
 - When image analysis is toggled on in Settings, a note warns the user about higher per-thread token cost for vision-capable providers.
 
@@ -299,13 +297,11 @@ Image analysis is controlled by a user toggle in Settings:
 
 28. Summaries are generated on demand when the user clicks "Summarize" in the Thread Detail Screen. Each request covers a single thread.
 
-29. Local summaries generate in \<500ms per thread.
+29. Generated summaries are cached in `clientStorage` keyed by `threadId + lastUpdatedAt`. If the thread receives new replies, the cache is invalidated and a "Summary outdated — regenerate?" hint is shown.
 
-30. Generated summaries are cached in `clientStorage` keyed by `threadId + lastUpdatedAt`. If the thread receives new replies, the cache is invalidated and a "Summary outdated — regenerate?" hint is shown.
+30. A loading state (spinner or skeleton) is shown in the summary section of the Thread Detail Screen while the AI request is in progress.
 
-31. A loading state (spinner or skeleton) is shown in the summary section of the Thread Detail Screen while the AI request is in progress.
-
-32. If a cloud API call fails, the plugin falls back to local summarization for that thread and shows an info toast.
+31. If an AI API call fails, the plugin shows an error toast and the user can retry.
 
 33. Users can regenerate a summary at any time via a `RefreshCw` button next to the generated summary.
 
@@ -329,7 +325,7 @@ Image analysis is controlled by a user toggle in Settings:
 
 ### Task Detection Logic
 
-The AI layer (local or cloud) scans each comment in a thread for implicit and explicit task assignments. Detection patterns include:
+The AI layer scans each comment in a thread for implicit and explicit task assignments. Detection patterns include:
 
 | **Pattern Type**    | **Examples**                                             | **Extracted As**                                                             |
 | ------------------- | -------------------------------------------------------- | ---------------------------------------------------------------------------- |
@@ -351,7 +347,7 @@ The AI layer (local or cloud) scans each comment in a thread for implicit and ex
 
 ### Acceptance Criteria
 
-39. Task extraction runs as part of the on-demand summary generation pipeline (same local/cloud toggle). Tasks are only available for threads the user has explicitly summarized.
+39. Task extraction runs as part of the on-demand summary generation pipeline. Tasks are only available for threads the user has explicitly summarized.
 
 40. Detected tasks achieve \>80% precision (i.e., 8 out of 10 detected items are actual tasks) on design feedback corpora.
 
@@ -405,7 +401,7 @@ The settings screen is organized into tabs to reduce cognitive load. Each tab gr
 
 | **Setting**            | **Options**                                                                               |
 | ---------------------- | ----------------------------------------------------------------------------------------- |
-| AI Provider            | Local / Anthropic / OpenAI / Gemini / Custom                                              |
+| AI Provider            | Anthropic / OpenAI / Gemini / Custom                                                      |
 | API Key(s)             | Masked input per provider (shown conditionally)                                           |
 | Custom Provider Config | Base URL + API key + model name (shown when Custom is selected)                           |
 | Image Analysis         | On / Off (default: Off). Cost warning shown. Only effective for vision-capable providers. |
@@ -681,9 +677,8 @@ Every export format includes the same data per thread (adapted to the format’s
 | ------------------------------------ | ---------------------------- | -------------------------------------------------------- |
 | Initial load (500 comments)          | \<3 seconds                  | Time from plugin open to thread list render              |
 | Filter application                   | \<200ms                      | Time from filter change to list update                   |
-| Local summary generation             | \<500ms per thread           | Measured on average thread (5–10 comments)               |
-| Cloud summary generation             | \<5s per thread              | Includes network round-trip; single-thread request       |
-| Cloud summary with images            | \<8s per thread              | Includes image fetch, resize, encode, and API round-trip |
+| AI summary generation                | \<5s per thread              | Includes network round-trip; single-thread request       |
+| AI summary with images               | \<8s per thread              | Includes image fetch, resize, encode, and API round-trip |
 | Navigate to comment                  | \<1 second                   | Time from click to canvas viewport settled               |
 | Intermediate state change            | \<100ms                      | Local state change (no API call)                         |
 | Keyword search filtering             | \<200ms                      | Debounce + render from keystroke to list update          |
@@ -719,7 +714,7 @@ Every export format includes the same data per thread (adapted to the format’s
 - REST API failures surface a clear error with retry option. If the failure persists, the plugin shows a diagnostic screen with common fixes (token expired, network issue, rate limited).
 - **403 (token invalid/expired/revoked):** Show a dedicated Reconnect flow: message that the token may have expired or been revoked, link to Figma Settings, and re-enter-token flow (same as onboarding Step 2). Do not show a generic error. Optionally, on plugin open, call `GET /v1/me` to validate the stored token and prompt re-auth before any comment fetch if invalid.
 
-- Cloud AI failures trigger fallback to local summarization per-thread.
+- AI API failures show an error toast; the user can retry the summarization.
 
 - Network timeouts are set at 10 seconds for REST API, 15 seconds for AI provider APIs.
 
@@ -774,8 +769,7 @@ Every export format includes the same data per thread (adapted to the format’s
 | Plugin UI (iframe) | React + TypeScript + Tailwind CSS + Lucide React | Renders all UI components, handles user interaction, manages local state. **Lucide icons** used throughout for consistency (navigation, actions, status, empty states). |
 | Plugin Sandbox     | Figma Plugin API (TypeScript)                    | Communicates with Figma canvas for viewport navigation and node data. Not used for comment fetching.                                                                    |
 | REST API Client    | Fetch API with retry logic                       | Makes authenticated requests to Figma REST API for comment data                                                                                                         |
-| AI Engine — Local  | TypeScript module                                | Rule-based summarization, keyword extraction, pattern matching for tasks                                                                                                |
-| AI Engine — Cloud  | TypeScript module                                | Formats prompts, manages API calls to Anthropic/OpenAI/Gemini/custom endpoints, parses responses                                                                        |
+| AI Engine          | TypeScript module                                | Formats prompts, manages API calls to Anthropic/OpenAI/Gemini/custom endpoints, parses responses                                                                        |
 | State Manager      | Zustand or similar                               | Manages comment cache, filter state, task states, user preferences                                                                                                      |
 | Storage Layer      | Figma clientStorage API                          | Persists tokens, preferences, task states, filter defaults                                                                                                              |
 
@@ -791,7 +785,7 @@ The comment data flows through the following pipeline:
 
 94. Raw comment data is normalized into a unified CommentThread model.
 
-95. Threads are passed to the AI Engine (local or cloud, per user preference).
+95. Threads are passed to the AI Engine (per the user's selected provider).
 
 96. AI Engine returns summaries + extracted tasks, which are attached to each thread model.
 
@@ -894,7 +888,7 @@ When using cloud AI providers, the quality of summaries and task extraction depe
 
 - **Single-thread requests:** Each summarization request covers exactly one thread. No batching is needed since summaries are generated on demand.
 
-- **Fallback:** If a cloud API call fails for a thread, the plugin falls back to local summarization for that thread and shows an info toast.
+- **Fallback:** If an AI API call fails for a thread, the plugin shows an error toast and the user can retry.
 
 # 9. UI/UX Specifications
 
@@ -1008,15 +1002,13 @@ Goal: Core infrastructure and basic comment browsing.
 
 Goal: AI-powered summaries and task extraction.
 
-- Local summarization engine (rule-based)
-
 - Cloud AI integration (Anthropic, OpenAI, Gemini + custom OpenAI-compatible endpoint support)
 
 - Prompt engineering and response parsing
 
 - Multimodal image analysis (fetch, resize, encode, send for vision-capable providers)
 
-- Task extraction pipeline (local + cloud)
+- Task extraction pipeline
 
 - On-demand summary generation UI on Thread Detail Screen (Summarize button, loading state, cached result display, regenerate)
 
@@ -1084,7 +1076,7 @@ Goal: Production readiness, performance, and community launch.
 | Figma changes or deprecates comment API endpoints          | Low            | Critical   | Abstracted data layer that decouples UI from API specifics; monitor Figma changelog; maintain close parity with API versioning                  |
 | AI task extraction has high false-positive rate            | Medium         | Medium     | User-dismissable tasks with feedback loop; adjustable confidence threshold in settings; conservative default patterns                           |
 | Users reluctant to provide PAT for security concerns       | Medium         | High       | Clear security messaging in onboarding; link to Figma’s official docs on PAT safety; explain minimal scopes required; token stored locally only |
-| Cloud AI costs concern users                               | Low            | Medium     | On-demand per-thread model gives users full cost control; local AI as capable default; no batch runs                                                   |
+| AI costs concern users                                     | Low            | Medium     | On-demand per-thread model gives users full cost control; no batch runs; custom endpoint supports free/local models like Ollama                        |
 | Large files (1000+ comments) cause performance degradation | Medium         | High       | Virtualized list rendering; pagination; progressive summarization (visible threads first)                                                       |
 
 # 13. Future Considerations (Post-V1)
@@ -1117,11 +1109,9 @@ The following capabilities are intentionally deferred from V1 but represent the 
 
 The following questions should be resolved during Phase 1 development:
 
-1. **Local summarization quality bar:** What’s the minimum acceptable quality for local summaries? A user study during Phase 2 should determine if rule-based is sufficient or if a lightweight on-device model (e.g., ONNX) is needed.
+1. **Task persistence model:** clientStorage has size limits. For power users with thousands of tasks over time, we may need a cleanup/archival strategy.
 
-2. **Task persistence model:** clientStorage has size limits. For power users with thousands of tasks over time, we may need a cleanup/archival strategy.
-
-3. **Figma Community monetization:** Is this a free plugin, freemium (cloud AI gated), or paid? Pricing model should be decided before Phase 4.
+2. **Figma Community monetization:** Is this a free plugin, freemium (cloud AI gated), or paid? Pricing model should be decided before Phase 4.
 
 # 15. Appendix
 
