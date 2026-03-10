@@ -57,7 +57,13 @@ export function ThreadCard({
             >
               {isSelected && (
                 <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
-                  <path d="M1.5 4L3.2 5.7L6.5 2.3" stroke="white" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+                  <path
+                    d="M1.5 4L3.2 5.7L6.5 2.3"
+                    stroke="white"
+                    strokeWidth="1.3"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
               )}
             </span>
@@ -69,11 +75,12 @@ export function ThreadCard({
           <div className="flex items-center justify-between gap-1.5">
             <div className="flex items-center gap-1.5">
               <span className="text-xs text-figma-text-tertiary">
-                #{thread.orderNumber ?? thread.id.slice(0, 8)} &middot; {timeAgo(thread.lastUpdatedAt)}
+                #{thread.orderNumber ?? thread.id.slice(0, 8)} &middot;{" "}
+                {timeAgo(thread.lastUpdatedAt)}
               </span>
               {isAddressed && (
                 <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-accent-subtle text-accent tracking-wide">
-                  FOR YOU
+                  FOR ME
                 </span>
               )}
             </div>

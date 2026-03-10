@@ -64,12 +64,12 @@ Reviews design work across multiple files and pages. Needs a bird’s-eye view o
 
 The plugin uses the Figma REST API as its data source, authenticated via a user-provided Personal Access Token:
 
-| **Layer**      | **Technology**                                            | **Purpose**                                                                                  |
-| -------------- | --------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| Data Source    | Figma REST API                                            | Full comment data with thread metadata, timestamps, reactions, resolved state, and user info |
-| Authentication | Personal Access Token (PAT)                               | Stored locally in plugin clientStorage; required to use the plugin                           |
-| AI — Cloud     | Anthropic / OpenAI / Gemini / Custom (OpenAI-compatible)  | High-quality thread summaries and nuanced task extraction                                    |
-| UI Framework   | Figma Plugin UI (iframe)                                  | Custom React-based interface rendered in the plugin panel. **Lucide React** for all icons.   |
+| **Layer**      | **Technology**                                           | **Purpose**                                                                                  |
+| -------------- | -------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Data Source    | Figma REST API                                           | Full comment data with thread metadata, timestamps, reactions, resolved state, and user info |
+| Authentication | Personal Access Token (PAT)                              | Stored locally in plugin clientStorage; required to use the plugin                           |
+| AI — Cloud     | Anthropic / OpenAI / Gemini / Custom (OpenAI-compatible) | High-quality thread summaries and nuanced task extraction                                    |
+| UI Framework   | Figma Plugin UI (iframe)                                 | Custom React-based interface rendered in the plugin panel. **Lucide React** for all icons.   |
 
 **Authentication roadmap**
 
@@ -87,14 +87,14 @@ The following table clarifies what is and isn’t included in the V1 release:
 | **In Scope (V1)**                            | **Out of Scope (Future)**                        |
 | -------------------------------------------- | ------------------------------------------------ |
 | Thread listing with open/resolved filtering  | Third-party integrations (Slack, Jira, Linear)   |
-| On-demand AI thread summaries                 | Comment creation or reply from within the plugin |
+| On-demand AI thread summaries                | Comment creation or reply from within the plugin |
 | Task extraction from natural language        | Cross-file comment aggregation                   |
 | Personal view (“addressed to me”)            | Notification system / push alerts                |
 | Page-level and document-level toggle         | Comment analytics and reporting dashboards       |
 | Navigate-to-comment on canvas click          | Webhook-based real-time sync                     |
 | PAT-based REST API authentication (required) | OAuth-based authentication flow (planned for V2) |
 | Keyword search across threads                | Full-text search with ranking/relevance scoring  |
-| Export to PDF, Markdown                       | Scheduled/automated exports                      |
+| Export to PDF, Markdown                      | Scheduled/automated exports                      |
 | User preference for AI provider              | Custom AI model fine-tuning                      |
 
 # 4. Detailed Functional Requirements
@@ -258,8 +258,8 @@ This on-demand model gives users full control over cost, avoids wasting tokens o
 
 Users choose their preferred AI processing method in Settings:
 
-| **Option**            | **How It Works**                                                                                                                                                                                             | **Trade-offs**                                                                                                                           |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| **Option**    | **How It Works**                                                                                                                                                                                             | **Trade-offs**                                                                                                                           |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | **Anthropic** | Sends thread text to Claude API. User provides their own API key. Prompt-engineered for design feedback context.                                                                                             | High-quality, nuanced summaries. Requires API key, incurs cost, depends on network.                                                      |
 | **OpenAI**    | Sends thread text to GPT API. User provides their own API key. Same prompt structure adapted for OpenAI format.                                                                                              | High-quality. Requires API key, incurs cost, depends on network.                                                                         |
 | **Gemini**    | Sends thread text to Google Gemini API. User provides their own API key. Prompt adapted for Gemini’s format.                                                                                                 | High-quality. Requires API key, incurs cost, depends on network.                                                                         |
@@ -303,19 +303,19 @@ Image analysis is controlled by a user toggle in Settings:
 
 31. If an AI API call fails, the plugin shows an error toast and the user can retry.
 
-33. Users can regenerate a summary at any time via a `RefreshCw` button next to the generated summary.
+32. Users can regenerate a summary at any time via a `RefreshCw` button next to the generated summary.
 
-34. API keys and custom endpoint configurations are stored in clientStorage and never transmitted anywhere except the chosen provider’s API endpoint.
+33. API keys and custom endpoint configurations are stored in clientStorage and never transmitted anywhere except the chosen provider’s API endpoint.
 
-35. When image analysis is enabled and the provider supports vision, images are included in the AI request and the summary references visual content.
+34. When image analysis is enabled and the provider supports vision, images are included in the AI request and the summary references visual content.
 
-36. When image analysis is enabled but the provider does not support vision, the summary includes: “Thread includes N image(s) not analyzed.”
+35. When image analysis is enabled but the provider does not support vision, the summary includes: “Thread includes N image(s) not analyzed.”
 
-37. A maximum of 5 images per thread are sent; images are resized to max 1024px on the longest edge.
+36. A maximum of 5 images per thread are sent; images are resized to max 1024px on the longest edge.
 
-38. Image analysis toggle defaults to Off and is clearly labeled with a cost warning in Settings.
+37. Image analysis toggle defaults to Off and is clearly labeled with a cost warning in Settings.
 
-39. Threads with fewer than 3 total comments show a "Thread too short to summarize" note instead of the Summarize button.
+38. Threads with fewer than 3 total comments show a "Thread too short to summarize" note instead of the Summarize button.
 
 > **PRIVACY SAFEGUARD**
 >
@@ -369,7 +369,7 @@ A thread is marked as “addressed to me” if any of the following conditions a
 
 ### UI Treatment
 
-- Threads addressed to the user receive a distinct visual indicator (left border accent + “For You” badge).
+- Threads addressed to the user receive a distinct visual indicator (left border accent + “For Me” badge).
 
 - The “Addressed to Me” filter surfaces these threads exclusively.
 
@@ -632,22 +632,22 @@ Users can export the current thread list (respecting active filters and search) 
 
 Every export format includes the same data per thread (adapted to the format’s structure):
 
-| **Field**                | **Value**                                                              |
-| ------------------------ | ---------------------------------------------------------------------- |
-| Thread title / initiator | Name of the person who started the thread                              |
-| Status                   | Open / Resolved + workflow state (e.g., In Progress)                   |
-| Last updated             | Relative and absolute timestamp                                        |
-| AI summary               | Full summary text if generated; “(not yet summarized)” otherwise        |
+| **Field**                | **Value**                                                                |
+| ------------------------ | ------------------------------------------------------------------------ |
+| Thread title / initiator | Name of the person who started the thread                                |
+| Status                   | Open / Resolved + workflow state (e.g., In Progress)                     |
+| Last updated             | Relative and absolute timestamp                                          |
+| AI summary               | Full summary text if generated; “(not yet summarized)” otherwise         |
 | Tasks                    | List of extracted tasks (if thread has been summarized); empty otherwise |
-| Tags                     | All applied tags (predefined + custom)                                 |
-| Participants             | Names of all people who commented in the thread                        |
-| Reply count              | Number of replies                                                      |
-| Page                     | Figma page name where the thread is located                            |
+| Tags                     | All applied tags (predefined + custom)                                   |
+| Participants             | Names of all people who commented in the thread                          |
+| Reply count              | Number of replies                                                        |
+| Page                     | Figma page name where the thread is located                              |
 
 ### Export Formats
 
-| **Format**   | **Structure**                                                                                                                                                              | **Notes**                |
-| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
+| **Format**   | **Structure**                                                                                                                                                              | **Notes**                        |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
 | **PDF**      | Report header (file name, export date, active filters/search) followed by sections per thread with all fields above. Tasks rendered as a table.                            | Generated client-side via jsPDF. |
 | **Markdown** | `## Thread: [initiator — summary snippet]` heading per thread. Tasks as `- [ ]` / `- [x]` checklists. Metadata as key-value pairs. Grouped under `# [Page Name]` headings. | Clean for Notion, GitHub, wikis. |
 
@@ -669,19 +669,19 @@ Every export format includes the same data per thread (adapted to the format’s
 
 ## 5.1 Performance
 
-| **Metric**                           | **Target**                   | **Measurement**                                          |
-| ------------------------------------ | ---------------------------- | -------------------------------------------------------- |
-| Initial load (500 comments)          | \<3 seconds                  | Time from plugin open to thread list render              |
-| Filter application                   | \<200ms                      | Time from filter change to list update                   |
-| AI summary generation                | \<5s per thread              | Includes network round-trip; single-thread request       |
-| AI summary with images               | \<8s per thread              | Includes image fetch, resize, encode, and API round-trip |
-| Navigate to comment                  | \<1 second                   | Time from click to canvas viewport settled               |
-| Intermediate state change            | \<100ms                      | Local state change (no API call)                         |
-| Keyword search filtering             | \<200ms                      | Debounce + render from keystroke to list update          |
-| Export (PDF/MD, 100 threads)        | \<3 seconds                  | Time from format selection to file download              |
-| Tag operation (apply/remove/create)  | \<100ms                      | Local storage operation                                  |
-| Synced state change (Resolve/Reopen) | \<2 seconds                  | Includes REST API round-trip + confirmation dialog       |
-| Memory usage                         | \<50MB                       | Measured with 1000+ comment file open                    |
+| **Metric**                           | **Target**      | **Measurement**                                          |
+| ------------------------------------ | --------------- | -------------------------------------------------------- |
+| Initial load (500 comments)          | \<3 seconds     | Time from plugin open to thread list render              |
+| Filter application                   | \<200ms         | Time from filter change to list update                   |
+| AI summary generation                | \<5s per thread | Includes network round-trip; single-thread request       |
+| AI summary with images               | \<8s per thread | Includes image fetch, resize, encode, and API round-trip |
+| Navigate to comment                  | \<1 second      | Time from click to canvas viewport settled               |
+| Intermediate state change            | \<100ms         | Local state change (no API call)                         |
+| Keyword search filtering             | \<200ms         | Debounce + render from keystroke to list update          |
+| Export (PDF/MD, 100 threads)         | \<3 seconds     | Time from format selection to file download              |
+| Tag operation (apply/remove/create)  | \<100ms         | Local storage operation                                  |
+| Synced state change (Resolve/Reopen) | \<2 seconds     | Includes REST API round-trip + confirmation dialog       |
+| Memory usage                         | \<50MB          | Measured with 1000+ comment file open                    |
 
 ## 5.2 Security & Privacy
 
@@ -931,26 +931,26 @@ Tapping a card navigates to a full-width detail screen (replaces the list). A ba
 
 **Layout (top to bottom):**
 
-| **Section** | **Content**                                                                                                                  |
-| ----------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| **Header**  | Back arrow + page name + status badge + workflow state selector (`ChevronDown`)                                              |
-| **Meta**    | Relative timestamp · thread initiator name · avatar group of all participants                                                |
+| **Section** | **Content**                                                                                                                                                                                                                                                                                                                                                                                                  |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Header**  | Back arrow + page name + status badge + workflow state selector (`ChevronDown`)                                                                                                                                                                                                                                                                                                                              |
+| **Meta**    | Relative timestamp · thread initiator name · avatar group of all participants                                                                                                                                                                                                                                                                                                                                |
 | **Summary** | On-demand AI summary section. Before generation: “Summarize” button (`Sparkles` Lucide icon) with thread length hint (e.g., “12 comments”). Threads with <3 comments show “Thread too short to summarize.” During generation: spinner/skeleton. After generation: full summary text + `RefreshCw` button to regenerate. If thread has new replies since last summary: “Summary outdated — regenerate?” hint. |
-| **Tasks**   | Extracted tasks (shown only after summary is generated): checkbox (Pending/Done), description, assignee avatar + name, type badge. Before summarization: section is hidden. Empty state after summarization: “No tasks detected.” |
-| **Tags**    | Tag chips with `Plus` (Lucide) button to add more.                                                                           |
-| **Thread**  | Collapsible full comment thread (`ChevronDown` toggle). Replies in chronological order with author, timestamp, and text.     |
-| **Actions** | “Navigate to comment” button (`ExternalLink` Lucide icon) — jumps to canvas location.                                        |
+| **Tasks**   | Extracted tasks (shown only after summary is generated): checkbox (Pending/Done), description, assignee avatar + name, type badge. Before summarization: section is hidden. Empty state after summarization: “No tasks detected.”                                                                                                                                                                            |
+| **Tags**    | Tag chips with `Plus` (Lucide) button to add more.                                                                                                                                                                                                                                                                                                                                                           |
+| **Thread**  | Collapsible full comment thread (`ChevronDown` toggle). Replies in chronological order with author, timestamp, and text.                                                                                                                                                                                                                                                                                     |
+| **Actions** | “Navigate to comment” button (`ExternalLink` Lucide icon) — jumps to canvas location.                                                                                                                                                                                                                                                                                                                        |
 
 ## 9.6 Empty States
 
-| **Context**                 | **Message**                                                 | **Action**                        |
-| --------------------------- | ----------------------------------------------------------- | --------------------------------- |
-| No comments in file         | “This file has no comments yet. Start the conversation!”    | None                              |
-| No comments match filters   | “No threads match your current filters.”                    | "Clear filters" button            |
-| No comments addressed to me | “You’re all caught up! No threads need your attention.”     | None                              |
-| API error                   | “Couldn’t fetch comments. Check your connection and token.” | "Retry" + "Open Settings" buttons |
-| No tasks detected           | “No action items found in the current threads.”             | None                              |
-| Summary not generated       | “Click Summarize to generate an AI summary for this thread.” | “Summarize” button                  |
+| **Context**                 | **Message**                                                  | **Action**                        |
+| --------------------------- | ------------------------------------------------------------ | --------------------------------- |
+| No comments in file         | “This file has no comments yet. Start the conversation!”     | None                              |
+| No comments match filters   | “No threads match your current filters.”                     | "Clear filters" button            |
+| No comments addressed to me | “You’re all caught up! No threads need your attention.”      | None                              |
+| API error                   | “Couldn’t fetch comments. Check your connection and token.”  | "Retry" + "Open Settings" buttons |
+| No tasks detected           | “No action items found in the current threads.”              | None                              |
+| Summary not generated       | “Click Summarize to generate an AI summary for this thread.” | “Summarize” button                |
 
 # 10. Success Metrics & KPIs
 
@@ -1072,7 +1072,7 @@ Goal: Production readiness, performance, and community launch.
 | Figma changes or deprecates comment API endpoints          | Low            | Critical   | Abstracted data layer that decouples UI from API specifics; monitor Figma changelog; maintain close parity with API versioning                  |
 | AI task extraction has high false-positive rate            | Medium         | Medium     | User-dismissable tasks with feedback loop; adjustable confidence threshold in settings; conservative default patterns                           |
 | Users reluctant to provide PAT for security concerns       | Medium         | High       | Clear security messaging in onboarding; link to Figma’s official docs on PAT safety; explain minimal scopes required; token stored locally only |
-| AI costs concern users                                     | Low            | Medium     | On-demand per-thread model gives users full cost control; no batch runs; custom endpoint supports free/local models like Ollama                        |
+| AI costs concern users                                     | Low            | Medium     | On-demand per-thread model gives users full cost control; no batch runs; custom endpoint supports free/local models like Ollama                 |
 | Large files (1000+ comments) cause performance degradation | Medium         | High       | Virtualized list rendering; pagination; progressive summarization (visible threads first)                                                       |
 
 # 13. Future Considerations (Post-V1)
