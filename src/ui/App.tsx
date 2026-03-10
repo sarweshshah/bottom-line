@@ -4,6 +4,7 @@ import {
   useRef,
   type PointerEvent as ReactPointerEvent,
 } from "react";
+import { FileText } from "lucide-react";
 import type { InitDataMessage, UIMessage } from "@shared/messages";
 import {
   MIN_UI_WIDTH,
@@ -21,6 +22,7 @@ import { ToastContainer } from "@ui/components/common/Toast";
 import { ConsentDialog } from "@ui/components/common/ConsentDialog";
 import { LoadingSpinner } from "@ui/components/common/LoadingSpinner";
 import { useAIStore } from "@ui/store/aiStore";
+import { useFilterStore } from "@ui/store/filterStore";
 
 const THEME_COLORS_LIGHT: Record<string, string> = {
   "--figma-color-bg": "#ffffff",
@@ -113,9 +115,11 @@ interface ResizeDragState {
 }
 
 export function App() {
-  const { screen, initFromSandbox, showDashboard, themePreference } =
+  const { screen, initFromSandbox, showDashboard, themePreference, fileName } =
     useAuthStore();
   const resizeDragStateRef = useRef<ResizeDragState | null>(null);
+  const showFileBar =
+    (screen === "dashboard" || screen === "settings") && !!fileName;
 
   useEffect(() => {
     applyTheme(themePreference);
@@ -219,6 +223,8 @@ export function App() {
           useCommentsStore.getState().initializeCacheTTL(msg.cacheTTLMinutes);
           useCommentsStore.getState().setCurrentPageId(msg.currentPageId);
           useAIStore.getState().initFromStorage();
+          useFilterStore.getState().initFromStorage();
+          useAuthStore.getState().fetchFileName();
           break;
         case "PAGE_CHANGED":
           useCommentsStore.getState().setCurrentPageId(msg.pageId);
@@ -235,12 +241,25 @@ export function App() {
   }, [initFromSandbox]);
 
   return (
-    <div className="relative h-full w-full">
-      {screen === "loading" && <LoadingSpinner message="Initializing..." />}
-      {screen === "setup" && <SetupScreen />}
-      {screen === "reconnect" && <ReconnectScreen />}
-      {screen === "dashboard" && <DashboardLayout />}
-      {screen === "settings" && <SettingsScreen onBack={showDashboard} />}
+    <div className="relative h-full w-full flex flex-col">
+      {showFileBar && (
+        <div
+          className="shrink-0 px-4 py-2 border-b border-figma-border bg-figma-bg-secondary flex items-center gap-1.5 min-h-2"
+          title={fileName!}
+        >
+          <FileText size={12} className="shrink-0 text-figma-icon-primary" />
+          <span className="text-[11px] text-figma-text-primary truncate min-w-0">
+            {fileName}
+          </span>
+        </div>
+      )}
+      <div className="flex-1 min-h-0 flex flex-col relative">
+        {screen === "loading" && <LoadingSpinner message="Initializing..." />}
+        {screen === "setup" && <SetupScreen />}
+        {screen === "reconnect" && <ReconnectScreen />}
+        {screen === "dashboard" && <DashboardLayout />}
+        {screen === "settings" && <SettingsScreen onBack={showDashboard} />}
+      </div>
       <ToastContainer />
       <ConsentDialog />
       <div

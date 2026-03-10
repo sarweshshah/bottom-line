@@ -33,6 +33,15 @@
   --bl-yellow-soft-bg: rgba(236, 167, 44, 0.1);
   --bl-yellow-soft-border: rgba(236, 167, 44, 0.3);
 
+  --bl-status-progress: #F59E0B;
+  --bl-status-progress-bg: #FEF3C7;
+  --bl-status-progress-text: #92400E;
+  --bl-status-blocked: #EF4444;
+  --bl-status-blocked-bg: #FEE2E2;
+  --bl-status-blocked-text: #991B1B;
+  --bl-addressed: rgba(79, 70, 229, 0.08);
+  --bl-addressed-border: rgba(79, 70, 229, 0.4);
+
   --bl-accent-ring: rgba(79, 70, 229, 0.3);
   --bl-accent-subtle: rgba(79, 70, 229, 0.08);
   --bl-ai-bg: rgba(238, 242, 255, 0.6);
@@ -71,6 +80,15 @@
   --bl-yellow: #FBBF24;
   --bl-yellow-soft-bg: rgba(251, 191, 36, 0.12);
   --bl-yellow-soft-border: rgba(251, 191, 36, 0.3);
+
+  --bl-status-progress: #FBBF24;
+  --bl-status-progress-bg: rgba(251, 191, 36, 0.12);
+  --bl-status-progress-text: #FDE68A;
+  --bl-status-blocked: #F87171;
+  --bl-status-blocked-bg: rgba(248, 113, 113, 0.12);
+  --bl-status-blocked-text: #FCA5A5;
+  --bl-addressed: rgba(129, 140, 248, 0.06);
+  --bl-addressed-border: rgba(129, 140, 248, 0.4);
 
   --bl-accent-ring: rgba(129, 140, 248, 0.3);
   --bl-accent-subtle: rgba(129, 140, 248, 0.1);

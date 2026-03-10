@@ -94,7 +94,7 @@ The following table clarifies what is and isn’t included in the V1 release:
 | Navigate-to-comment on canvas click          | Webhook-based real-time sync                     |
 | PAT-based REST API authentication (required) | OAuth-based authentication flow (planned for V2) |
 | Keyword search across threads                | Full-text search with ranking/relevance scoring  |
-| Export to PDF, Markdown, TXT, Figma Canvas   | Scheduled/automated exports                      |
+| Export to PDF, Markdown                       | Scheduled/automated exports                      |
 | User preference for AI provider              | Custom AI model fine-tuning                      |
 
 # 4. Detailed Functional Requirements
@@ -646,28 +646,24 @@ Every export format includes the same data per thread (adapted to the format’s
 
 ### Export Formats
 
-| **Format**       | **Structure**                                                                                                                                                                   | **Notes**                                            |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
-| **PDF**          | Report header (file name, export date, active filters/search) followed by sections per thread with all fields above. Tasks rendered as a table.                                 | Generated client-side via jsPDF.                     |
-| **Markdown**     | `## Thread: [initiator — summary snippet]` heading per thread. Tasks as `- [ ]` / `- [x]` checklists. Metadata as key-value pairs. Grouped under `# [Page Name]` headings.      | Clean for Notion, GitHub, wikis.                     |
-| **Plain Text**   | Flat text, one thread per block separated by `---`. Fields as `Label: Value` lines. Tasks as indented lines with `[ ]`/`[x]` prefixes.                                          | Universal compatibility.                             |
-| **Figma Canvas** | One frame per page group, each containing sticky-note-style cards per thread (summary, status badge, task count, participants). Frames placed to the right of existing content. | Uses Plugin API. Confirmation dialog before placing. |
+| **Format**   | **Structure**                                                                                                                                                              | **Notes**                |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
+| **PDF**      | Report header (file name, export date, active filters/search) followed by sections per thread with all fields above. Tasks rendered as a table.                            | Generated client-side via jsPDF. |
+| **Markdown** | `## Thread: [initiator — summary snippet]` heading per thread. Tasks as `- [ ]` / `- [x]` checklists. Metadata as key-value pairs. Grouped under `# [Page Name]` headings. | Clean for Notion, GitHub, wikis. |
 
 ### Export UX
 
-- Clicking the export button opens a dropdown with the five format options.
+- Clicking the export button opens a dropdown with PDF and Markdown format options.
 - A "What's included" tooltip explains that the export respects current filters/search.
-- For PDF/MD/TXT: file is downloaded to the user's device.
-- For Figma Canvas: a confirmation dialog ("This will add a frame to your current page. Continue?") precedes the action. The created frame is selected and scrolled into view.
+- The selected file (PDF or Markdown) is downloaded to the user's device.
 
 ### Acceptance Criteria
 
 1. Export button is visible in the toolbar and opens a format picker.
-2. All four formats (PDF, Markdown, Plain Text, Figma Canvas) are available.
+2. PDF and Markdown formats are available.
 3. Exports respect the current filter and search state — only visible threads are included.
 4. PDF includes a header with file name, export date, and active filter summary.
-5. Figma Canvas export creates a structured text frame on the current page with a confirmation dialog.
-6. Export completes in <3s for up to 100 threads (PDF/MD/TXT). Figma Canvas may take longer with a progress indicator.
+5. Export completes in <3s for up to 100 threads.
 
 # 5. Non-Functional Requirements
 
@@ -682,7 +678,7 @@ Every export format includes the same data per thread (adapted to the format’s
 | Navigate to comment                  | \<1 second                   | Time from click to canvas viewport settled               |
 | Intermediate state change            | \<100ms                      | Local state change (no API call)                         |
 | Keyword search filtering             | \<200ms                      | Debounce + render from keystroke to list update          |
-| Export (PDF/MD/TXT, 100 threads)     | \<3 seconds                  | Time from format selection to file download              |
+| Export (PDF/MD, 100 threads)        | \<3 seconds                  | Time from format selection to file download              |
 | Tag operation (apply/remove/create)  | \<100ms                      | Local storage operation                                  |
 | Synced state change (Resolve/Reopen) | \<2 seconds                  | Includes REST API round-trip + confirmation dialog       |
 | Memory usage                         | \<50MB                       | Measured with 1000+ comment file open                    |
@@ -1048,7 +1044,7 @@ Goal: Personalized views, advanced filtering, thread workflow states, and custom
 
 - Keyword search with real-time filtering and match highlighting
 
-- Export functionality (PDF, Markdown, TXT, Figma Canvas)
+- Export functionality (PDF, Markdown)
 
 ## Phase 4 — Polish & Launch (Weeks 10–12)
 

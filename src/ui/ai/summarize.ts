@@ -1,5 +1,6 @@
 import type { CommentThread, SummaryResult } from "@shared/types";
 import { useAIStore } from "@ui/store/aiStore";
+import { useWorkflowStore } from "@ui/store/workflowStore";
 import { cloudSummarize, supportsVision, CloudAIError } from "./cloudProvider";
 import { processThreadImages } from "./imageProcessor";
 import { getStorage, setStorage, deleteStorage } from "@ui/lib/storage";
@@ -96,6 +97,17 @@ export async function summarizeThread(
     result.summary += ` Thread includes image(s) not analyzed — switch to a vision-capable provider for image context.`;
   }
 
-  await cacheSummary(result, thread.id);
-  return result;
+  const workflowState = useWorkflowStore.getState().getState(thread.id);
+  const threadIsDone =
+    thread.status === "resolved" || workflowState === "resolved";
+  const finalResult: SummaryResult =
+    threadIsDone && result.tasks.length > 0
+      ? {
+          ...result,
+          tasks: result.tasks.map((t) => ({ ...t, status: "done" as const })),
+        }
+      : result;
+
+  await cacheSummary(finalResult, thread.id);
+  return finalResult;
 }

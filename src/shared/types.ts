@@ -58,6 +58,7 @@ export interface RawReaction {
 }
 
 export type ThreadStatus = "open" | "resolved";
+export type WorkflowState = "open" | "in_progress" | "blocked" | "resolved";
 
 export interface CommentReply {
   id: string;

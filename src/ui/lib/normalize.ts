@@ -6,12 +6,25 @@ import type {
   ThreadStatus,
 } from "@shared/types";
 
-const MENTION_REGEX = /@[\w.-]+/g;
+const MD_MENTION_RE = /\[@([^\]]+)\]\(mention:[^)]+\)/g;
+const PLAIN_MENTION_RE = /@([\w.-]+)/g;
 
 function extractMentions(message: string): string[] {
-  const matches = message.match(MENTION_REGEX);
-  if (!matches) return [];
-  return [...new Set(matches.map((m) => m.slice(1)))];
+  const mentions = new Set<string>();
+  let match: RegExpExecArray | null;
+
+  MD_MENTION_RE.lastIndex = 0;
+  while ((match = MD_MENTION_RE.exec(message)) !== null) {
+    mentions.add(match[1]);
+  }
+
+  const cleaned = message.replace(MD_MENTION_RE, "");
+  PLAIN_MENTION_RE.lastIndex = 0;
+  while ((match = PLAIN_MENTION_RE.exec(cleaned)) !== null) {
+    mentions.add(match[1]);
+  }
+
+  return [...mentions];
 }
 
 function dedupeUsers(users: FigmaUser[]): FigmaUser[] {

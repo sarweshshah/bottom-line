@@ -1,8 +1,8 @@
 import { create } from "zustand";
 import type { FigmaUser, ThemePreference } from "@shared/types";
 import type { InitDataMessage } from "@shared/messages";
-import { setStorage } from "@ui/lib/storage";
-import { validateToken, FigmaApiError } from "@ui/api/figmaApi";
+import { getStorage, setStorage } from "@ui/lib/storage";
+import { validateToken, getFileName, FigmaApiError } from "@ui/api/figmaApi";
 
 type AuthScreen = "loading" | "setup" | "reconnect" | "dashboard" | "settings";
 
@@ -11,6 +11,7 @@ interface AuthState {
   user: FigmaUser | null;
   fileKey: string | null;
   fileUrl: string | null;
+  fileName: string | null;
   screen: AuthScreen;
   isValidating: boolean;
   validationError: string | null;
@@ -21,6 +22,7 @@ interface AuthState {
   initFromSandbox: (data: InitDataMessage) => void;
   validateAndSetToken: (pat: string) => Promise<FigmaUser>;
   setFileInfo: (url: string, key: string) => Promise<void>;
+  fetchFileName: () => Promise<void>;
   setAutoOpenComment: (enabled: boolean) => void;
   setShowThreadElbows: (enabled: boolean) => void;
   setThemePreference: (pref: ThemePreference) => void;
@@ -36,6 +38,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   fileKey: null,
   fileUrl: null,
+  fileName: null,
   screen: "loading",
   isValidating: false,
   validationError: null,
@@ -77,6 +80,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         screen: "setup",
       });
     }
+
+    getStorage<string>("fileName").then((name) => {
+      if (name) set({ fileName: name });
+    });
   },
 
   validateAndSetToken: async (pat: string) => {
@@ -103,7 +110,20 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   setFileInfo: async (url: string, key: string) => {
     await Promise.all([setStorage("fileUrl", url), setStorage("fileKey", key)]);
-    set({ fileUrl: url, fileKey: key });
+    set({ fileUrl: url, fileKey: key, fileName: null });
+    get().fetchFileName();
+  },
+
+  fetchFileName: async () => {
+    const { pat, fileKey } = get();
+    if (!pat || !fileKey) return;
+    try {
+      const name = await getFileName(fileKey, pat);
+      set({ fileName: name });
+      await setStorage("fileName", name);
+    } catch {
+      // non-critical — bar will remain empty or show fallback
+    }
   },
 
   setAutoOpenComment: (enabled: boolean) => {
@@ -149,6 +169,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       user: null,
       fileKey: null,
       fileUrl: null,
+      fileName: null,
       screen: "setup",
     });
   },

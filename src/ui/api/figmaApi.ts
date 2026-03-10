@@ -67,6 +67,53 @@ async function fetchWithTimeout(
   }
 }
 
+async function apiRequestPost<T>(
+  path: string,
+  pat: string,
+  body: Record<string, unknown>,
+  attempt = 0,
+): Promise<T> {
+  let response: Response;
+
+  try {
+    response = await fetchWithTimeout(`${BASE_URL}${path}`, {
+      method: "POST",
+      headers: {
+        "X-Figma-Token": pat,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+  } catch (err) {
+    if (err instanceof FigmaApiError && shouldRetry(err.code) && attempt < MAX_RETRIES) {
+      const delay = INITIAL_BACKOFF_MS * Math.pow(2, attempt);
+      await new Promise((r) => setTimeout(r, delay));
+      return apiRequestPost<T>(path, pat, body, attempt + 1);
+    }
+    throw err;
+  }
+
+  if (!response.ok) {
+    const code = classifyError(response.status);
+    if (shouldRetry(code) && attempt < MAX_RETRIES) {
+      const retryAfter = response.headers.get("Retry-After");
+      const delay = retryAfter
+        ? parseInt(retryAfter, 10) * 1000
+        : INITIAL_BACKOFF_MS * Math.pow(2, attempt);
+      await new Promise((r) => setTimeout(r, delay));
+      return apiRequestPost<T>(path, pat, body, attempt + 1);
+    }
+
+    throw new FigmaApiError(
+      `Request failed with status ${response.status}.`,
+      code,
+      response.status,
+    );
+  }
+
+  return response.json() as Promise<T>;
+}
+
 async function apiRequest<T>(
   path: string,
   pat: string,
@@ -135,6 +182,21 @@ export async function validateToken(pat: string): Promise<FigmaUser> {
   };
 }
 
+interface FileMetaResponse {
+  name: string;
+}
+
+export async function getFileName(
+  fileKey: string,
+  pat: string,
+): Promise<string> {
+  const data = await apiRequest<FileMetaResponse>(
+    `/v1/files/${fileKey}?depth=1`,
+    pat,
+  );
+  return data.name;
+}
+
 export async function getComments(
   fileKey: string,
   pat: string,
@@ -145,3 +207,10 @@ export async function getComments(
   );
   return data.comments;
 }
+
+/**
+ * The Figma REST API does not support resolving or reopening comments.
+ * The POST /v1/files/:file_key/comments endpoint only accepts message,
+ * comment_id, and client_meta — there is no "resolved" field.
+ * Resolve/reopen state is tracked locally only.
+ */

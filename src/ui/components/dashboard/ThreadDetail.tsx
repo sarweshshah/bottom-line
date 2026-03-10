@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import {
   ArrowLeft,
   User,
@@ -14,8 +14,12 @@ import {
   CheckSquare,
   Square,
   X,
+  Circle,
+  Wrench,
+  Ban,
+  CheckCircle2,
 } from "lucide-react";
-import type { CommentThread, CommentReply } from "@shared/types";
+import type { CommentThread, CommentReply, WorkflowState } from "@shared/types";
 import { StatusBadge } from "@ui/components/common/StatusBadge";
 import { AvatarGroup } from "@ui/components/common/AvatarGroup";
 import {
@@ -28,12 +32,27 @@ import { renderMentions } from "@ui/lib/renderMentions";
 import { useNavigateToComment } from "@ui/lib/useNavigateToComment";
 import { useAuthStore } from "@ui/store/authStore";
 import { useAIStore } from "@ui/store/aiStore";
+import { useWorkflowStore } from "@ui/store/workflowStore";
 import {
   summarizeThread,
   clearCachedSummary,
   isTooShort,
 } from "@ui/ai/summarize";
 import { PROVIDER_MODEL_LABELS, formatModelName } from "@ui/ai/cloudProvider";
+
+const WORKFLOW_STATE_CONFIG: Record<
+  WorkflowState,
+  { label: string; Icon: typeof Circle }
+> = {
+  open: { label: "Open", Icon: Circle },
+  in_progress: { label: "In Progress", Icon: Wrench },
+  blocked: { label: "Blocked", Icon: Ban },
+  resolved: { label: "Resolved", Icon: CheckCircle2 },
+};
+
+const STATE_ORDER: WorkflowState[] = [
+  "open", "in_progress", "blocked", "resolved",
+];
 
 interface ThreadDetailProps {
   thread: CommentThread;
@@ -48,6 +67,68 @@ function formatDate(dateStr: string): string {
     hour: "numeric",
     minute: "2-digit",
   });
+}
+
+function StateSelector({ thread }: { thread: CommentThread }) {
+  const workflowState = useWorkflowStore((s) => s.getState(thread.id));
+  const setWorkflowState = useWorkflowStore((s) => s.setState);
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick, { passive: true });
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const handleSelect = (state: WorkflowState) => {
+    setOpen(false);
+    if (state === workflowState) return;
+    setWorkflowState(thread.id, state);
+  };
+
+  return (
+    <>
+      <div className="relative" ref={ref}>
+        <button
+          type="button"
+          onClick={() => setOpen(!open)}
+          className="flex items-center gap-1 cursor-pointer"
+        >
+          <StatusBadge status={workflowState} />
+          <ChevronDown size={10} className="text-figma-text-tertiary" />
+        </button>
+
+        {open && (
+          <div className="absolute right-0 top-full mt-1 bg-figma-bg border border-figma-border rounded-md shadow-lg z-30 min-w-[160px]">
+            {STATE_ORDER.map((state) => {
+              const cfg = WORKFLOW_STATE_CONFIG[state];
+              const Icon = cfg.Icon;
+              const isActive = workflowState === state;
+              return (
+                <button
+                  key={state}
+                  type="button"
+                  onClick={() => handleSelect(state)}
+                  className={`w-full flex items-center gap-2 px-3 py-1.5 text-xs hover:bg-figma-bg-hover transition-colors ${
+                    isActive ? "text-accent font-medium" : "text-figma-text-secondary"
+                  }`}
+                >
+                  <Icon size={12} />
+                  {cfg.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+    </>
+  );
 }
 
 function CommentBubble({
@@ -411,7 +492,7 @@ export function ThreadDetail({ thread, onBack }: ThreadDetailProps) {
             Thread #{thread.orderNumber ?? thread.id.slice(0, 8)}
           </span>
         </div>
-        <StatusBadge status={thread.status} />
+        <StateSelector thread={thread} />
       </div>
 
       {/* Content */}

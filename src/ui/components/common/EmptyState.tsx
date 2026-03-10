@@ -1,7 +1,7 @@
-import { MessageSquare, Filter, AlertCircle, CheckCircle2 } from "lucide-react";
+import { MessageSquare, Filter, AlertCircle, CheckCircle2, Sparkles } from "lucide-react";
 import type { ReactNode } from "react";
 
-type EmptyVariant = "no-comments" | "no-matches" | "api-error" | "all-resolved";
+type EmptyVariant = "no-comments" | "no-matches" | "api-error" | "all-resolved" | "addressed-to-me";
 
 const variants: Record<
   EmptyVariant,
@@ -26,6 +26,11 @@ const variants: Record<
     Icon: CheckCircle2,
     title: "All caught up!",
     description: "All threads have been resolved.",
+  },
+  "addressed-to-me": {
+    Icon: Sparkles,
+    title: "You're all caught up!",
+    description: "No threads need your attention right now.",
   },
 };
 

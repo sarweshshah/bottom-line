@@ -18,7 +18,7 @@ function UserAvatar({ user, size }: { user: FigmaUser; size: number }) {
     <div
       title={user.handle}
       style={{ width: size, height: size, minWidth: size, minHeight: size }}
-      className="rounded-full border-2 border-figma-bg bg-figma-bg-tertiary flex items-center justify-center text-xs font-medium text-figma-text-secondary overflow-hidden"
+      className="rounded-full bg-figma-bg-tertiary flex items-center justify-center text-xs font-medium text-figma-text-secondary overflow-hidden"
     >
       {showImage ? (
         <img
@@ -34,7 +34,7 @@ function UserAvatar({ user, size }: { user: FigmaUser; size: number }) {
   );
 }
 
-export function AvatarGroup({ users, max = 5, size = 28 }: AvatarGroupProps) {
+export function AvatarGroup({ users, max = 5, size = 18 }: AvatarGroupProps) {
   const visible = users.slice(0, max);
   const overflow = users.length - max;
 
@@ -46,7 +46,7 @@ export function AvatarGroup({ users, max = 5, size = 28 }: AvatarGroupProps) {
       {overflow > 0 && (
         <div
           style={{ width: size, height: size, minWidth: size, minHeight: size }}
-          className="rounded-full border-2 border-figma-bg bg-figma-bg-tertiary flex items-center justify-center text-xs font-medium text-figma-text-secondary"
+          className="rounded-full bg-figma-bg-tertiary flex items-center justify-center text-xs font-medium text-figma-text-secondary"
           title={`${overflow} more`}
         >
           +{overflow}

@@ -1,8 +1,9 @@
-import { useMemo } from "react";
-import { CheckSquare, Square, Sparkles } from "lucide-react";
-import type { Task } from "@shared/types";
+import { useMemo, useState } from "react";
+import { CheckSquare, Square, Sparkles, MessageSquare } from "lucide-react";
+import type { Task, TaskStatus, CommentThread } from "@shared/types";
 import { useAIStore } from "@ui/store/aiStore";
 import { TASK_TYPE_LABELS, TASK_TYPE_COLORS } from "@ui/components/common/taskTypeConfig";
+import { useCommentsStore } from "@ui/store/commentsStore";
 
 interface TaskGroup {
   assignee: string;
@@ -39,13 +40,39 @@ function groupByAssignee(tasks: Task[]): TaskGroup[] {
   return sorted;
 }
 
-export function TasksView() {
+interface TasksViewProps {
+  onSelectThread: (thread: CommentThread) => void;
+}
+
+export function TasksView({ onSelectThread }: TasksViewProps) {
   const allTasks = useAIStore((s) => s.allTasks);
   const updateTaskStatus = useAIStore((s) => s.updateTaskStatus);
+  const threads = useCommentsStore((s) => s.threads);
 
-  const groups = useMemo(() => groupByAssignee(allTasks), [allTasks]);
+  const [statusFilter, setStatusFilter] = useState<Set<TaskStatus>>(
+    () => new Set(["pending", "done"]),
+  );
+
   const pendingCount = allTasks.filter((t) => t.status === "pending").length;
   const doneCount = allTasks.filter((t) => t.status === "done").length;
+
+  const filteredTasks = useMemo(
+    () => allTasks.filter((t) => statusFilter.has(t.status)),
+    [allTasks, statusFilter],
+  );
+  const groups = useMemo(() => groupByAssignee(filteredTasks), [filteredTasks]);
+
+  const toggleFilter = (status: TaskStatus) => {
+    setStatusFilter((prev) => {
+      const next = new Set(prev);
+      if (next.has(status)) {
+        if (next.size > 1) next.delete(status);
+      } else {
+        next.add(status);
+      }
+      return next;
+    });
+  };
 
   if (allTasks.length === 0) {
     return (
@@ -64,12 +91,29 @@ export function TasksView() {
 
   return (
     <div className="flex-1 overflow-y-auto">
-      <div className="px-4 py-2.5 border-b border-figma-border">
-        <div className="flex items-center gap-3 text-xs text-figma-text-tertiary">
-          <span>{pendingCount} pending</span>
-          <span>&middot;</span>
-          <span>{doneCount} done</span>
-        </div>
+      <div className="flex items-center gap-1.5 px-4 py-3 border-b border-figma-border bg-figma-bg">
+          <button
+            type="button"
+            onClick={() => toggleFilter("pending")}
+            className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded transition-colors ${
+              statusFilter.has("pending")
+                ? "bg-accent-subtle text-accent"
+                : "bg-figma-bg-secondary text-figma-text-secondary hover:text-figma-text"
+            }`}
+          >
+            {pendingCount} pending
+          </button>
+          <button
+            type="button"
+            onClick={() => toggleFilter("done")}
+            className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded transition-colors ${
+              statusFilter.has("done")
+                ? "bg-accent-subtle text-accent"
+                : "bg-figma-bg-secondary text-figma-text-secondary hover:text-figma-text"
+            }`}
+          >
+            {doneCount} done
+          </button>
       </div>
 
       {groups.map((group) => (
@@ -117,11 +161,28 @@ export function TasksView() {
                   >
                     {task.description}
                   </p>
-                  <span
-                    className={`inline-block text-[9px] px-1.5 py-0.5 rounded-full font-medium mt-1 ${TASK_TYPE_COLORS[task.type]}`}
-                  >
-                    {TASK_TYPE_LABELS[task.type]}
-                  </span>
+                  <div className="flex items-center justify-between mt-1">
+                    <span
+                      className={`inline-block text-[9px] px-1.5 py-0.5 rounded-full font-medium ${TASK_TYPE_COLORS[task.type]}`}
+                    >
+                      {TASK_TYPE_LABELS[task.type]}
+                    </span>
+                    {threads.find((t) => t.id === task.threadId) && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const thread = threads.find((t) => t.id === task.threadId);
+                          if (thread) onSelectThread(thread);
+                        }}
+                        className="ml-2 shrink-0 p-1 rounded-md text-figma-icon-tertiary hover:bg-figma-bg-secondary hover:text-figma-icon transition-colors"
+                        data-tooltip="Open thread"
+                        data-tooltip-align="right"
+                        data-tooltip-pos="bottom"
+                      >
+                        <MessageSquare size={11} />
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}

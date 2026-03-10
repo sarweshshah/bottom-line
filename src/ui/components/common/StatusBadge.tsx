@@ -1,13 +1,23 @@
-import type { ThreadStatus } from "@shared/types";
+import type { WorkflowState } from "@shared/types";
 
 const config: Record<
-  ThreadStatus,
+  WorkflowState,
   { label: string; dotClass: string; bgClass: string }
 > = {
   open: {
     label: "OPEN",
     dotClass: "bg-status-open shadow-status-open",
     bgClass: "bg-status-open-bg text-status-open-text",
+  },
+  in_progress: {
+    label: "WIP",
+    dotClass: "bg-status-progress",
+    bgClass: "bg-status-progress-bg text-status-progress-text",
+  },
+  blocked: {
+    label: "BLOCKED",
+    dotClass: "bg-status-blocked",
+    bgClass: "bg-status-blocked-bg text-status-blocked-text",
   },
   resolved: {
     label: "DONE",
@@ -17,7 +27,7 @@ const config: Record<
 };
 
 interface StatusBadgeProps {
-  status: ThreadStatus;
+  status: WorkflowState;
 }
 
 export function StatusBadge({ status }: StatusBadgeProps) {

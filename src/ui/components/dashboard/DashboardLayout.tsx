@@ -1,22 +1,84 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   RefreshCw,
   MessageSquare,
   CheckSquare,
   Loader2,
   Settings,
+  ListChecks,
+  X,
+  ChevronDown,
+  Circle,
+  Wrench,
+  Ban,
+  CheckCircle2,
 } from "lucide-react";
-import type { CommentThread } from "@shared/types";
+import type { CommentThread, WorkflowState } from "@shared/types";
 import { useCommentsStore } from "@ui/store/commentsStore";
 import { useFilterStore } from "@ui/store/filterStore";
 import { useAuthStore } from "@ui/store/authStore";
 import { useAIStore } from "@ui/store/aiStore";
+import { useWorkflowStore } from "@ui/store/workflowStore";
 import { FilterBar } from "./FilterBar";
 import { ThreadList } from "./ThreadList";
 import { ThreadDetail } from "./ThreadDetail";
 import { TasksView } from "@ui/components/tasks/TasksView";
 
 type DashboardTab = "threads" | "tasks";
+
+const BULK_STATE_OPTIONS: { value: WorkflowState; label: string; Icon: typeof Circle }[] = [
+  { value: "open", label: "Open", Icon: Circle },
+  { value: "in_progress", label: "In Progress", Icon: Wrench },
+  { value: "blocked", label: "Blocked", Icon: Ban },
+  { value: "resolved", label: "Resolved", Icon: CheckCircle2 },
+];
+
+function BulkStateDropdown({ onSelect }: { onSelect: (state: WorkflowState) => void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handleClick, { passive: true });
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium bg-accent-bg text-white hover:bg-accent-hover transition-colors"
+      >
+        Set state
+        <ChevronDown size={10} />
+      </button>
+      {open && (
+        <div className="absolute right-0 bottom-full mb-1 bg-figma-bg border border-figma-border rounded-md shadow-lg z-30 min-w-[150px]">
+          {BULK_STATE_OPTIONS.map((opt) => {
+            const Icon = opt.Icon;
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => {
+                  onSelect(opt.value);
+                  setOpen(false);
+                }}
+                className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-figma-text-secondary hover:bg-figma-bg-hover transition-colors"
+              >
+                <Icon size={12} />
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function DashboardLayout() {
   const {
@@ -28,12 +90,18 @@ export function DashboardLayout() {
     currentPageThreadIds,
   } = useCommentsStore();
   const { applyFilters } = useFilterStore();
-  const { showSettings } = useAuthStore();
+  const { showSettings, user } = useAuthStore();
   const taskCount = useAIStore((s) => s.allTasks.length);
-  const [selectedThread, setSelectedThread] = useState<CommentThread | null>(
-    null,
-  );
+  const getWorkflowState = useWorkflowStore((s) => s.getState);
+  const initStates = useWorkflowStore((s) => s.initStates);
+  const reconcileWithFigma = useWorkflowStore((s) => s.reconcileWithFigma);
+  const cleanup = useWorkflowStore((s) => s.cleanup);
+  const bulkSetState = useWorkflowStore((s) => s.bulkSetState);
+  const workflowInitialized = useWorkflowStore((s) => s.initialized);
+  const [selectedThread, setSelectedThread] = useState<CommentThread | null>(null);
   const [activeTab, setActiveTab] = useState<DashboardTab>("threads");
+  const [bulkMode, setBulkMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const restoreCachedSummaries = useAIStore((s) => s.restoreCachedSummaries);
 
@@ -46,6 +114,17 @@ export function DashboardLayout() {
       restoreCachedSummaries(threads);
     }
   }, [threads, restoreCachedSummaries]);
+
+  useEffect(() => {
+    if (threads.length > 0) {
+      if (!workflowInitialized) {
+        initStates(threads);
+      } else {
+        reconcileWithFigma(threads);
+        cleanup(new Set(threads.map((t) => t.id)));
+      }
+    }
+  }, [threads, workflowInitialized, initStates, reconcileWithFigma, cleanup]);
 
   useEffect(() => {
     const intervalId = window.setInterval(() => {
@@ -65,13 +144,42 @@ export function DashboardLayout() {
     setSelectedThread(null);
   };
 
+  const handleToggleSelect = (threadId: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(threadId)) {
+        next.delete(threadId);
+      } else {
+        next.add(threadId);
+      }
+      return next;
+    });
+  };
+
+  const handleBulkStateChange = async (state: WorkflowState) => {
+    await bulkSetState([...selectedIds], state);
+    setBulkMode(false);
+    setSelectedIds(new Set());
+  };
+
+  const exitBulkMode = () => {
+    setBulkMode(false);
+    setSelectedIds(new Set());
+  };
+
   if (selectedThread) {
     const freshThread =
       threads.find((t) => t.id === selectedThread.id) ?? selectedThread;
     return <ThreadDetail thread={freshThread} onBack={handleBack} />;
   }
 
-  const filteredCount = applyFilters(threads, currentPageThreadIds).length;
+  const filteredThreads = applyFilters(
+    threads,
+    currentPageThreadIds,
+    getWorkflowState,
+    user?.handle ?? null,
+  );
+  const filteredCount = filteredThreads.length;
 
   return (
     <div className="flex flex-col h-full bg-figma-bg">
@@ -113,21 +221,43 @@ export function DashboardLayout() {
         </div>
         <div className="flex items-center gap-1">
           {activeTab === "threads" && (
-            <button
-              type="button"
-              onClick={refreshComments}
-              disabled={isLoading}
-              className="p-1.5 rounded-md text-figma-icon-secondary hover:bg-figma-bg-secondary hover:text-figma-icon disabled:opacity-40 transition-colors"
-              data-tooltip="Refresh comments"
-              data-tooltip-align="right"
-              data-tooltip-pos="bottom"
-            >
-              {isLoading ? (
-                <Loader2 size={14} className="animate-spin" />
-              ) : (
-                <RefreshCw size={14} />
-              )}
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={() => {
+                  if (bulkMode) {
+                    exitBulkMode();
+                  } else {
+                    setBulkMode(true);
+                  }
+                }}
+                className={`p-1.5 rounded-md transition-colors ${
+                  bulkMode
+                    ? "bg-accent-subtle text-accent"
+                    : "text-figma-icon-secondary hover:bg-figma-bg-secondary hover:text-figma-icon"
+                }`}
+                data-tooltip={bulkMode ? "Exit select mode" : "Select threads"}
+                data-tooltip-align="right"
+                data-tooltip-pos="bottom"
+              >
+                <ListChecks size={14} />
+              </button>
+              <button
+                type="button"
+                onClick={refreshComments}
+                disabled={isLoading}
+                className="p-1.5 rounded-md text-figma-icon-secondary hover:bg-figma-bg-secondary hover:text-figma-icon disabled:opacity-40 transition-colors"
+                data-tooltip="Refresh comments"
+                data-tooltip-align="right"
+                data-tooltip-pos="bottom"
+              >
+                {isLoading ? (
+                  <Loader2 size={14} className="animate-spin" />
+                ) : (
+                  <RefreshCw size={14} />
+                )}
+              </button>
+            </>
           )}
           <button
             type="button"
@@ -145,11 +275,35 @@ export function DashboardLayout() {
       {activeTab === "threads" && (
         <>
           <FilterBar />
-          <ThreadList onSelectThread={handleSelectThread} />
+          <ThreadList
+            onSelectThread={handleSelectThread}
+            bulkMode={bulkMode}
+            selectedIds={selectedIds}
+            onToggleSelect={handleToggleSelect}
+          />
         </>
       )}
 
-      {activeTab === "tasks" && <TasksView />}
+      {activeTab === "tasks" && <TasksView onSelectThread={handleSelectThread} />}
+
+      {/* Bulk action bar */}
+      {bulkMode && selectedIds.size > 0 && (
+        <div className="px-4 py-2.5 border-t border-figma-border bg-figma-bg flex items-center justify-between">
+          <span className="text-xs text-figma-text-secondary">
+            {selectedIds.size} selected
+          </span>
+          <div className="flex items-center gap-2">
+            <BulkStateDropdown onSelect={handleBulkStateChange} />
+            <button
+              type="button"
+              onClick={exitBulkMode}
+              className="p-1.5 rounded-md text-figma-icon-secondary hover:bg-figma-bg-secondary hover:text-figma-icon transition-colors"
+            >
+              <X size={14} />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { getComments, FigmaApiError } from "@ui/api/figmaApi";
 import { normalizeComments } from "@ui/lib/normalize";
 import { setStorage } from "@ui/lib/storage";
 import { useAuthStore } from "./authStore";
+import { useWorkflowStore } from "./workflowStore";
 
 const DEFAULT_CACHE_TTL_MINUTES: CacheTTLMinutes = 5;
 
@@ -62,6 +63,12 @@ export const useCommentsStore = create<CommentsState>((set, get) => ({
       const threads = normalizeComments(rawComments);
       set({ threads, lastFetched: Date.now(), isLoading: false });
       get().resolveCurrentPageThreads();
+
+      const wfStore = useWorkflowStore.getState();
+      if (wfStore.initialized) {
+        wfStore.reconcileWithFigma(threads);
+        wfStore.cleanup(new Set(threads.map((t) => t.id)));
+      }
     } catch (err) {
       if (err instanceof FigmaApiError) {
         if (err.code === "TOKEN_INVALID") {

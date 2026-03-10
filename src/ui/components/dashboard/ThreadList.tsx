@@ -3,15 +3,27 @@ import { ThreadCard } from "./ThreadCard";
 import { EmptyState } from "@ui/components/common/EmptyState";
 import { LoadingSpinner } from "@ui/components/common/LoadingSpinner";
 import { useCommentsStore } from "@ui/store/commentsStore";
-import { useFilterStore } from "@ui/store/filterStore";
+import { useFilterStore, isAddressedToMe } from "@ui/store/filterStore";
+import { useWorkflowStore } from "@ui/store/workflowStore";
+import { useAuthStore } from "@ui/store/authStore";
 
 interface ThreadListProps {
   onSelectThread: (thread: CommentThread) => void;
+  bulkMode: boolean;
+  selectedIds: Set<string>;
+  onToggleSelect: (threadId: string) => void;
 }
 
-export function ThreadList({ onSelectThread }: ThreadListProps) {
+export function ThreadList({
+  onSelectThread,
+  bulkMode,
+  selectedIds,
+  onToggleSelect,
+}: ThreadListProps) {
   const { threads, isLoading, error, currentPageThreadIds } = useCommentsStore();
-  const { applyFilters, clearFilters } = useFilterStore();
+  const { applyFilters, clearFilters, addressedToMe } = useFilterStore();
+  const getWorkflowState = useWorkflowStore((s) => s.getState);
+  const user = useAuthStore((s) => s.user);
 
   if (isLoading && threads.length === 0) {
     return <LoadingSpinner message="Fetching comments..." />;
@@ -40,9 +52,30 @@ export function ThreadList({ onSelectThread }: ThreadListProps) {
     return <EmptyState variant="no-comments" />;
   }
 
-  const filtered = applyFilters(threads, currentPageThreadIds);
+  const filtered = applyFilters(
+    threads,
+    currentPageThreadIds,
+    getWorkflowState,
+    user?.handle ?? null,
+  );
 
   if (filtered.length === 0) {
+    if (addressedToMe) {
+      return (
+        <EmptyState
+          variant="addressed-to-me"
+          action={
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="px-3 py-1.5 rounded-md text-xs font-medium bg-figma-bg-secondary text-figma-text-secondary hover:bg-figma-bg-tertiary"
+            >
+              Clear filters
+            </button>
+          }
+        />
+      );
+    }
     return (
       <EmptyState
         variant="no-matches"
@@ -65,7 +98,12 @@ export function ThreadList({ onSelectThread }: ThreadListProps) {
         <ThreadCard
           key={thread.id}
           thread={thread}
+          workflowState={getWorkflowState(thread.id)}
+          isAddressed={user ? isAddressedToMe(thread, user.handle) : false}
+          bulkMode={bulkMode}
+          isSelected={selectedIds.has(thread.id)}
           onSelect={onSelectThread}
+          onToggleSelect={onToggleSelect}
         />
       ))}
     </div>
