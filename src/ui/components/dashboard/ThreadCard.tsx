@@ -44,8 +44,8 @@ export function ThreadCard({
       type="button"
       onClick={handleClick}
       className={`w-full text-left px-4 py-3 border-b border-figma-border hover:bg-figma-bg-hover transition-colors cursor-pointer ${
-        isAddressed ? "border-l-2 border-l-addressed-border" : ""
-      } ${isSelected ? "bg-accent-subtle" : ""}`}
+        isSelected ? "bg-accent-subtle" : ""
+      }`}
     >
       <div className="flex gap-2.5">
         {bulkMode && (
