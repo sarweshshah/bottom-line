@@ -75,10 +75,10 @@ function ToastItem({
   const Icon = icons[toast.type];
   return (
     <div
-      className={`pointer-events-auto flex items-start gap-2 px-3 py-2.5 rounded-lg border shadow-sm text-xs animate-in slide-in-from-bottom ${styles[toast.type]}`}
+      className={`pointer-events-auto flex items-center gap-2 px-3 py-2.5 rounded-lg border shadow-sm text-xs animate-in slide-in-from-bottom ${styles[toast.type]}`}
     >
-      <Icon size={14} className="mt-0.5 shrink-0" />
-      <span className="flex-1">{toast.message}</span>
+      <Icon size={14} className="shrink-0" />
+      <span className="flex-1 mt-px">{toast.message}</span>
       <button
         type="button"
         onClick={onDismiss}

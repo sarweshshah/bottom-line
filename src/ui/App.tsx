@@ -247,7 +247,7 @@ export function App() {
           className="shrink-0 px-4 py-2 border-b border-figma-border bg-figma-bg-secondary flex items-center gap-1.5 min-h-2"
           title={fileName!}
         >
-          <FileText size={14} className="shrink-0 text-figma-icon-primary" />
+          <FileText size={14} className="shrink-0 text-figma-icon-secondary" />
           <span className="text-[11px] text-figma-text-primary truncate min-w-0">
             {fileName}
           </span>
