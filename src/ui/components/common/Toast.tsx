@@ -21,12 +21,6 @@ const icons: Record<ToastType, typeof Info> = {
   info: Info,
 };
 
-const styles: Record<ToastType, string> = {
-  success: "border-green-500/30 bg-green-500/10 text-green-500",
-  error: "border-danger-border bg-danger-bg text-danger",
-  info: "border-blue-500/30 bg-blue-500/10 text-blue-500",
-};
-
 export function ToastContainer() {
   const [toasts, setToasts] = useState<ToastData[]>([]);
   const counter = useRef(0);
@@ -47,10 +41,12 @@ export function ToastContainer() {
     };
   }, [addToast]);
 
+  if (toasts.length === 0) return null;
+
   return (
-    <div className="fixed bottom-3 left-3 right-3 flex flex-col gap-2 z-50 pointer-events-none">
+    <div className="absolute bottom-0 left-0 right-0 flex flex-col z-50">
       {toasts.map((toast) => (
-        <ToastItem
+        <ToastBar
           key={toast.id}
           toast={toast}
           onDismiss={() => removeToast(toast.id)}
@@ -60,7 +56,7 @@ export function ToastContainer() {
   );
 }
 
-function ToastItem({
+function ToastBar({
   toast,
   onDismiss,
 }: {
@@ -73,16 +69,16 @@ function ToastItem({
   }, [onDismiss]);
 
   const Icon = icons[toast.type];
+
   return (
-    <div
-      className={`pointer-events-auto flex items-center gap-2 px-3 py-2.5 rounded-lg border shadow-sm text-xs animate-in slide-in-from-bottom ${styles[toast.type]}`}
-    >
-      <Icon size={14} className="shrink-0" />
-      <span className="flex-1 mt-px">{toast.message}</span>
+    <div className="flex items-center gap-2 px-3 py-2.5 bg-indigo-600 text-white border-t border-indigo-500 text-xs animate-in slide-in-from-bottom">
+      <Icon size={13} className="shrink-0 opacity-80" />
+      <span className="flex-1">{toast.message}</span>
       <button
         type="button"
         onClick={onDismiss}
-        className="shrink-0 opacity-60 hover:opacity-100"
+        className="shrink-0 opacity-60 hover:opacity-100 transition-opacity"
+        aria-label="Dismiss"
       >
         <X size={12} />
       </button>
