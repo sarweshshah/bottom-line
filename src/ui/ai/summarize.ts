@@ -1,9 +1,15 @@
 import type { CommentThread, SummaryResult } from "@shared/types";
 import { useAIStore } from "@ui/store/aiStore";
 import { useWorkflowStore } from "@ui/store/workflowStore";
-import { cloudSummarize, supportsVision, CloudAIError } from "./cloudProvider";
+import {
+  cloudSummarize,
+  supportsVision,
+  CloudAIError,
+  formatModelName,
+} from "./cloudProvider";
 import { processThreadImages } from "./imageProcessor";
 import { getStorage, setStorage, deleteStorage } from "@ui/lib/storage";
+import { showToast } from "@ui/components/common/Toast";
 
 const MIN_COMMENTS_FOR_SUMMARY = 3;
 const VALID_PROVIDERS = new Set<string>([
@@ -92,6 +98,13 @@ export async function summarizeThread(
     images,
     provider === "custom" ? store.customConfig : undefined,
   );
+
+  if (provider === "gemini" && result.modelName !== "gemini-2.5-flash") {
+    showToast(
+      `Gemini 2.5 Flash unavailable — used ${formatModelName(result.modelName)} instead`,
+      "info",
+    );
+  }
 
   if (imageAnalysisEnabled && !supportsVision(provider) && result.summary) {
     result.summary += ` Thread includes image(s) not analyzed — switch to a vision-capable provider for image context.`;

@@ -164,12 +164,30 @@ async function callOpenAI(
   return data.choices?.[0]?.message?.content ?? "";
 }
 
-async function callGemini(
+const GEMINI_PRIMARY_MODEL = "gemini-2.5-flash";
+const GEMINI_FALLBACK_MODEL = "gemini-1.5-flash";
+const GEMINI_RETRY_DELAY_MS = 1_000;
+
+function geminiErrorMessage(status: number, body: string): string {
+  switch (status) {
+    case 401:
+    case 403:
+      return "Invalid Gemini API key. Check your key in Settings > AI & Summarization.";
+    case 429:
+      return "Gemini rate limit reached. Please wait a moment and try again.";
+    case 503:
+      return "Gemini is temporarily overloaded. Retrying with a fallback model…";
+    default:
+      return `Gemini API error (${status}): ${body.slice(0, 200)}`;
+  }
+}
+
+async function callGeminiModel(
   apiKey: string,
   threadText: string,
   images: ProcessedImage[],
+  model: string,
 ): Promise<string> {
-  const model = "gemini-2.5-flash";
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
   const parts: unknown[] = [];
@@ -191,10 +209,7 @@ async function callGemini(
 
   if (!res.ok) {
     const body = await res.text().catch(() => "");
-    throw new CloudAIError(
-      `Gemini API error (${res.status}): ${body.slice(0, 200)}`,
-      res.status,
-    );
+    throw new CloudAIError(geminiErrorMessage(res.status, body), res.status);
   }
 
   const data = await res.json();
@@ -204,6 +219,41 @@ async function callGemini(
     responseParts.find((p) => p.text && !p.thought) ??
     responseParts.find((p) => p.text);
   return responsePart?.text ?? "";
+}
+
+async function callGemini(
+  apiKey: string,
+  threadText: string,
+  images: ProcessedImage[],
+): Promise<{ text: string; model: string }> {
+  // Try the primary model with one retry on 503 before falling back.
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const text = await callGeminiModel(
+        apiKey,
+        threadText,
+        images,
+        GEMINI_PRIMARY_MODEL,
+      );
+      return { text, model: GEMINI_PRIMARY_MODEL };
+    } catch (err) {
+      const isOverloaded =
+        err instanceof CloudAIError && err.statusCode === 503;
+      if (!isOverloaded) throw err;
+      if (attempt === 0) {
+        await new Promise((r) => setTimeout(r, GEMINI_RETRY_DELAY_MS));
+      }
+    }
+  }
+
+  // Primary model exhausted — fall back to the stable model.
+  const text = await callGeminiModel(
+    apiKey,
+    threadText,
+    images,
+    GEMINI_FALLBACK_MODEL,
+  );
+  return { text, model: GEMINI_FALLBACK_MODEL };
 }
 
 export async function cloudSummarize(
@@ -226,10 +276,12 @@ export async function cloudSummarize(
       modelName = "gpt-4o-mini";
       rawResponse = await callOpenAI(apiKey, threadText, images);
       break;
-    case "gemini":
-      modelName = "gemini-2.5-flash";
-      rawResponse = await callGemini(apiKey, threadText, images);
+    case "gemini": {
+      const geminiResult = await callGemini(apiKey, threadText, images);
+      modelName = geminiResult.model;
+      rawResponse = geminiResult.text;
       break;
+    }
     case "custom": {
       if (!customConfig?.baseUrl) {
         throw new CloudAIError("Custom provider base URL is not configured");
@@ -268,6 +320,7 @@ const MODEL_DISPLAY_NAMES: Record<string, string> = {
   "claude-3-5-haiku-latest": "Claude 3.5 Haiku",
   "gpt-4o-mini": "GPT-4o mini",
   "gemini-2.5-flash": "Gemini 2.5 Flash",
+  "gemini-1.5-flash": "Gemini 1.5 Flash",
 };
 
 export function formatModelName(modelId: string): string {
