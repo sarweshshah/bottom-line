@@ -1,4 +1,4 @@
-import { defineConfig } from "vite";
+import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 import { viteSingleFile } from "vite-plugin-singlefile";
 import path from "path";
@@ -18,5 +18,11 @@ export default defineConfig({
       "@shared": path.resolve(__dirname, "src/shared"),
       "@ui": path.resolve(__dirname, "src/ui"),
     },
+  },
+  test: {
+    environment: "node",
+    include: ["src/**/*.test.ts"],
+    restoreMocks: true,
+    clearMocks: true,
   },
 });
