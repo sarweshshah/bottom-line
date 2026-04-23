@@ -23,6 +23,30 @@ function cacheKey(threadId: string, lastUpdatedAt: string): string {
   return `summary:${threadId}:${lastUpdatedAt}`;
 }
 
+async function applyStoredTaskStatuses(
+  result: SummaryResult,
+): Promise<SummaryResult> {
+  if (result.tasks.length === 0) {
+    return result;
+  }
+
+  const statuses = await Promise.all(
+    result.tasks.map((task) => getStorage<"pending" | "done">(`taskStatus:${task.id}`)),
+  );
+
+  let changed = false;
+  const tasks = result.tasks.map((task, index) => {
+    const persisted = statuses[index];
+    if (persisted && persisted !== task.status) {
+      changed = true;
+      return { ...task, status: persisted };
+    }
+    return task;
+  });
+
+  return changed ? { ...result, tasks } : result;
+}
+
 export function isTooShort(thread: CommentThread): boolean {
   return thread.replyCount + 1 < MIN_COMMENTS_FOR_SUMMARY;
 }
@@ -34,7 +58,7 @@ export async function getCachedSummary(
   const key = cacheKey(threadId, lastUpdatedAt);
   const cached = await getStorage<SummaryResult>(key);
   if (cached && cached.summary && VALID_PROVIDERS.has(cached.provider)) {
-    return cached;
+    return applyStoredTaskStatuses(cached);
   }
   return null;
 }
@@ -121,6 +145,7 @@ export async function summarizeThread(
         }
       : result;
 
-  await cacheSummary(finalResult, thread.id);
-  return finalResult;
+  const resultWithPersistedTaskState = await applyStoredTaskStatuses(finalResult);
+  await cacheSummary(resultWithPersistedTaskState, thread.id);
+  return resultWithPersistedTaskState;
 }

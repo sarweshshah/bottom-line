@@ -5,7 +5,7 @@
 |                    |                              |
 | ------------------ | ---------------------------- |
 | **Version**        | 1.8                          |
-| **Status**         | Draft                        |
+| **Status**         | Phase 1 In Progress          |
 | **Author**         | Sarwesh                      |
 | **Date**           | February 27, 2026            |
 | **Stakeholders**   | Design, Engineering, Product |

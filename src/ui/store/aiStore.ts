@@ -147,8 +147,6 @@ export const useAIStore = create<AIState>((set, get) => ({
       return { threadSummaries: next };
     });
     get().refreshAllTasks();
-    const cacheKey = `summary:${threadId}`;
-    setStorage(cacheKey, result);
   },
 
   setThreadError: (threadId, error) => {
