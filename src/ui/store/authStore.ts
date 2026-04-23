@@ -114,7 +114,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   setFileInfo: async (url: string, key: string) => {
     await Promise.all([setStorage("fileUrl", url), setStorage("fileKey", key)]);
-    set({ fileUrl: url, fileKey: key, fileName: null });
+    // Keep fileName until fetchFileName() replaces it so the file bar does not unmount.
+    set({ fileUrl: url, fileKey: key });
     get().fetchFileName();
   },
 

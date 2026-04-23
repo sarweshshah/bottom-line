@@ -2,7 +2,10 @@ import { useMemo, useState } from "react";
 import { CheckSquare, Square, Sparkles, MessageSquare } from "lucide-react";
 import type { Task, TaskStatus, CommentThread } from "@shared/types";
 import { useAIStore } from "@ui/store/aiStore";
-import { TASK_TYPE_LABELS, TASK_TYPE_COLORS } from "@ui/components/common/taskTypeConfig";
+import {
+  TASK_TYPE_LABELS,
+  TASK_TYPE_COLORS,
+} from "@ui/components/common/taskTypeConfig";
 import { useCommentsStore } from "@ui/store/commentsStore";
 
 interface TaskGroup {
@@ -76,13 +79,16 @@ export function TasksView({ onSelectThread }: TasksViewProps) {
 
   if (allTasks.length === 0) {
     return (
-      <div className="flex-1 flex flex-col items-center px-6 text-center" style={{ paddingTop: "33%" }}>
+      <div
+        className="flex-1 flex flex-col items-center px-6 text-center"
+        style={{ paddingTop: "33%" }}
+      >
         <Sparkles size={32} className="text-figma-icon-tertiary mb-3" />
         <p className="text-sm font-medium text-figma-text-secondary mb-1">
           No tasks yet
         </p>
         <p className="text-xs text-figma-text-tertiary">
-          Summarize threads to extract tasks. Open a thread and click
+          Summarize threads to extract tasks. <br /> Open a thread and click
           "Summarize" to get started.
         </p>
       </div>
@@ -92,28 +98,28 @@ export function TasksView({ onSelectThread }: TasksViewProps) {
   return (
     <div className="flex-1 overflow-y-auto">
       <div className="flex items-center gap-1.5 px-4 py-3 border-b border-figma-border bg-figma-bg">
-          <button
-            type="button"
-            onClick={() => toggleFilter("pending")}
-            className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded transition-colors ${
-              statusFilter.has("pending")
-                ? "bg-accent-subtle text-accent"
-                : "bg-figma-bg-secondary text-figma-text-secondary hover:text-figma-text"
-            }`}
-          >
-            {pendingCount} pending
-          </button>
-          <button
-            type="button"
-            onClick={() => toggleFilter("done")}
-            className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded transition-colors ${
-              statusFilter.has("done")
-                ? "bg-accent-subtle text-accent"
-                : "bg-figma-bg-secondary text-figma-text-secondary hover:text-figma-text"
-            }`}
-          >
-            {doneCount} done
-          </button>
+        <button
+          type="button"
+          onClick={() => toggleFilter("pending")}
+          className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded transition-colors ${
+            statusFilter.has("pending")
+              ? "bg-accent-subtle text-accent"
+              : "bg-figma-bg-secondary text-figma-text-secondary hover:text-figma-text"
+          }`}
+        >
+          {pendingCount} pending
+        </button>
+        <button
+          type="button"
+          onClick={() => toggleFilter("done")}
+          className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded transition-colors ${
+            statusFilter.has("done")
+              ? "bg-accent-subtle text-accent"
+              : "bg-figma-bg-secondary text-figma-text-secondary hover:text-figma-text"
+          }`}
+        >
+          {doneCount} done
+        </button>
       </div>
 
       {groups.map((group) => (
@@ -171,7 +177,9 @@ export function TasksView({ onSelectThread }: TasksViewProps) {
                       <button
                         type="button"
                         onClick={() => {
-                          const thread = threads.find((t) => t.id === task.threadId);
+                          const thread = threads.find(
+                            (t) => t.id === task.threadId,
+                          );
                           if (thread) onSelectThread(thread);
                         }}
                         className="ml-2 shrink-0 p-1 rounded-md text-figma-icon-tertiary hover:bg-figma-bg-secondary hover:text-figma-icon transition-colors"

@@ -47,6 +47,21 @@
   --bl-ai-bg: rgba(238, 242, 255, 0.6);
   --bl-ai-bg-a: rgba(238, 242, 255, 0.5);
   --bl-ai-bg-b: rgba(224, 231, 255, 0.4);
+  /* AI strip shimmer — soft multi-hue wash (indigo → violet → sky → cyan) */
+  --bl-ai-shimmer-c0: #f1f3ff;
+  --bl-ai-shimmer-c1: #eef2ff;
+  --bl-ai-shimmer-c2: #f4f2ff;
+  --bl-ai-shimmer-c3: #eff6ff;
+  --bl-ai-shimmer-c4: #eefcfd;
+  --bl-ai-shimmer-c5: #f0fdfa;
+  /* Summarize CTA — richer fill for static button (WCAG-friendly with dark text) */
+  --bl-ai-cta-bg: #e2e8ff;
+  --bl-ai-cta-c0: #d8defe;
+  --bl-ai-cta-c1: #d1d9fd;
+  --bl-ai-cta-c2: #ddd6f5;
+  --bl-ai-cta-c3: #c9dcf8;
+  --bl-ai-cta-c4: #c5e8f0;
+  --bl-ai-cta-c5: #caece5;
   --bl-elbow: #D1D5DB;
 }
 
@@ -95,6 +110,19 @@
   --bl-ai-bg: rgba(99, 102, 241, 0.08);
   --bl-ai-bg-a: rgba(99, 102, 241, 0.07);
   --bl-ai-bg-b: rgba(79, 70, 229, 0.05);
+  --bl-ai-shimmer-c0: rgba(67, 56, 202, 0.2);
+  --bl-ai-shimmer-c1: rgba(79, 70, 229, 0.16);
+  --bl-ai-shimmer-c2: rgba(109, 40, 217, 0.14);
+  --bl-ai-shimmer-c3: rgba(37, 99, 235, 0.12);
+  --bl-ai-shimmer-c4: rgba(8, 145, 178, 0.1);
+  --bl-ai-shimmer-c5: rgba(13, 148, 136, 0.09);
+  --bl-ai-cta-bg: rgba(79, 70, 229, 0.35);
+  --bl-ai-cta-c0: rgba(67, 56, 202, 0.42);
+  --bl-ai-cta-c1: rgba(79, 70, 229, 0.38);
+  --bl-ai-cta-c2: rgba(109, 40, 217, 0.34);
+  --bl-ai-cta-c3: rgba(37, 99, 235, 0.32);
+  --bl-ai-cta-c4: rgba(8, 145, 178, 0.26);
+  --bl-ai-cta-c5: rgba(13, 148, 136, 0.24);
   --bl-elbow: #4B5563;
 }
 
@@ -172,22 +200,100 @@ body,
   color-scheme: dark;
 }
 
+/*
+ * Seamless loop: gradient is two identical halves (0–50% and 50–100% stop space),
+ * both ending on c0. background-size 200% + position 0%→100% aligns the same slice
+ * at start and end — no jump when infinite restarts.
+ */
 @keyframes ai-shimmer {
-  0%, 100% {
+  0% {
     background-position: 0% 50%;
   }
-  50% {
+  100% {
     background-position: 100% 50%;
   }
 }
 
 .bg-ai-shimmer {
-  background: linear-gradient(
-    135deg,
-    var(--bl-ai-bg-a) 0%,
-    var(--bl-ai-bg-b) 50%,
-    var(--bl-ai-bg-a) 100%
+  background-color: var(--bl-ai-bg);
+  /* No white sheen — only pastel stops so cycling stays smooth with no bright streak */
+  background-image: linear-gradient(
+    90deg,
+    var(--bl-ai-shimmer-c0) 0%,
+    var(--bl-ai-shimmer-c1) 5%,
+    var(--bl-ai-shimmer-c2) 10%,
+    var(--bl-ai-shimmer-c3) 14%,
+    var(--bl-ai-shimmer-c4) 18%,
+    var(--bl-ai-shimmer-c5) 21%,
+    var(--bl-ai-shimmer-c4) 23%,
+    var(--bl-ai-shimmer-c3) 25%,
+    var(--bl-ai-shimmer-c4) 28%,
+    var(--bl-ai-shimmer-c3) 32%,
+    var(--bl-ai-shimmer-c2) 38%,
+    var(--bl-ai-shimmer-c1) 44%,
+    var(--bl-ai-shimmer-c0) 50%,
+    var(--bl-ai-shimmer-c1) 55%,
+    var(--bl-ai-shimmer-c2) 60%,
+    var(--bl-ai-shimmer-c3) 64%,
+    var(--bl-ai-shimmer-c4) 68%,
+    var(--bl-ai-shimmer-c5) 71%,
+    var(--bl-ai-shimmer-c4) 73%,
+    var(--bl-ai-shimmer-c3) 75%,
+    var(--bl-ai-shimmer-c4) 78%,
+    var(--bl-ai-shimmer-c3) 82%,
+    var(--bl-ai-shimmer-c2) 88%,
+    var(--bl-ai-shimmer-c1) 94%,
+    var(--bl-ai-shimmer-c0) 100%
   );
-  background-size: 200% 200%;
-  animation: ai-shimmer 6s ease-in-out infinite;
+  background-size: 200% 100%;
+  background-repeat: no-repeat;
+  animation: ai-shimmer 4.75s linear infinite;
+}
+
+/* Use with .bg-ai-shimmer — same gradient, no motion (e.g. CTA button) */
+.bg-ai-shimmer-static {
+  animation: none;
+  background-position: 0% 50%;
+}
+
+/* Bolder static gradient for Summarize CTA — pair with .bg-ai-shimmer-static */
+.bg-ai-shimmer-cta {
+  background-color: var(--bl-ai-cta-bg);
+  background-image: linear-gradient(
+    90deg,
+    var(--bl-ai-cta-c0) 0%,
+    var(--bl-ai-cta-c1) 5%,
+    var(--bl-ai-cta-c2) 10%,
+    var(--bl-ai-cta-c3) 14%,
+    var(--bl-ai-cta-c4) 18%,
+    var(--bl-ai-cta-c5) 21%,
+    var(--bl-ai-cta-c4) 23%,
+    var(--bl-ai-cta-c3) 25%,
+    var(--bl-ai-cta-c4) 28%,
+    var(--bl-ai-cta-c3) 32%,
+    var(--bl-ai-cta-c2) 38%,
+    var(--bl-ai-cta-c1) 44%,
+    var(--bl-ai-cta-c0) 50%,
+    var(--bl-ai-cta-c1) 55%,
+    var(--bl-ai-cta-c2) 60%,
+    var(--bl-ai-cta-c3) 64%,
+    var(--bl-ai-cta-c4) 68%,
+    var(--bl-ai-cta-c5) 71%,
+    var(--bl-ai-cta-c4) 73%,
+    var(--bl-ai-cta-c3) 75%,
+    var(--bl-ai-cta-c4) 78%,
+    var(--bl-ai-cta-c3) 82%,
+    var(--bl-ai-cta-c2) 88%,
+    var(--bl-ai-cta-c1) 94%,
+    var(--bl-ai-cta-c0) 100%
+  );
+  background-size: 200% 100%;
+  background-repeat: no-repeat;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bg-ai-shimmer {
+    animation: none;
+    background-position: 0% 50%;
+  }
 }

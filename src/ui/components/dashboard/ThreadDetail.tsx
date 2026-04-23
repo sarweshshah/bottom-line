@@ -51,7 +51,10 @@ const WORKFLOW_STATE_CONFIG: Record<
 };
 
 const STATE_ORDER: WorkflowState[] = [
-  "open", "in_progress", "blocked", "resolved",
+  "open",
+  "in_progress",
+  "blocked",
+  "resolved",
 ];
 
 interface ThreadDetailProps {
@@ -115,7 +118,9 @@ function StateSelector({ thread }: { thread: CommentThread }) {
                   type="button"
                   onClick={() => handleSelect(state)}
                   className={`w-full flex items-center gap-2 px-3 py-1.5 text-xs hover:bg-figma-bg-hover transition-colors ${
-                    isActive ? "text-accent font-medium" : "text-figma-text-secondary"
+                    isActive
+                      ? "text-accent font-medium"
+                      : "text-figma-text-secondary"
                   }`}
                 >
                   <Icon size={12} />
@@ -126,7 +131,6 @@ function StateSelector({ thread }: { thread: CommentThread }) {
           </div>
         )}
       </div>
-
     </>
   );
 }
@@ -252,7 +256,7 @@ function SummarySection({ thread }: { thread: CommentThread }) {
 
   if (tooShort) {
     return (
-      <div className="pl-4 pr-3.5 py-3 border-b border-figma-border bg-ai-shimmer">
+      <div className="pl-4 pr-3.5 pt-3 pb-4 border-b border-figma-border">
         <div className="flex items-center gap-1.5 text-xs text-figma-text-secondary">
           <Sparkles size={12} />
           Thread too short to summarize (fewer than 3 comments).
@@ -262,7 +266,7 @@ function SummarySection({ thread }: { thread: CommentThread }) {
   }
 
   return (
-    <div className="pl-4 pr-3.5 py-3 border-b border-figma-border bg-ai-shimmer">
+    <div className="pl-4 pr-3.5 pt-3 pb-4 border-b border-figma-border">
       <div className="flex items-center justify-between">
         <button
           type="button"
@@ -322,24 +326,25 @@ function SummarySection({ thread }: { thread: CommentThread }) {
               type="button"
               onClick={() => handleSummarize()}
               disabled={isLoading}
-              className="flex items-center gap-2 px-3 py-2 rounded-md text-xs font-medium bg-figma-bg-secondary text-figma-text-secondary hover:bg-figma-bg-tertiary hover:text-figma-text transition-colors"
+              className="flex items-center gap-2 px-3 py-2 rounded-md text-xs font-medium bg-ai-shimmer-cta bg-ai-shimmer-static text-figma-text border border-figma-border-strong/80 overflow-hidden hover:brightness-[0.96] active:brightness-[0.92] transition-[filter] duration-150"
             >
-              <Sparkles size={13} />
-              Summarize ({thread.replyCount + 1} comments)
-              <span className="text-figma-text-disabled ml-1">
-                via{" "}
-                {provider === "custom"
-                  ? customModelName || "custom"
-                  : (PROVIDER_MODEL_LABELS[provider] ?? provider)}
+              <span className="inline-flex min-w-0 flex-wrap items-baseline gap-x-1 gap-y-0.5">
+                <span>Summarize ({thread.replyCount + 1} comments)</span>
+                <span className="text-figma-text-secondary whitespace-nowrap">
+                  via{" "}
+                  {provider === "custom"
+                    ? customModelName || "custom"
+                    : (PROVIDER_MODEL_LABELS[provider] ?? provider)}
+                </span>
               </span>
             </button>
           )}
 
           {isLoading && (
-            <div className="space-y-2 animate-pulse">
-              <div className="h-3 bg-figma-bg-tertiary rounded w-full" />
-              <div className="h-3 bg-figma-bg-tertiary rounded w-4/5" />
-              <div className="h-3 bg-figma-bg-tertiary rounded w-3/5" />
+            <div className="space-y-2">
+              <div className="h-3 w-full rounded bg-ai-shimmer overflow-hidden" />
+              <div className="h-3 w-4/5 rounded bg-ai-shimmer overflow-hidden" />
+              <div className="h-3 w-3/5 rounded bg-ai-shimmer overflow-hidden" />
             </div>
           )}
 
