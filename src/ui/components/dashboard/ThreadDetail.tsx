@@ -326,7 +326,7 @@ function SummarySection({ thread }: { thread: CommentThread }) {
               type="button"
               onClick={() => handleSummarize()}
               disabled={isLoading}
-              className="flex items-center gap-2 px-3 py-2 rounded-md text-xs font-medium bg-ai-shimmer-cta bg-ai-shimmer-static text-figma-text border border-figma-border-strong/80 overflow-hidden hover:brightness-[0.96] active:brightness-[0.92] transition-[filter] duration-150"
+              className="summarize-cta-button flex items-center gap-2 px-3 py-2 rounded-md text-xs font-medium bg-ai-shimmer-cta bg-ai-shimmer-static text-figma-text border border-figma-border-strong/80 overflow-hidden hover:brightness-[0.96] active:brightness-[0.92] transition-[filter] duration-150"
             >
               <span className="inline-flex min-w-0 flex-wrap items-baseline gap-x-1 gap-y-0.5">
                 <span>Summarize ({thread.replyCount + 1} comments)</span>

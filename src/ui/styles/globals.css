@@ -200,6 +200,10 @@ body,
   color-scheme: dark;
 }
 
+.figma-dark .summarize-cta-button {
+  border: none;
+}
+
 /*
  * Seamless loop: gradient is two identical halves (0–50% and 50–100% stop space),
  * both ending on c0. background-size 200% + position 0%→100% aligns the same slice
