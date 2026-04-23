@@ -351,12 +351,12 @@ function SummarySection({ thread }: { thread: CommentThread }) {
           {error && (
             <div className="flex items-start gap-2 p-2.5 rounded-md bg-danger-bg border border-danger-border">
               <AlertCircle size={14} className="text-danger shrink-0 mt-0.5" />
-              <div className="flex-1 min-w-0">
-                <p className="text-xs text-danger mb-2">{error}</p>
+              <div className="flex-1 min-w-0 flex flex-col gap-0">
+                <p className="text-xs text-danger leading-relaxed">{error}</p>
                 <button
                   type="button"
                   onClick={() => handleSummarize()}
-                  className="text-xs font-medium text-danger hover:opacity-80 transition-colors"
+                  className="text-xs font-medium text-danger underline hover:opacity-80 transition-colors self-start"
                 >
                   Retry
                 </button>
