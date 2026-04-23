@@ -28,7 +28,11 @@ import { parseFileKey, isValidFigmaUrl } from "@ui/lib/parseFileUrl";
 import { showToast } from "@ui/components/common/Toast";
 import { supportsVision, PROVIDER_MODEL_LABELS } from "@ui/ai/cloudProvider";
 import { clearAllCachedSummaries } from "@ui/ai/summarize";
-import type { AIProvider, CacheTTLMinutes, ThemePreference } from "@shared/types";
+import type {
+  AIProvider,
+  CacheTTLMinutes,
+  ThemePreference,
+} from "@shared/types";
 
 type SettingsTab = "general" | "ai" | "behavior" | "auth" | "display" | "about";
 
@@ -501,7 +505,10 @@ function BehaviorTab() {
                 setCacheTTLMinutes(Number(e.target.value) as CacheTTLMinutes)
               }
               className="bg-figma-bg border border-figma-border rounded-md pl-2 pr-6 py-1.5 text-xs font-medium text-figma-text focus:outline-none focus:border-accent cursor-pointer appearance-none bg-[length:12px] bg-[right_6px_center] bg-no-repeat"
-              style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")" }}
+              style={{
+                backgroundImage:
+                  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")",
+              }}
             >
               {TTL_OPTIONS.map((minutes) => (
                 <option key={minutes} value={minutes}>
@@ -580,7 +587,7 @@ function AuthTab() {
             </div>
             <button
               type="button"
-              onClick={logout}
+              onClick={() => void logout()}
               className="p-2 rounded-md text-figma-icon-tertiary hover:bg-danger-bg hover:text-danger transition-colors shrink-0"
               title="Logout"
             >
@@ -683,14 +690,23 @@ function AuthTab() {
   );
 }
 
-const THEME_OPTIONS: { value: ThemePreference; label: string; icon: typeof Monitor }[] = [
+const THEME_OPTIONS: {
+  value: ThemePreference;
+  label: string;
+  icon: typeof Monitor;
+}[] = [
   { value: "system", label: "System", icon: Monitor },
   { value: "light", label: "Light", icon: Sun },
   { value: "dark", label: "Dark", icon: Moon },
 ];
 
 function DisplayTab() {
-  const { showThreadElbows, setShowThreadElbows, themePreference, setThemePreference } = useAuthStore();
+  const {
+    showThreadElbows,
+    setShowThreadElbows,
+    themePreference,
+    setThemePreference,
+  } = useAuthStore();
 
   return (
     <div className="space-y-5">

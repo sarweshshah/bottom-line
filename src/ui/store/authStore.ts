@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import type { FigmaUser, ThemePreference } from "@shared/types";
 import type { InitDataMessage } from "@shared/messages";
-import { getStorage, setStorage } from "@ui/lib/storage";
+import { deleteStorage, getStorage, setStorage } from "@ui/lib/storage";
 import { validateToken, getFileName, FigmaApiError } from "@ui/api/figmaApi";
 
 type AuthScreen = "loading" | "setup" | "reconnect" | "dashboard" | "settings";
@@ -30,7 +30,7 @@ interface AuthState {
   showReconnect: () => void;
   showSettings: () => void;
   showDashboard: () => void;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -72,7 +72,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         fileKey: data.fileKey,
         fileUrl: data.fileUrl,
         user: hasUser
-          ? { id: data.userId!, handle: data.userName!, img_url: data.userAvatarUrl ?? "" }
+          ? {
+              id: data.userId!,
+              handle: data.userName!,
+              img_url: data.userAvatarUrl ?? "",
+            }
           : null,
         autoOpenComment: data.autoOpenComment,
         showThreadElbows: data.showThreadElbows === true,
@@ -163,7 +167,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  logout: () => {
+  logout: async () => {
+    await Promise.all([
+      deleteStorage("pat"),
+      deleteStorage("userName"),
+      deleteStorage("userAvatarUrl"),
+      deleteStorage("userId"),
+      deleteStorage("fileKey"),
+      deleteStorage("fileUrl"),
+      deleteStorage("fileName"),
+    ]);
     set({
       pat: null,
       user: null,
@@ -171,6 +184,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       fileUrl: null,
       fileName: null,
       screen: "setup",
+      validationError: null,
     });
   },
 }));
