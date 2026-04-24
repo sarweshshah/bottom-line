@@ -8,9 +8,21 @@ import {
   Loader2,
   Link,
   ShieldCheck,
+  Info,
+  Check,
+  X,
 } from "lucide-react";
 import { useAuthStore } from "@ui/store/authStore";
 import { parseFileKey, isValidFigmaUrl } from "@ui/lib/parseFileUrl";
+
+const PAT_TRANSPARENCY_ITEMS = [
+  { allow: true, label: "Read comment threads" },
+  { allow: true, label: "Read user profiles" },
+  { allow: true, label: "Navigate to comments" },
+  { allow: false, label: "Modify your designs" },
+  { allow: false, label: "Store token externally" },
+  { allow: false, label: "Share data with others" },
+] as const;
 
 export function SetupScreen() {
   const { validateAndSetToken, setFileInfo, completeSetup, isValidating, validationError, user } =
@@ -84,9 +96,50 @@ export function SetupScreen() {
 
         {/* Section 1: Figma Token */}
         <section className="mb-5">
-          <h2 className="text-sm font-medium text-figma-text mb-2 flex items-center gap-1.5">
+          <h2 className="text-sm font-medium text-figma-text mb-2 flex items-center gap-1.5 flex-wrap">
             <ShieldCheck size={14} className="text-accent" />
             Figma Personal Access Token
+            <span className="relative inline-flex group">
+              <button
+                type="button"
+                className="rounded p-0.5 text-figma-icon-tertiary hover:text-figma-icon-secondary focus:outline-none focus-visible:ring-1 focus-visible:ring-accent-ring"
+                aria-label="What your token is used for"
+                aria-describedby="pat-token-transparency"
+              >
+                <Info size={13} strokeWidth={2} aria-hidden />
+              </button>
+              <div
+                id="pat-token-transparency"
+                className="pointer-events-none absolute left-1/2 top-full z-50 mt-1 w-max max-w-[min(260px,calc(100vw-2.5rem))] -translate-x-1/2 scale-95 rounded-md border border-white/[0.18] bg-figma-text pl-2.5 pr-3.5 py-2 text-left font-normal text-figma-bg opacity-0 shadow-[0_4px_20px_rgba(0,0,0,0.22)] transition-[opacity,transform] duration-150 [html.figma-dark_&]:border-black/[0.14] group-hover:pointer-events-auto group-hover:scale-100 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:scale-100 group-focus-within:opacity-100"
+                role="tooltip"
+              >
+                {/* <p className="mb-1.5 text-[11px] font-medium leading-tight text-figma-bg">
+                  Access Token is used to
+                </p> */}
+                <ul className="space-y-0.5 text-[10px] leading-tight text-figma-bg">
+                  {PAT_TRANSPARENCY_ITEMS.map(({ allow, label }) => (
+                    <li key={label} className="flex items-start gap-1.5">
+                      {allow ? (
+                        <Check
+                          size={10}
+                          strokeWidth={2.5}
+                          className="mt-[2px] shrink-0 text-status-resolved"
+                          aria-hidden
+                        />
+                      ) : (
+                        <X
+                          size={10}
+                          strokeWidth={2.5}
+                          className="mt-[2px] shrink-0 text-danger"
+                          aria-hidden
+                        />
+                      )}
+                      <span className="min-w-0">{label}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </span>
           </h2>
 
           <div className="text-xs text-figma-text-secondary mb-3 space-y-1.5">
