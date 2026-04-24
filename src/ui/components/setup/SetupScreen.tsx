@@ -4,7 +4,6 @@ import {
   EyeOff,
   ExternalLink,
   CheckCircle2,
-  AlertCircle,
   Loader2,
   Link,
   ShieldCheck,
@@ -12,6 +11,7 @@ import {
   Check,
   X,
 } from "lucide-react";
+import { FieldError } from "@ui/components/common/FieldError";
 import { useAuthStore } from "@ui/store/authStore";
 import { parseFileKey, isValidFigmaUrl } from "@ui/lib/parseFileUrl";
 
@@ -110,7 +110,7 @@ export function SetupScreen() {
               </button>
               <div
                 id="pat-token-transparency"
-                className="pointer-events-none absolute left-1/2 top-full z-50 mt-1 w-max max-w-[min(260px,calc(100vw-2.5rem))] -translate-x-1/2 scale-95 rounded-md border border-white/[0.18] bg-figma-text pl-2.5 pr-3.5 py-2 text-left font-normal text-figma-bg opacity-0 shadow-[0_4px_20px_rgba(0,0,0,0.22)] transition-[opacity,transform] duration-150 [html.figma-dark_&]:border-black/[0.14] group-hover:pointer-events-auto group-hover:scale-100 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:scale-100 group-focus-within:opacity-100"
+                className="pointer-events-none absolute left-1/2 top-full z-50 mt-1 w-max max-w-[min(260px,calc(100vw-2.5rem))] -translate-x-1/2 scale-50 rounded-md border border-white/[0.18] bg-figma-text pl-2.5 pr-3.5 py-2 text-left font-normal text-figma-bg opacity-0 shadow-[0_4px_20px_rgba(0,0,0,0.22)] transition-[opacity,transform] duration-150 [html.figma-dark_&]:border-black/[0.14] group-hover:pointer-events-auto group-hover:scale-100 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:scale-100 group-focus-within:opacity-100"
                 role="tooltip"
               >
                 {/* <p className="mb-1.5 text-[11px] font-medium leading-tight text-figma-bg">
@@ -163,43 +163,38 @@ export function SetupScreen() {
             </a>
           </div>
 
-          {/* Token input */}
-          <div className="relative mb-2">
-            <input
-              type={showToken ? "text" : "password"}
-              value={pat}
-              onChange={(e) => handleTokenChange(e.target.value)}
-              placeholder="figd_xxxxxxxxxxxxxxxx"
-              className="w-full bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2 pr-9 text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent-ring"
-            />
-            <button
-              type="button"
-              onClick={() => setShowToken(!showToken)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-figma-icon-tertiary hover:text-figma-icon-secondary"
-            >
-              {showToken ? <EyeOff size={14} /> : <Eye size={14} />}
-            </button>
+          {/* Token input + validation feedback — gap-2 between control and messages */}
+          <div className="flex flex-col gap-2">
+            <div className="relative">
+              <input
+                type={showToken ? "text" : "password"}
+                value={pat}
+                onChange={(e) => handleTokenChange(e.target.value)}
+                placeholder="figd_xxxxxxxxxxxxxxxx"
+                className="w-full bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2 pr-9 text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent-ring"
+              />
+              <button
+                type="button"
+                onClick={() => setShowToken(!showToken)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-figma-icon-tertiary hover:text-figma-icon-secondary"
+              >
+                {showToken ? <EyeOff size={14} /> : <Eye size={14} />}
+              </button>
+            </div>
+            {isValidating && (
+              <div className="flex items-center gap-1.5 text-xs text-figma-text-secondary">
+                <Loader2 size={12} className="animate-spin" />
+                Validating token...
+              </div>
+            )}
+            {tokenValid && user && (
+              <div className="flex items-center gap-1.5 text-xs text-status-resolved">
+                <CheckCircle2 size={12} />
+                Connected as {user.handle}
+              </div>
+            )}
+            {validationError && <FieldError>{validationError}</FieldError>}
           </div>
-
-          {/* Validation feedback */}
-          {isValidating && (
-            <div className="flex items-center gap-1.5 text-xs text-figma-text-secondary">
-              <Loader2 size={12} className="animate-spin" />
-              Validating token...
-            </div>
-          )}
-          {tokenValid && user && (
-            <div className="flex items-center gap-1.5 text-xs text-status-resolved">
-              <CheckCircle2 size={12} />
-              Connected as {user.handle}
-            </div>
-          )}
-          {validationError && (
-            <div className="flex items-center gap-1.5 text-xs text-danger bg-danger-bg border border-danger-border rounded-md px-2 py-1">
-              <AlertCircle size={12} />
-              {validationError}
-            </div>
-          )}
         </section>
 
         {/* Section 2: File URL */}
@@ -211,25 +206,22 @@ export function SetupScreen() {
           <p className="text-xs text-figma-text-tertiary mb-2">
             Paste the URL of the Figma file you want to analyze comments for.
           </p>
-          <input
-            type="text"
-            value={fileUrl}
-            onChange={(e) => handleUrlChange(e.target.value)}
-            placeholder="https://www.figma.com/design/abc123/..."
-            className="w-full bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2 text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent-ring"
-          />
-          {urlError && (
-            <div className="flex items-center gap-1.5 text-xs text-danger bg-danger-bg border border-danger-border rounded-md px-2 py-1 mt-1">
-              <AlertCircle size={12} />
-              {urlError}
-            </div>
-          )}
-          {fileKey && !urlError && (
-            <div className="flex items-center gap-1.5 text-xs text-status-resolved mt-1">
-              <CheckCircle2 size={12} />
-              File key detected
-            </div>
-          )}
+          <div className="flex flex-col gap-2">
+            <input
+              type="text"
+              value={fileUrl}
+              onChange={(e) => handleUrlChange(e.target.value)}
+              placeholder="https://www.figma.com/design/abc123/..."
+              className="w-full bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2 text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent-ring"
+            />
+            {urlError && <FieldError>{urlError}</FieldError>}
+            {fileKey && !urlError && (
+              <div className="flex items-center gap-1.5 text-xs text-status-resolved">
+                <CheckCircle2 size={12} />
+                File key detected
+              </div>
+            )}
+          </div>
         </section>
       </div>
 

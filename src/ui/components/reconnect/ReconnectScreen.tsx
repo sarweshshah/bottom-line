@@ -4,10 +4,10 @@ import {
   EyeOff,
   ExternalLink,
   CheckCircle2,
-  AlertCircle,
   Loader2,
   ShieldAlert,
 } from "lucide-react";
+import { FieldError } from "@ui/components/common/FieldError";
 import { useAuthStore } from "@ui/store/authStore";
 import { useCommentsStore } from "@ui/store/commentsStore";
 
@@ -69,41 +69,37 @@ export function ReconnectScreen() {
           </a>
         </div>
 
-        <div className="relative mb-2">
-          <input
-            type={showToken ? "text" : "password"}
-            value={pat}
-            onChange={(e) => handleTokenChange(e.target.value)}
-            placeholder="Paste your new token here"
-            className="w-full bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2 pr-9 text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent-ring"
-          />
-          <button
-            type="button"
-            onClick={() => setShowToken(!showToken)}
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-figma-icon-tertiary hover:text-figma-icon-secondary"
-          >
-            {showToken ? <EyeOff size={14} /> : <Eye size={14} />}
-          </button>
+        <div className="flex flex-col gap-2">
+          <div className="relative">
+            <input
+              type={showToken ? "text" : "password"}
+              value={pat}
+              onChange={(e) => handleTokenChange(e.target.value)}
+              placeholder="Paste your new token here"
+              className="w-full bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2 pr-9 text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent-ring"
+            />
+            <button
+              type="button"
+              onClick={() => setShowToken(!showToken)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-figma-icon-tertiary hover:text-figma-icon-secondary"
+            >
+              {showToken ? <EyeOff size={14} /> : <Eye size={14} />}
+            </button>
+          </div>
+          {isValidating && (
+            <div className="flex items-center gap-1.5 text-xs text-figma-text-secondary">
+              <Loader2 size={12} className="animate-spin" />
+              Validating token...
+            </div>
+          )}
+          {tokenValid && (
+            <div className="flex items-center gap-1.5 text-xs text-status-resolved">
+              <CheckCircle2 size={12} />
+              Token is valid
+            </div>
+          )}
+          {validationError && <FieldError>{validationError}</FieldError>}
         </div>
-
-        {isValidating && (
-          <div className="flex items-center gap-1.5 text-xs text-figma-text-secondary">
-            <Loader2 size={12} className="animate-spin" />
-            Validating token...
-          </div>
-        )}
-        {tokenValid && (
-          <div className="flex items-center gap-1.5 text-xs text-status-resolved">
-            <CheckCircle2 size={12} />
-            Token is valid
-          </div>
-        )}
-        {validationError && (
-          <div className="flex items-center gap-1.5 text-xs text-danger bg-danger-bg border border-danger-border rounded-md px-2 py-1">
-            <AlertCircle size={12} />
-            {validationError}
-          </div>
-        )}
       </div>
 
       <div className="px-5 py-4 border-t border-figma-border">

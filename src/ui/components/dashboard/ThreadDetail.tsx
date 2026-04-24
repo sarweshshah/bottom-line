@@ -19,7 +19,7 @@ import {
   Ban,
   CheckCircle2,
 } from "lucide-react";
-import type { CommentThread, CommentReply, WorkflowState } from "@shared/types";
+import type { CommentThread, WorkflowState } from "@shared/types";
 import { StatusBadge } from "@ui/components/common/StatusBadge";
 import { AvatarGroup } from "@ui/components/common/AvatarGroup";
 import {
@@ -56,6 +56,17 @@ const STATE_ORDER: WorkflowState[] = [
   "blocked",
   "resolved",
 ];
+
+const SUMMARY_SECTION_CLASS =
+  "pl-4 pr-3.5 pt-3 pb-4 border-b border-figma-border";
+
+function ExpandChevron({ expanded }: { expanded: boolean }) {
+  return expanded ? (
+    <ChevronDown size={12} />
+  ) : (
+    <ChevronRight size={12} />
+  );
+}
 
 interface ThreadDetailProps {
   thread: CommentThread;
@@ -95,43 +106,41 @@ function StateSelector({ thread }: { thread: CommentThread }) {
   };
 
   return (
-    <>
-      <div className="relative" ref={ref}>
-        <button
-          type="button"
-          onClick={() => setOpen(!open)}
-          className="flex items-center gap-1 cursor-pointer"
-        >
-          <StatusBadge status={workflowState} />
-          <ChevronDown size={10} className="text-figma-text-tertiary" />
-        </button>
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-1 cursor-pointer"
+      >
+        <StatusBadge status={workflowState} />
+        <ChevronDown size={10} className="text-figma-text-tertiary" />
+      </button>
 
-        {open && (
-          <div className="absolute right-0 top-full mt-1 bg-figma-bg border border-figma-border rounded-md shadow-lg z-30 min-w-[160px]">
-            {STATE_ORDER.map((state) => {
-              const cfg = WORKFLOW_STATE_CONFIG[state];
-              const Icon = cfg.Icon;
-              const isActive = workflowState === state;
-              return (
-                <button
-                  key={state}
-                  type="button"
-                  onClick={() => handleSelect(state)}
-                  className={`w-full flex items-center gap-2 px-3 py-1.5 text-xs hover:bg-figma-bg-hover transition-colors ${
-                    isActive
-                      ? "text-accent font-medium"
-                      : "text-figma-text-secondary"
-                  }`}
-                >
-                  <Icon size={12} />
-                  {cfg.label}
-                </button>
-              );
-            })}
-          </div>
-        )}
-      </div>
-    </>
+      {open && (
+        <div className="absolute right-0 top-full mt-1 bg-figma-bg border border-figma-border rounded-md shadow-lg z-30 min-w-[160px]">
+          {STATE_ORDER.map((state) => {
+            const cfg = WORKFLOW_STATE_CONFIG[state];
+            const Icon = cfg.Icon;
+            const isActive = workflowState === state;
+            return (
+              <button
+                key={state}
+                type="button"
+                onClick={() => handleSelect(state)}
+                className={`w-full flex items-center gap-2 px-3 py-1.5 text-xs hover:bg-figma-bg-hover transition-colors ${
+                  isActive
+                    ? "text-accent font-medium"
+                    : "text-figma-text-secondary"
+                }`}
+              >
+                <Icon size={12} />
+                {cfg.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -256,7 +265,7 @@ function SummarySection({ thread }: { thread: CommentThread }) {
 
   if (tooShort) {
     return (
-      <div className="pl-4 pr-3.5 pt-3 pb-4 border-b border-figma-border">
+      <div className={SUMMARY_SECTION_CLASS}>
         <div className="flex items-center gap-1.5 text-xs text-figma-text-secondary">
           <Sparkles size={12} />
           Thread too short to summarize (fewer than 3 comments).
@@ -266,14 +275,14 @@ function SummarySection({ thread }: { thread: CommentThread }) {
   }
 
   return (
-    <div className="pl-4 pr-3.5 pt-3 pb-4 border-b border-figma-border">
+    <div className={SUMMARY_SECTION_CLASS}>
       <div className="flex items-center justify-between">
         <button
           type="button"
           onClick={() => setExpanded(!expanded)}
           className="flex items-center gap-1.5 text-xs font-medium text-figma-text-secondary hover:text-figma-text"
         >
-          {expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+          <ExpandChevron expanded={expanded} />
           <Sparkles size={12} />
           AI Summary
         </button>
@@ -351,12 +360,12 @@ function SummarySection({ thread }: { thread: CommentThread }) {
           {error && (
             <div className="flex items-start gap-2 p-2.5 rounded-md bg-danger-bg border border-danger-border">
               <AlertCircle size={14} className="text-danger shrink-0 mt-0.5" />
-              <div className="flex-1 min-w-0 flex flex-col gap-0">
+              <div className="flex-1 min-w-0 flex flex-col">
                 <p className="text-xs text-danger leading-relaxed">{error}</p>
                 <button
                   type="button"
                   onClick={() => handleSummarize()}
-                  className="text-xs font-medium text-danger underline hover:opacity-80 transition-colors self-start"
+                  className="mt-1 text-xs font-medium text-danger underline hover:opacity-80 transition-colors self-start"
                 >
                   Retry
                 </button>
@@ -410,7 +419,7 @@ function TasksSection({ thread }: { thread: CommentThread }) {
         onClick={() => setExpanded(!expanded)}
         className="flex items-center gap-1.5 text-xs font-medium text-figma-text hover:text-figma-text"
       >
-        {expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+        <ExpandChevron expanded={expanded} />
         Tasks ({doneCount}/{tasks.length})
       </button>
 
@@ -422,49 +431,55 @@ function TasksSection({ thread }: { thread: CommentThread }) {
             </p>
           ) : (
             <div className="space-y-2">
-              {tasks.map((task) => (
-                <div key={task.id} className="flex items-start gap-2 group">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      updateTaskStatus(
-                        task.id,
-                        task.status === "done" ? "pending" : "done",
-                      )
-                    }
-                    className="shrink-0 mt-0.5 text-figma-icon-secondary hover:text-figma-icon transition-colors"
-                  >
-                    {task.status === "done" ? (
-                      <CheckSquare size={14} className="text-status-resolved" />
-                    ) : (
-                      <Square size={14} />
-                    )}
-                  </button>
-                  <div className="flex-1 min-w-0">
-                    <p
-                      className={`text-[11px] leading-relaxed ${
-                        task.status === "done"
-                          ? "text-figma-text-disabled line-through"
-                          : "text-figma-text"
-                      }`}
+              {tasks.map((task) => {
+                const assignee = normalizeAssignee(task.assignee);
+                return (
+                  <div key={task.id} className="flex items-start gap-2 group">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        updateTaskStatus(
+                          task.id,
+                          task.status === "done" ? "pending" : "done",
+                        )
+                      }
+                      className="shrink-0 mt-0.5 text-figma-icon-secondary hover:text-figma-icon transition-colors"
                     >
-                      {task.description}
-                    </p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      {normalizeAssignee(task.assignee) && (
-                        <span className="text-[10px] text-figma-text-secondary">
-                          @{normalizeAssignee(task.assignee)}
-                        </span>
+                      {task.status === "done" ? (
+                        <CheckSquare
+                          size={14}
+                          className="text-status-resolved"
+                        />
+                      ) : (
+                        <Square size={14} />
                       )}
-                      <span
-                        className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${TASK_TYPE_COLORS[task.type]}`}
+                    </button>
+                    <div className="flex-1 min-w-0">
+                      <p
+                        className={`text-[11px] leading-relaxed ${
+                          task.status === "done"
+                            ? "text-figma-text-disabled line-through"
+                            : "text-figma-text"
+                        }`}
                       >
-                        {TASK_TYPE_LABELS[task.type]}
-                      </span>
+                        {task.description}
+                      </p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        {assignee && (
+                          <span className="text-[10px] text-figma-text-secondary">
+                            @{assignee}
+                          </span>
+                        )}
+                        <span
+                          className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${TASK_TYPE_COLORS[task.type]}`}
+                        >
+                          {TASK_TYPE_LABELS[task.type]}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -529,11 +544,7 @@ export function ThreadDetail({ thread, onBack }: ThreadDetailProps) {
             onClick={() => setThreadExpanded(!threadExpanded)}
             className="flex items-center gap-1.5 text-xs font-medium text-figma-text mb-3 hover:text-figma-text"
           >
-            {threadExpanded ? (
-              <ChevronDown size={12} />
-            ) : (
-              <ChevronRight size={12} />
-            )}
+            <ExpandChevron expanded={threadExpanded} />
             Comments ({thread.replyCount + 1})
           </button>
 
@@ -554,7 +565,7 @@ export function ThreadDetail({ thread, onBack }: ThreadDetailProps) {
               </div>
               {thread.replies.length > 0 && (
                 <div className="mt-3 mb-3 space-y-3">
-                  {thread.replies.map((reply: CommentReply, index: number) => {
+                  {thread.replies.map((reply, index) => {
                     const isLast = index === thread.replies.length - 1;
                     return (
                       <div key={reply.id} className="relative pl-10">

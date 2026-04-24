@@ -26,6 +26,7 @@ import { useCommentsStore } from "@ui/store/commentsStore";
 import { useAIStore } from "@ui/store/aiStore";
 import { parseFileKey, isValidFigmaUrl } from "@ui/lib/parseFileUrl";
 import { showToast } from "@ui/components/common/Toast";
+import { FieldError } from "@ui/components/common/FieldError";
 import { supportsVision, PROVIDER_MODEL_LABELS } from "@ui/ai/cloudProvider";
 import { clearAllCachedSummaries } from "@ui/ai/summarize";
 import type {
@@ -146,7 +147,7 @@ function GeneralTab() {
             ? "Paste a new URL to switch the connected Figma file."
             : "The Figma file to analyze comments for."}
         </p>
-        <div className="space-y-2.5">
+        <div className="space-y-2">
           <input
             type="text"
             value={url}
@@ -154,12 +155,7 @@ function GeneralTab() {
             placeholder="https://www.figma.com/design/abc123/..."
             className="w-full bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2 text-sm text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent-ring"
           />
-          {urlError && (
-            <div className="flex items-center gap-1.5 text-xs text-danger bg-danger-bg border border-danger-border rounded-md px-2.5 py-1.5">
-              <AlertCircle size={12} />
-              {urlError}
-            </div>
-          )}
+          {urlError && <FieldError>{urlError}</FieldError>}
           <button
             type="button"
             onClick={handleSaveUrl}
@@ -616,7 +612,7 @@ function AuthTab() {
         </p>
 
         {!editing ? (
-          <div className="space-y-2.5">
+          <div className="space-y-2">
             <div className="flex items-center gap-2 bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2">
               <code className="text-xs font-medium text-figma-text-secondary flex-1 truncate">
                 {showToken ? pat : maskedPat}
@@ -642,7 +638,7 @@ function AuthTab() {
             </button>
           </div>
         ) : (
-          <div className="space-y-2.5">
+          <div className="space-y-2">
             <input
               type="password"
               value={newPat}
@@ -657,12 +653,7 @@ function AuthTab() {
                 Validating token...
               </div>
             )}
-            {validationError && (
-              <div className="flex items-center gap-1.5 text-xs text-danger bg-danger-bg border border-danger-border rounded-md px-2.5 py-1.5">
-                <AlertCircle size={12} />
-                {validationError}
-              </div>
-            )}
+            {validationError && <FieldError>{validationError}</FieldError>}
             <div className="flex gap-2">
               <button
                 type="button"
