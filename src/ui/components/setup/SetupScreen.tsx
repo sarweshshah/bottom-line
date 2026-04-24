@@ -8,7 +8,6 @@ import {
   Loader2,
   Link,
   ShieldCheck,
-  ShieldX,
 } from "lucide-react";
 import { useAuthStore } from "@ui/store/authStore";
 import { parseFileKey, isValidFigmaUrl } from "@ui/lib/parseFileUrl";
@@ -148,32 +147,6 @@ export function SetupScreen() {
               {validationError}
             </div>
           )}
-
-          {/* Transparency */}
-          <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-            <div className="bg-figma-bg-secondary rounded-md p-2">
-              <p className="font-medium text-figma-text-secondary mb-1 flex items-center gap-1">
-                <ShieldCheck size={10} className="text-status-resolved" />
-                Will do
-              </p>
-              <ul className="text-figma-text-tertiary space-y-0.5">
-                <li>&bull; Read comments &amp; threads</li>
-                <li>&bull; Read user profiles</li>
-                <li>&bull; Navigate to comments</li>
-              </ul>
-            </div>
-            <div className="bg-figma-bg-secondary rounded-md p-2">
-              <p className="font-medium text-figma-text-secondary mb-1 flex items-center gap-1">
-                <ShieldX size={10} className="text-danger" />
-                Will never do
-              </p>
-              <ul className="text-figma-text-tertiary space-y-0.5">
-                <li>&bull; Modify your designs</li>
-                <li>&bull; Store token externally</li>
-                <li>&bull; Share data with others</li>
-              </ul>
-            </div>
-          </div>
         </section>
 
         {/* Section 2: File URL */}
