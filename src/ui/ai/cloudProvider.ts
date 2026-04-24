@@ -12,6 +12,7 @@ import {
 import type { ProcessedImage } from "./imageProcessor";
 
 const TIMEOUT_MS = 15_000;
+const ANTHROPIC_MODEL = "claude-haiku-4-5";
 
 export class CloudAIError extends Error {
   constructor(
@@ -106,7 +107,7 @@ async function callAnthropic(
       "anthropic-dangerous-direct-browser-access": "true",
     },
     body: JSON.stringify({
-      model: "claude-3-5-haiku-latest",
+      model: ANTHROPIC_MODEL,
       max_tokens: 4096,
       system: SYSTEM_PROMPT,
       messages: [{ role: "user", content: userContent }],
@@ -269,7 +270,7 @@ export async function cloudSummarize(
 
   switch (provider) {
     case "anthropic":
-      modelName = "claude-3-5-haiku-latest";
+      modelName = ANTHROPIC_MODEL;
       rawResponse = await callAnthropic(apiKey, threadText, images);
       break;
     case "openai":
@@ -310,14 +311,14 @@ export function supportsVision(provider: AIProvider): boolean {
 }
 
 export const PROVIDER_MODEL_LABELS: Record<AIProvider, string> = {
-  anthropic: "Claude 3.5 Haiku",
+  anthropic: "Claude Haiku 4.5",
   openai: "GPT-4o mini",
   gemini: "Gemini 2.5 Flash",
   custom: "Custom",
 };
 
 const MODEL_DISPLAY_NAMES: Record<string, string> = {
-  "claude-3-5-haiku-latest": "Claude 3.5 Haiku",
+  [ANTHROPIC_MODEL]: "Claude Haiku 4.5",
   "gpt-4o-mini": "GPT-4o mini",
   "gemini-2.5-flash": "Gemini 2.5 Flash",
   "gemini-1.5-flash": "Gemini 1.5 Flash",

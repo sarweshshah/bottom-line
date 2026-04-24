@@ -17,7 +17,7 @@ AI-powered comment intelligence for design teams — a Figma plugin that surface
 
 | Provider | Model | Vision |
 |----------|-------|--------|
-| Anthropic | Claude 3.5 Haiku | Yes |
+| Anthropic | Claude Haiku 4.5 | Yes |
 | OpenAI | GPT-4o mini | Yes |
 | Google | Gemini 2.5 Flash | Yes |
 | Custom | Any OpenAI-compatible endpoint | No |
