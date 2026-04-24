@@ -20,9 +20,14 @@ AI-powered comment intelligence for design teams — a Figma plugin that surface
 | Anthropic | Claude Haiku 4.5 | Yes |
 | OpenAI | GPT-4o mini | Yes |
 | Google | Gemini 2.5 Flash | Yes |
-| Custom | Any OpenAI-compatible endpoint | No |
+| Custom | You configure (see below) | No |
 
-API keys are stored locally in Figma's client storage and sent only to the selected provider.
+- **Anthropic** — Uses the `claude-haiku-4-5` [model alias](https://docs.anthropic.com/en/docs/about-claude/models), which always targets the current Haiku 4.5 snapshot.
+- **OpenAI** — `gpt-4o-mini` via the Chat Completions API.
+- **Google** — Tries **Gemini 2.5 Flash** first. On temporary overload (HTTP 503), the plugin retries once, then falls back to **Gemini 1.5 Flash** if needed.
+- **Custom** — OpenAI-compatible `POST …/v1/chat/completions` (you set base URL, API key, and model name). Image analysis is not enabled for this option in the UI.
+
+API keys are stored locally in Figma’s client storage, trimmed when used, and sent only to the selected provider.
 
 ## Tech Stack
 
@@ -65,6 +70,14 @@ Outputs `dist/index.html` (UI) and `dist/code.js` (sandbox).
 npm run typecheck
 ```
 
+### Tests
+
+```bash
+npm test
+```
+
+Watch mode: `npm run test:watch`
+
 ## Project Structure
 
 ```
@@ -89,7 +102,7 @@ src/
 All settings are accessible from the plugin's **Settings** screen:
 
 - **General** — Set the Figma file URL to analyze.
-- **AI** — Choose provider, enter API key, toggle image analysis.
+- **AI** — Choose provider, enter API key, toggle image analysis. For **Custom**, set the API base URL, key, and model name.
 - **Behavior** — Auto-refresh interval, comment navigation reminders.
 - **Auth** — Manage your Figma Personal Access Token.
 - **Display** — Toggle thread reply elbows, theme adapts to Figma automatically.
