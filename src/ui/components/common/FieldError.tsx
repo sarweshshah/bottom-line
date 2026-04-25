@@ -8,7 +8,7 @@ export function FieldError({ children }: { children: ReactNode }) {
       role="alert"
     >
       <AlertCircle size={14} className="mt-0.5 shrink-0" aria-hidden />
-      <span className="leading-5">{children}</span>
+      <span className="leading-4">{children}</span>
     </div>
   );
 }

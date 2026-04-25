@@ -84,8 +84,26 @@ function basicAuthHeader() {
 
 function isOriginAllowed(origin) {
   if (!origin) return true;
+  if (origin === "null") return true;
   if (CORS_ALLOW_ORIGINS.includes("*")) return true;
-  return CORS_ALLOW_ORIGINS.includes(origin);
+  if (CORS_ALLOW_ORIGINS.includes(origin)) return true;
+
+  // Figma surfaces slightly different host variants depending on environment.
+  // Treat figma.com/www.figma.com and figma-beta.com/www.figma-beta.com as equivalent.
+  try {
+    const incoming = new URL(origin);
+    for (const allowed of CORS_ALLOW_ORIGINS) {
+      const allowedUrl = new URL(allowed);
+      if (incoming.protocol !== allowedUrl.protocol) continue;
+      const a = allowedUrl.hostname.replace(/^www\./, "");
+      const b = incoming.hostname.replace(/^www\./, "");
+      if (a === b) return true;
+    }
+  } catch {
+    // Ignore parse errors and fall through to "not allowed".
+  }
+
+  return false;
 }
 
 function cors(req, res) {
