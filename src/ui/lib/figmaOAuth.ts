@@ -6,13 +6,68 @@ function oauthBackendBase(): string | null {
 
 function normalizeOAuthErrorMessage(message: string): string {
   const lower = message.toLowerCase();
+  if (
+    lower.includes("failed to fetch") ||
+    lower.includes("networkerror when attempting to fetch resource")
+  ) {
+    return "Could not start sign-in right now. Please check your connection and try again.";
+  }
+  if (lower.includes("origin not allowed")) {
+    return "Sign-in is blocked for this environment. Please contact support.";
+  }
+  if (lower.includes("invalid oauth callback") || lower.includes("invalid callback")) {
+    return "Sign-in could not be completed. Please try again.";
+  }
+  if (lower.includes("unknown session")) {
+    return "Your sign-in session expired. Please start again.";
+  }
   if (lower.includes("invalid_client")) {
-    return "Figma OAuth is misconfigured on the backend (invalid client credentials). Check FIGMA_CLIENT_ID, FIGMA_CLIENT_SECRET, and OAUTH_REDIRECT_URI on the OAuth server, then try again.";
+    return "Sign-in is temporarily unavailable. Please try again in a moment.";
+  }
+  if (
+    lower.includes("server missing oauth credentials") ||
+    lower.includes("server missing figma_client_id") ||
+    lower.includes("server missing")
+  ) {
+    return "Sign-in is temporarily unavailable. Please try again later.";
+  }
+  if (lower.includes("refresh_token required")) {
+    return "Your session could not be refreshed. Please sign in again.";
+  }
+  if (lower.includes("token exchange failed") || lower.includes("oauth failed")) {
+    return "Sign-in could not be completed. Please try again.";
+  }
+  if (lower.includes("refresh failed") || lower.includes("figma refresh error")) {
+    return "Your session could not be refreshed. Please sign in again.";
   }
   if (lower.includes("authorization timed out")) {
-    return "Authorization timed out. Try again and complete sign-in in the browser tab.";
+    return "Sign-in timed out. Please try again and complete authorization in your browser.";
   }
-  return message;
+  return "Sign in with Figma failed. Please try again.";
+}
+
+async function fetchWithRetry(
+  input: string,
+  init: RequestInit,
+  options?: { attempts?: number; baseDelayMs?: number },
+): Promise<Response> {
+  const attempts = Math.max(1, options?.attempts ?? 3);
+  const baseDelayMs = Math.max(100, options?.baseDelayMs ?? 500);
+  let lastError: Error | null = null;
+
+  for (let i = 0; i < attempts; i += 1) {
+    try {
+      return await fetch(input, init);
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error(String(err));
+      if (i < attempts - 1) {
+        const delay = baseDelayMs * (i + 1);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+    }
+  }
+
+  throw lastError ?? new Error("Network request failed.");
 }
 
 export function isFigmaOAuthConfigured(): boolean {
@@ -26,8 +81,19 @@ export interface BeginOAuthResponse {
 
 export async function beginOAuthSession(): Promise<BeginOAuthResponse> {
   const base = oauthBackendBase();
-  if (!base) throw new Error("OAuth backend URL is not configured.");
-  const res = await fetch(`${base}/api/figma/oauth/begin`, { method: "POST" });
+  if (!base) throw new Error("Sign-in is temporarily unavailable. Please try again later.");
+  let res: Response;
+  try {
+    res = await fetchWithRetry(
+      `${base}/api/figma/oauth/begin`,
+      { method: "POST" },
+      { attempts: 3, baseDelayMs: 600 },
+    );
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Sign in with Figma failed.";
+    const normalized = normalizeOAuthErrorMessage(message);
+    throw new Error(normalized);
+  }
   const text = await res.text();
   if (!res.ok) {
     let msg = `OAuth begin failed (${res.status})`;
@@ -41,7 +107,7 @@ export async function beginOAuthSession(): Promise<BeginOAuthResponse> {
   }
   const data = JSON.parse(text) as BeginOAuthResponse;
   if (!data.sessionId || !data.authorizeUrl) {
-    throw new Error("Invalid response from OAuth server.");
+    throw new Error("Sign-in is temporarily unavailable. Please try again.");
   }
   return data;
 }
@@ -63,8 +129,14 @@ export async function fetchOAuthSessionStatus(
   sessionId: string,
 ): Promise<OAuthSessionComplete | OAuthSessionPoll> {
   const base = oauthBackendBase();
-  if (!base) throw new Error("OAuth backend URL is not configured.");
-  const res = await fetch(`${base}/api/figma/oauth/session/${sessionId}`);
+  if (!base) throw new Error("Sign-in is temporarily unavailable. Please try again later.");
+  let res: Response;
+  try {
+    res = await fetch(`${base}/api/figma/oauth/session/${sessionId}`);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Sign in with Figma failed.";
+    throw new Error(normalizeOAuthErrorMessage(message));
+  }
   if (!res.ok) {
     const text = await res.text();
     throw new Error(normalizeOAuthErrorMessage(text || `OAuth session poll failed (${res.status})`));
@@ -99,12 +171,18 @@ export async function refreshOAuthAccessToken(
   refreshToken: string,
 ): Promise<RefreshResponse> {
   const base = oauthBackendBase();
-  if (!base) throw new Error("OAuth backend URL is not configured.");
-  const res = await fetch(`${base}/api/figma/oauth/refresh`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ refresh_token: refreshToken }),
-  });
+  if (!base) throw new Error("Session refresh is temporarily unavailable. Please sign in again.");
+  let res: Response;
+  try {
+    res = await fetch(`${base}/api/figma/oauth/refresh`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh_token: refreshToken }),
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Session refresh failed.";
+    throw new Error(normalizeOAuthErrorMessage(message));
+  }
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     const message =

@@ -57,6 +57,34 @@ const stateToSession = new Map();
 
 const SESSION_TTL_MS = 15 * 60 * 1000;
 
+function publicOAuthError(message, fallback = "Request failed. Please try again.") {
+  const lower = String(message || "").toLowerCase();
+  if (
+    lower.includes("invalid_client") ||
+    lower.includes("server missing oauth credentials") ||
+    lower.includes("server missing figma_client_id") ||
+    lower.includes("server missing")
+  ) {
+    return "Sign-in is temporarily unavailable. Please try again later.";
+  }
+  if (lower.includes("invalid oauth callback") || lower.includes("invalid callback")) {
+    return "Sign-in could not be completed. Please try again.";
+  }
+  if (lower.includes("unknown session")) {
+    return "Your sign-in session expired. Please start again.";
+  }
+  if (lower.includes("refresh_token required")) {
+    return "Your session could not be refreshed. Please sign in again.";
+  }
+  if (lower.includes("refresh failed") || lower.includes("figma refresh error")) {
+    return "Your session could not be refreshed. Please sign in again.";
+  }
+  if (lower.includes("token exchange failed") || lower.includes("oauth failed")) {
+    return "Sign-in could not be completed. Please try again.";
+  }
+  return fallback;
+}
+
 function base64url(buf) {
   return Buffer.from(buf)
     .toString("base64")
@@ -218,12 +246,12 @@ const server = http.createServer(async (req, res) => {
   try {
     if (req.method === "POST" && url.pathname === "/api/figma/oauth/begin") {
       if (!isOriginAllowed(req.headers.origin)) {
-        json(req, res, 403, { error: "Origin not allowed" });
+        json(req, res, 403, { error: "Sign-in is blocked for this environment. Please contact support." });
         return;
       }
       if (!FIGMA_CLIENT_ID || !FIGMA_CLIENT_SECRET || !OAUTH_REDIRECT_URI) {
         json(req, res, 500, {
-          error: "Server missing FIGMA_CLIENT_ID, FIGMA_CLIENT_SECRET, or OAUTH_REDIRECT_URI",
+          error: "Sign-in is temporarily unavailable. Please try again later.",
         });
         return;
       }
@@ -275,8 +303,10 @@ const server = http.createServer(async (req, res) => {
         session.userId = data.user_id_string ?? String(data.user_id ?? "");
         delete session.codeVerifier;
       } catch (e) {
+        const rawError = e instanceof Error ? e.message : String(e);
+        console.error("OAuth code exchange failed:", rawError);
         session.status = "error";
-        session.error = e instanceof Error ? e.message : "Token exchange failed";
+        session.error = publicOAuthError(rawError, "Sign-in could not be completed. Please try again.");
       }
 
       res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
@@ -288,7 +318,7 @@ const server = http.createServer(async (req, res) => {
       const sessionId = url.pathname.replace("/api/figma/oauth/session/", "").split("/")[0];
       const session = sessions.get(sessionId);
       if (!session) {
-        json(req, res, 404, { status: "error", error: "Unknown session" });
+        json(req, res, 404, { status: "error", error: "Your sign-in session expired. Please start again." });
         return;
       }
       if (session.status === "pending") {
@@ -298,7 +328,7 @@ const server = http.createServer(async (req, res) => {
       if (session.status === "error") {
         json(req, res, 200, {
           status: "error",
-          error: session.error || "OAuth failed",
+          error: session.error || "Sign-in could not be completed. Please try again.",
         });
         stateToSession.delete(session.state);
         sessions.delete(sessionId);
@@ -319,17 +349,17 @@ const server = http.createServer(async (req, res) => {
 
     if (req.method === "POST" && url.pathname === "/api/figma/oauth/refresh") {
       if (!isOriginAllowed(req.headers.origin)) {
-        json(req, res, 403, { error: "Origin not allowed" });
+        json(req, res, 403, { error: "Sign-in is blocked for this environment. Please contact support." });
         return;
       }
       if (!FIGMA_CLIENT_ID || !FIGMA_CLIENT_SECRET) {
-        json(req, res, 500, { error: "Server missing OAuth credentials" });
+        json(req, res, 500, { error: "Sign-in is temporarily unavailable. Please try again later." });
         return;
       }
       const body = await readBody(req);
       const refreshToken = body.refresh_token;
       if (!refreshToken || typeof refreshToken !== "string") {
-        json(req, res, 400, { error: "refresh_token required" });
+        json(req, res, 400, { error: "Your session could not be refreshed. Please sign in again." });
         return;
       }
       try {
@@ -340,8 +370,13 @@ const server = http.createServer(async (req, res) => {
           token_type: data.token_type,
         });
       } catch (e) {
+        const rawError = e instanceof Error ? e.message : String(e);
+        console.error("OAuth token refresh failed:", rawError);
         json(req, res, 401, {
-          error: e instanceof Error ? e.message : "Refresh failed",
+          error: publicOAuthError(
+            rawError,
+            "Your session could not be refreshed. Please sign in again.",
+          ),
         });
       }
       return;
@@ -350,7 +385,9 @@ const server = http.createServer(async (req, res) => {
     res.writeHead(404);
     res.end();
   } catch (e) {
-    json(req, res, 500, { error: e instanceof Error ? e.message : "Server error" });
+    const rawError = e instanceof Error ? e.message : String(e);
+    console.error("OAuth server request failed:", rawError);
+    json(req, res, 500, { error: "Something went wrong. Please try again." });
   }
 });
 
