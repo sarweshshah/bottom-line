@@ -1,13 +1,23 @@
 import { create } from "zustand";
-import type { FigmaUser, ThemePreference } from "@shared/types";
+import type { FigmaUser, ThemePreference, FigmaAuthMethod } from "@shared/types";
 import type { InitDataMessage } from "@shared/messages";
 import { deleteStorage, getStorage, setStorage } from "@ui/lib/storage";
 import { validateToken, getFileName, FigmaApiError } from "@ui/api/figmaApi";
+import { isFigmaOAuthConfigured, refreshOAuthAccessToken } from "@ui/lib/figmaOAuth";
 
 type AuthScreen = "loading" | "setup" | "reconnect" | "dashboard" | "settings";
 
+export interface RestAuth {
+  token: string;
+  mode: FigmaAuthMethod;
+}
+
 interface AuthState {
   pat: string | null;
+  figmaAccessToken: string | null;
+  refreshToken: string | null;
+  tokenExpiresAt: number | null;
+  authMethod: FigmaAuthMethod | null;
   user: FigmaUser | null;
   fileKey: string | null;
   fileUrl: string | null;
@@ -20,6 +30,13 @@ interface AuthState {
   themePreference: ThemePreference;
 
   initFromSandbox: (data: InitDataMessage) => void;
+  getRestAuth: () => RestAuth | null;
+  tryRefreshOAuthToken: () => Promise<boolean>;
+  applyOAuthSession: (tokens: {
+    access_token: string;
+    refresh_token: string;
+    expires_in: number;
+  }) => Promise<FigmaUser>;
   validateAndSetToken: (pat: string) => Promise<FigmaUser>;
   setFileInfo: (url: string, key: string) => Promise<void>;
   fetchFileName: () => Promise<void>;
@@ -27,14 +44,35 @@ interface AuthState {
   setShowThreadElbows: (enabled: boolean) => void;
   setThemePreference: (pref: ThemePreference) => void;
   completeSetup: () => void;
-  showReconnect: () => void;
+  showReconnect: () => Promise<void>;
   showSettings: () => void;
   showDashboard: () => void;
   logout: () => Promise<void>;
 }
 
+function resolveAuthFromInit(data: InitDataMessage): Pick<
+  AuthState,
+  "pat" | "figmaAccessToken" | "refreshToken" | "tokenExpiresAt" | "authMethod"
+> {
+  let authMethod = data.authMethod;
+  if (!authMethod && data.pat) authMethod = "pat";
+  if (!authMethod && data.figmaAccessToken) authMethod = "oauth";
+
+  return {
+    pat: authMethod === "pat" ? data.pat : null,
+    figmaAccessToken: authMethod === "oauth" ? data.figmaAccessToken : null,
+    refreshToken: authMethod === "oauth" ? data.figmaRefreshToken : null,
+    tokenExpiresAt: authMethod === "oauth" ? data.figmaTokenExpiresAt : null,
+    authMethod,
+  };
+}
+
 export const useAuthStore = create<AuthState>((set, get) => ({
   pat: null,
+  figmaAccessToken: null,
+  refreshToken: null,
+  tokenExpiresAt: null,
+  authMethod: null,
   user: null,
   fileKey: null,
   fileUrl: null,
@@ -46,14 +84,26 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   showThreadElbows: false,
   themePreference: "system",
 
+  getRestAuth: () => {
+    const { authMethod, pat, figmaAccessToken } = get();
+    if (authMethod === "pat" && pat) return { token: pat, mode: "pat" };
+    if (authMethod === "oauth" && figmaAccessToken) {
+      return { token: figmaAccessToken, mode: "oauth" };
+    }
+    return null;
+  },
+
   initFromSandbox: (data) => {
-    const hasPat = !!data.pat;
+    const auth = resolveAuthFromInit(data);
     const hasFileKey = !!data.fileKey;
     const hasUser = !!data.userName;
+    const tokenReady =
+      (auth.authMethod === "pat" && !!auth.pat) ||
+      (auth.authMethod === "oauth" && !!auth.figmaAccessToken);
 
-    if (hasPat && hasFileKey && hasUser) {
+    if (tokenReady && hasFileKey && hasUser) {
       set({
-        pat: data.pat,
+        ...auth,
         fileKey: data.fileKey,
         fileUrl: data.fileUrl,
         user: {
@@ -68,7 +118,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       });
     } else {
       set({
-        pat: data.pat,
+        ...auth,
         fileKey: data.fileKey,
         fileUrl: data.fileUrl,
         user: hasUser
@@ -90,17 +140,91 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     });
   },
 
-  validateAndSetToken: async (pat: string) => {
+  tryRefreshOAuthToken: async () => {
+    const { authMethod, refreshToken } = get();
+    if (authMethod !== "oauth" || !refreshToken) return false;
+    if (!isFigmaOAuthConfigured()) return false;
+    try {
+      const data = await refreshOAuthAccessToken(refreshToken);
+      const expiresAt = Date.now() + data.expires_in * 1000;
+      await Promise.all([
+        setStorage("figmaAccessToken", data.access_token),
+        setStorage("figmaTokenExpiresAt", expiresAt),
+      ]);
+      set({
+        figmaAccessToken: data.access_token,
+        tokenExpiresAt: expiresAt,
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  },
+
+  applyOAuthSession: async (tokens) => {
     set({ isValidating: true, validationError: null });
     try {
-      const user = await validateToken(pat);
+      const user = await validateToken(tokens.access_token, "oauth");
+      const expiresAt = Date.now() + tokens.expires_in * 1000;
       await Promise.all([
-        setStorage("pat", pat),
+        deleteStorage("pat"),
+        setStorage("authMethod", "oauth"),
+        setStorage("figmaAccessToken", tokens.access_token),
+        setStorage("figmaRefreshToken", tokens.refresh_token),
+        setStorage("figmaTokenExpiresAt", expiresAt),
         setStorage("userName", user.handle),
         setStorage("userAvatarUrl", user.img_url),
         setStorage("userId", user.id),
       ]);
-      set({ pat, user, isValidating: false });
+      set({
+        pat: null,
+        figmaAccessToken: tokens.access_token,
+        refreshToken: tokens.refresh_token,
+        tokenExpiresAt: expiresAt,
+        authMethod: "oauth",
+        user,
+        isValidating: false,
+        validationError: null,
+      });
+      return user;
+    } catch (err) {
+      const message =
+        err instanceof FigmaApiError
+          ? err.message
+          : "Failed to validate session. Please try again.";
+      set({ isValidating: false, validationError: message });
+      throw err;
+    }
+  },
+
+  validateAndSetToken: async (pat: string) => {
+    set({ isValidating: true, validationError: null });
+    try {
+      await Promise.all([
+        deleteStorage("figmaAccessToken"),
+        deleteStorage("figmaRefreshToken"),
+        deleteStorage("figmaTokenExpiresAt"),
+      ]);
+      set({
+        figmaAccessToken: null,
+        refreshToken: null,
+        tokenExpiresAt: null,
+      });
+
+      const user = await validateToken(pat, "pat");
+      await Promise.all([
+        setStorage("pat", pat),
+        setStorage("authMethod", "pat"),
+        setStorage("userName", user.handle),
+        setStorage("userAvatarUrl", user.img_url),
+        setStorage("userId", user.id),
+      ]);
+      set({
+        pat,
+        authMethod: "pat",
+        user,
+        isValidating: false,
+      });
       return user;
     } catch (err) {
       const message =
@@ -114,16 +238,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   setFileInfo: async (url: string, key: string) => {
     await Promise.all([setStorage("fileUrl", url), setStorage("fileKey", key)]);
-    // Keep fileName until fetchFileName() replaces it so the file bar does not unmount.
     set({ fileUrl: url, fileKey: key });
     get().fetchFileName();
   },
 
   fetchFileName: async () => {
-    const { pat, fileKey } = get();
-    if (!pat || !fileKey) return;
+    const auth = get().getRestAuth();
+    const { fileKey } = get();
+    if (!auth || !fileKey) return;
     try {
-      const name = await getFileName(fileKey, pat);
+      const name = await getFileName(fileKey, auth.token, auth.mode);
       set({ fileName: name });
       await setStorage("fileName", name);
     } catch {
@@ -147,14 +271,33 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   completeSetup: () => {
-    const { pat, fileKey, user } = get();
-    if (pat && fileKey && user) {
+    const { fileKey, user } = get();
+    const auth = get().getRestAuth();
+    if (auth && fileKey && user) {
       set({ screen: "dashboard" });
     }
   },
 
-  showReconnect: () => {
-    set({ screen: "reconnect", pat: null, user: null });
+  showReconnect: async () => {
+    await Promise.all([
+      deleteStorage("pat"),
+      deleteStorage("figmaAccessToken"),
+      deleteStorage("figmaRefreshToken"),
+      deleteStorage("figmaTokenExpiresAt"),
+      deleteStorage("authMethod"),
+      deleteStorage("userName"),
+      deleteStorage("userAvatarUrl"),
+      deleteStorage("userId"),
+    ]);
+    set({
+      pat: null,
+      figmaAccessToken: null,
+      refreshToken: null,
+      tokenExpiresAt: null,
+      authMethod: null,
+      user: null,
+      screen: "reconnect",
+    });
   },
 
   showSettings: () => {
@@ -162,8 +305,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   showDashboard: () => {
-    const { pat, fileKey, user } = get();
-    if (pat && fileKey && user) {
+    const { fileKey, user } = get();
+    const auth = get().getRestAuth();
+    if (auth && fileKey && user) {
       set({ screen: "dashboard" });
     }
   },
@@ -171,6 +315,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   logout: async () => {
     await Promise.all([
       deleteStorage("pat"),
+      deleteStorage("figmaAccessToken"),
+      deleteStorage("figmaRefreshToken"),
+      deleteStorage("figmaTokenExpiresAt"),
+      deleteStorage("authMethod"),
       deleteStorage("userName"),
       deleteStorage("userAvatarUrl"),
       deleteStorage("userId"),
@@ -180,6 +328,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     ]);
     set({
       pat: null,
+      figmaAccessToken: null,
+      refreshToken: null,
+      tokenExpiresAt: null,
+      authMethod: null,
       user: null,
       fileKey: null,
       fileUrl: null,

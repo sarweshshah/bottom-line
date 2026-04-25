@@ -64,6 +64,14 @@ npm run build
 
 Outputs `dist/index.html` (UI) and `dist/code.js` (sandbox).
 
+For OAuth-enabled release builds, set your production backend origin before build:
+
+```bash
+FIGMA_OAUTH_BACKEND_ORIGIN=https://oauth.example.com npm run build
+```
+
+This adds your OAuth backend to `dist/manifest.json` `allowedDomains` and strips `devAllowedDomains` so localhost is not included in release artifacts.
+
 ### Type Checking
 
 ```bash
@@ -106,6 +114,20 @@ All settings are accessible from the plugin's **Settings** screen:
 - **Behavior** — Auto-refresh interval, comment navigation reminders.
 - **Auth** — Manage your Figma Personal Access Token.
 - **Display** — Toggle thread reply elbows, theme adapts to Figma automatically.
+
+### OAuth (Production)
+
+Use an HTTPS OAuth backend in production and configure both frontend + server:
+
+- UI env (`.env`):
+  - `VITE_FIGMA_OAUTH_BACKEND_URL=https://oauth.example.com`
+- OAuth server env:
+  - `FIGMA_CLIENT_ID=...`
+  - `FIGMA_CLIENT_SECRET=...`
+  - `OAUTH_REDIRECT_URI=https://oauth.example.com/api/figma/oauth/callback`
+  - `CORS_ALLOW_ORIGINS=https://www.figma.com,https://www.figma-beta.com`
+
+Do not expose `FIGMA_CLIENT_SECRET` to the UI or any `VITE_*` variable.
 
 ## License
 

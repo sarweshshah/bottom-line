@@ -1,4 +1,4 @@
-import type { ClientMeta } from "./types";
+import type { ClientMeta, FigmaAuthMethod } from "./types";
 
 export interface GetStorageMessage {
   type: "GET_STORAGE";
@@ -29,6 +29,10 @@ export interface StorageResultMessage {
 export interface InitDataMessage {
   type: "INIT_DATA";
   pat: string | null;
+  figmaAccessToken: string | null;
+  figmaRefreshToken: string | null;
+  figmaTokenExpiresAt: number | null;
+  authMethod: FigmaAuthMethod | null;
   fileKey: string | null;
   fileUrl: string | null;
   userName: string | null;
@@ -86,6 +90,11 @@ export interface ResizeUIMessage {
   height: number;
 }
 
+export interface OpenExternalMessage {
+  type: "OPEN_EXTERNAL";
+  url: string;
+}
+
 export type SandboxMessage =
   | GetStorageMessage
   | SetStorageMessage
@@ -94,7 +103,8 @@ export type SandboxMessage =
   | NotifyMessage
   | RequestInitMessage
   | ResizeUIMessage
-  | ResolvePageThreadsMessage;
+  | ResolvePageThreadsMessage
+  | OpenExternalMessage;
 
 export type UIMessage =
   | StorageResultMessage

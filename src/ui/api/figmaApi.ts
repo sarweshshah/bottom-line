@@ -1,5 +1,7 @@
 import type { RawComment, FigmaUser } from "@shared/types";
+import type { FigmaAuthMethod } from "@shared/types";
 import { rateLimitedFetch } from "@ui/lib/rateLimiter";
+import { figmaRestAuthHeaders } from "@ui/lib/figmaAuthHeaders";
 
 const BASE_URL = "https://api.figma.com";
 const TIMEOUT_MS = 10_000;
@@ -67,69 +69,23 @@ async function fetchWithTimeout(
   }
 }
 
-async function apiRequestPost<T>(
-  path: string,
-  pat: string,
-  body: Record<string, unknown>,
-  attempt = 0,
-): Promise<T> {
-  let response: Response;
-
-  try {
-    response = await fetchWithTimeout(`${BASE_URL}${path}`, {
-      method: "POST",
-      headers: {
-        "X-Figma-Token": pat,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    });
-  } catch (err) {
-    if (err instanceof FigmaApiError && shouldRetry(err.code) && attempt < MAX_RETRIES) {
-      const delay = INITIAL_BACKOFF_MS * Math.pow(2, attempt);
-      await new Promise((r) => setTimeout(r, delay));
-      return apiRequestPost<T>(path, pat, body, attempt + 1);
-    }
-    throw err;
-  }
-
-  if (!response.ok) {
-    const code = classifyError(response.status);
-    if (shouldRetry(code) && attempt < MAX_RETRIES) {
-      const retryAfter = response.headers.get("Retry-After");
-      const delay = retryAfter
-        ? parseInt(retryAfter, 10) * 1000
-        : INITIAL_BACKOFF_MS * Math.pow(2, attempt);
-      await new Promise((r) => setTimeout(r, delay));
-      return apiRequestPost<T>(path, pat, body, attempt + 1);
-    }
-
-    throw new FigmaApiError(
-      `Request failed with status ${response.status}.`,
-      code,
-      response.status,
-    );
-  }
-
-  return response.json() as Promise<T>;
-}
-
 async function apiRequest<T>(
   path: string,
-  pat: string,
+  token: string,
+  authMode: FigmaAuthMethod,
   attempt = 0,
 ): Promise<T> {
   let response: Response;
 
   try {
     response = await fetchWithTimeout(`${BASE_URL}${path}`, {
-      headers: { "X-Figma-Token": pat },
+      headers: figmaRestAuthHeaders(token, authMode),
     });
   } catch (err) {
     if (err instanceof FigmaApiError && shouldRetry(err.code) && attempt < MAX_RETRIES) {
       const delay = INITIAL_BACKOFF_MS * Math.pow(2, attempt);
       await new Promise((r) => setTimeout(r, delay));
-      return apiRequest<T>(path, pat, attempt + 1);
+      return apiRequest<T>(path, token, authMode, attempt + 1);
     }
     throw err;
   }
@@ -142,7 +98,7 @@ async function apiRequest<T>(
         ? parseInt(retryAfter, 10) * 1000
         : INITIAL_BACKOFF_MS * Math.pow(2, attempt);
       await new Promise((r) => setTimeout(r, delay));
-      return apiRequest<T>(path, pat, attempt + 1);
+      return apiRequest<T>(path, token, authMode, attempt + 1);
     }
 
     const errorMessages: Record<string, string> = {
@@ -173,8 +129,11 @@ export interface CommentsResponse {
   comments: RawComment[];
 }
 
-export async function validateToken(pat: string): Promise<FigmaUser> {
-  const data = await apiRequest<MeResponse>("/v1/me", pat);
+export async function validateToken(
+  token: string,
+  authMode: FigmaAuthMethod,
+): Promise<FigmaUser> {
+  const data = await apiRequest<MeResponse>("/v1/me", token, authMode);
   return {
     id: data.id,
     handle: data.handle,
@@ -188,22 +147,26 @@ interface FileMetaResponse {
 
 export async function getFileName(
   fileKey: string,
-  pat: string,
+  token: string,
+  authMode: FigmaAuthMethod,
 ): Promise<string> {
   const data = await apiRequest<FileMetaResponse>(
     `/v1/files/${fileKey}?depth=1`,
-    pat,
+    token,
+    authMode,
   );
   return data.name;
 }
 
 export async function getComments(
   fileKey: string,
-  pat: string,
+  token: string,
+  authMode: FigmaAuthMethod,
 ): Promise<RawComment[]> {
   const data = await apiRequest<CommentsResponse>(
     `/v1/files/${fileKey}/comments?as_md=true`,
-    pat,
+    token,
+    authMode,
   );
   return data.comments;
 }

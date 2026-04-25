@@ -10,10 +10,20 @@ import {
   Info,
   Check,
   X,
+  User as UserIcon,
+  LogOut,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react";
 import { FieldError } from "@ui/components/common/FieldError";
 import { useAuthStore } from "@ui/store/authStore";
 import { parseFileKey, isValidFigmaUrl } from "@ui/lib/parseFileUrl";
+import {
+  isFigmaOAuthConfigured,
+  beginOAuthSession,
+  pollOAuthUntilComplete,
+} from "@ui/lib/figmaOAuth";
+import { openExternalUrl } from "@ui/lib/openExternal";
 
 const PAT_TRANSPARENCY_ITEMS = [
   { allow: true, label: "Read comment threads" },
@@ -24,13 +34,33 @@ const PAT_TRANSPARENCY_ITEMS = [
   { allow: false, label: "Share data with others" },
 ] as const;
 
+/** Info icon tooltip next to “Personal access token” */
+const PAT_INFO_TOOLTIP_CLASSNAME = [
+  "pointer-events-none absolute left-1/2 top-full z-50 mt-1 w-max max-w-[min(260px,calc(100vw-2.5rem))] -translate-x-1/2",
+  "scale-95 opacity-0 transition duration-150",
+  "rounded-md border border-white/[0.18] bg-figma-text py-2 pl-2.5 pr-3.5 text-left font-normal text-figma-bg shadow-[0_4px_20px_rgba(0,0,0,0.22)] [html.figma-dark_&]:border-black/[0.14]",
+  "group-hover:pointer-events-auto group-hover:scale-100 group-hover:opacity-100",
+  "group-focus-within:pointer-events-auto group-focus-within:scale-100 group-focus-within:opacity-100",
+].join(" ");
+
 export function SetupScreen() {
-  const { validateAndSetToken, setFileInfo, completeSetup, isValidating, validationError, user } =
-    useAuthStore();
+  const oauthAvailable = isFigmaOAuthConfigured();
+  const {
+    validateAndSetToken,
+    applyOAuthSession,
+    setFileInfo,
+    completeSetup,
+    isValidating,
+    validationError,
+    user,
+    authMethod,
+  } = useAuthStore();
 
   const [pat, setPat] = useState("");
   const [showToken, setShowToken] = useState(false);
-  const [tokenValid, setTokenValid] = useState(false);
+  const [showPatAdvanced, setShowPatAdvanced] = useState(!oauthAvailable);
+  const [oauthBusy, setOauthBusy] = useState(false);
+  const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
 
   const [fileUrl, setFileUrl] = useState("");
   const [fileKey, setFileKey] = useState<string | null>(null);
@@ -39,18 +69,39 @@ export function SetupScreen() {
   const handleTokenChange = useCallback(
     async (value: string) => {
       setPat(value);
-      setTokenValid(false);
       if (!value.trim()) return;
 
       try {
         await validateAndSetToken(value.trim());
-        setTokenValid(true);
       } catch {
-        setTokenValid(false);
+        /* validationError in store */
       }
     },
     [validateAndSetToken],
   );
+
+  const handleSignInWithFigma = useCallback(async () => {
+    useAuthStore.setState({ validationError: null });
+    setOauthBusy(true);
+    try {
+      const { sessionId, authorizeUrl } = await beginOAuthSession();
+      openExternalUrl(authorizeUrl);
+      const result = await pollOAuthUntilComplete(sessionId);
+      await applyOAuthSession({
+        access_token: result.access_token,
+        refresh_token: result.refresh_token,
+        expires_in: result.expires_in,
+      });
+      setPat("");
+    } catch (e) {
+      useAuthStore.setState({
+        validationError:
+          e instanceof Error ? e.message : "Sign in with Figma failed.",
+      });
+    } finally {
+      setOauthBusy(false);
+    }
+  }, [applyOAuthSession]);
 
   const handleUrlChange = useCallback((value: string) => {
     setFileUrl(value);
@@ -72,17 +123,17 @@ export function SetupScreen() {
   }, []);
 
   const handleSubmit = useCallback(async () => {
-    if (!tokenValid || !fileKey) return;
+    if (!user || !fileKey) return;
     await setFileInfo(fileUrl, fileKey);
     completeSetup();
-  }, [tokenValid, fileKey, fileUrl, setFileInfo, completeSetup]);
+  }, [user, fileKey, fileUrl, setFileInfo, completeSetup]);
 
-  const canSubmit = tokenValid && !!fileKey && !isValidating;
+  const authReady = !!user;
+  const canSubmit = authReady && !!fileKey && !isValidating && !oauthBusy;
 
   return (
     <div className="flex flex-col h-full bg-figma-bg">
       <div className="flex-1 overflow-y-auto px-5 py-6">
-        {/* Header */}
         <div className="mb-6 text-center">
           <h1 className="text-lg font-semibold text-figma-text mb-1">
             Welcome to Bottom Line
@@ -94,110 +145,225 @@ export function SetupScreen() {
           </p>
         </div>
 
-        {/* Section 1: Figma Token */}
         <section className="mb-5">
-          <h2 className="text-sm font-medium text-figma-text mb-2 flex items-center gap-1.5 flex-wrap">
+          <h2 className="text-sm font-medium text-figma-text mb-2 flex items-center gap-1.5">
             <ShieldCheck size={14} className="text-accent" />
-            Figma Personal Access Token
-            <span className="relative inline-flex group">
-              <button
-                type="button"
-                className="rounded p-0.5 text-figma-icon-tertiary hover:text-figma-icon-secondary focus:outline-none focus-visible:ring-1 focus-visible:ring-accent-ring"
-                aria-label="What your token is used for"
-                aria-describedby="pat-token-transparency"
-              >
-                <Info size={13} strokeWidth={2} aria-hidden />
-              </button>
-              <div
-                id="pat-token-transparency"
-                className="pointer-events-none absolute left-1/2 top-full z-50 mt-1 w-max max-w-[min(260px,calc(100vw-2.5rem))] -translate-x-1/2 scale-50 rounded-md border border-white/[0.18] bg-figma-text pl-2.5 pr-3.5 py-2 text-left font-normal text-figma-bg opacity-0 shadow-[0_4px_20px_rgba(0,0,0,0.22)] transition-[opacity,transform] duration-150 [html.figma-dark_&]:border-black/[0.14] group-hover:pointer-events-auto group-hover:scale-100 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:scale-100 group-focus-within:opacity-100"
-                role="tooltip"
-              >
-                {/* <p className="mb-1.5 text-[11px] font-medium leading-tight text-figma-bg">
-                  Access Token is used to
-                </p> */}
-                <ul className="space-y-0.5 text-[10px] leading-tight text-figma-bg">
-                  {PAT_TRANSPARENCY_ITEMS.map(({ allow, label }) => (
-                    <li key={label} className="flex items-start gap-1.5">
-                      {allow ? (
-                        <Check
-                          size={10}
-                          strokeWidth={2.5}
-                          className="mt-[2px] shrink-0 text-status-resolved"
-                          aria-hidden
-                        />
-                      ) : (
-                        <X
-                          size={10}
-                          strokeWidth={2.5}
-                          className="mt-[2px] shrink-0 text-danger"
-                          aria-hidden
-                        />
-                      )}
-                      <span className="min-w-0">{label}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </span>
+            Connect to Figma
           </h2>
+          <p className="text-xs text-figma-text-tertiary mb-3">
+            The plugin uses Figma&apos;s API to read comments. Choose sign-in (recommended) or
+            paste a personal access token.
+          </p>
 
-          <div className="text-xs text-figma-text-secondary mb-3 space-y-1.5">
-            <p className="font-medium text-figma-text-secondary">How to get your token:</p>
-            <ol className="list-decimal list-inside space-y-0.5 text-figma-text-tertiary">
-              <li>Open Figma Settings &rarr; Security</li>
-              <li>Generate a new token named "Bottom Line"</li>
-              <li>
-                Include the <code className="bg-figma-bg-secondary px-1 py-0.5 rounded text-xs">file_comments:read</code> scope
-              </li>
-              <li>Copy and paste it below</li>
-            </ol>
-            <a
-              href="https://www.figma.com/settings"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-accent hover:underline text-xs mt-1"
-            >
-              Open Figma Settings
-              <ExternalLink size={10} />
-            </a>
-          </div>
-
-          {/* Token input + validation feedback — gap-2 between control and messages */}
-          <div className="flex flex-col gap-2">
-            <div className="relative">
-              <input
-                type={showToken ? "text" : "password"}
-                value={pat}
-                onChange={(e) => handleTokenChange(e.target.value)}
-                placeholder="figd_xxxxxxxxxxxxxxxx"
-                className="w-full bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2 pr-9 text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent-ring"
-              />
+          {oauthAvailable && !user && (
+            <div className="mb-3">
               <button
                 type="button"
-                onClick={() => setShowToken(!showToken)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-figma-icon-tertiary hover:text-figma-icon-secondary"
+                disabled={oauthBusy || isValidating}
+                onClick={() => void handleSignInWithFigma()}
+                className="w-full py-2.5 rounded-md text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed bg-figma-bg-secondary border border-figma-border text-figma-text hover:bg-figma-bg-tertiary hover:border-figma-border-strong"
               >
-                {showToken ? <EyeOff size={14} /> : <Eye size={14} />}
+                {oauthBusy ? (
+                  <span className="inline-flex items-center justify-center gap-2">
+                    <Loader2 size={14} className="animate-spin" />
+                    Waiting for browser…
+                  </span>
+                ) : (
+                  "Sign in with Figma"
+                )}
               </button>
+              <p className="text-[10px] text-figma-text-tertiary mt-1.5 text-center">
+                Opens your browser to sign in. Return here when the tab says you can close it.
+              </p>
             </div>
-            {isValidating && (
-              <div className="flex items-center gap-1.5 text-xs text-figma-text-secondary">
-                <Loader2 size={12} className="animate-spin" />
-                Validating token...
+          )}
+
+          {oauthAvailable && (
+            <button
+              type="button"
+              onClick={() => setShowPatAdvanced((v) => !v)}
+              className="flex items-center gap-1 text-xs text-accent hover:underline mb-2"
+            >
+              {showPatAdvanced ? (
+                <ChevronDown size={14} />
+              ) : (
+                <ChevronRight size={14} />
+              )}
+              Use a personal access token instead
+            </button>
+          )}
+
+          {showPatAdvanced && (
+            <>
+              <h3 className="text-xs font-medium text-figma-text-secondary mb-2 flex items-center gap-1.5 flex-wrap">
+                Personal access token
+                <span className="relative inline-flex group">
+                  <button
+                    type="button"
+                    className="rounded p-0.5 text-figma-icon-tertiary hover:text-figma-icon-secondary focus:outline-none focus-visible:ring-1 focus-visible:ring-accent-ring"
+                    aria-label="What your token is used for"
+                    aria-describedby="pat-token-transparency"
+                  >
+                    <Info size={13} strokeWidth={2} aria-hidden />
+                  </button>
+                  <div
+                    id="pat-token-transparency"
+                    className={PAT_INFO_TOOLTIP_CLASSNAME}
+                    role="tooltip"
+                  >
+                    <ul className="space-y-0.5 text-[10px] leading-tight text-figma-bg">
+                      {PAT_TRANSPARENCY_ITEMS.map(({ allow, label }) => (
+                        <li key={label} className="flex items-start gap-1.5">
+                          {allow ? (
+                            <Check
+                              size={10}
+                              strokeWidth={2.5}
+                              className="mt-[2px] shrink-0 text-status-resolved"
+                              aria-hidden
+                            />
+                          ) : (
+                            <X
+                              size={10}
+                              strokeWidth={2.5}
+                              className="mt-[2px] shrink-0 text-danger"
+                              aria-hidden
+                            />
+                          )}
+                          <span className="min-w-0">{label}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </span>
+              </h3>
+
+              <div className="text-xs text-figma-text-secondary mb-3 space-y-1.5">
+                <p className="font-medium text-figma-text-secondary">How to get your token:</p>
+                <ol className="list-decimal list-inside space-y-0.5 text-figma-text-tertiary">
+                  <li>Open Figma Settings &rarr; Security</li>
+                  <li>Generate a new token named &quot;Bottom Line&quot;</li>
+                  <li>
+                    Include these scopes:{" "}
+                    <code className="bg-figma-bg-secondary px-1 py-0.5 rounded text-xs">
+                      current_user:read
+                    </code>
+                    ,{" "}
+                    <code className="bg-figma-bg-secondary px-1 py-0.5 rounded text-xs">
+                      file_comments:read
+                    </code>
+                    , and{" "}
+                    <code className="bg-figma-bg-secondary px-1 py-0.5 rounded text-xs">
+                      file_content:read
+                    </code>
+                  </li>
+                  <li>Copy and paste it below</li>
+                </ol>
+                <a
+                  href="https://www.figma.com/settings"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-accent hover:underline text-xs mt-1"
+                >
+                  Open Figma Settings
+                  <ExternalLink size={10} />
+                </a>
               </div>
-            )}
-            {tokenValid && user && (
-              <div className="flex items-center gap-1.5 text-xs text-status-resolved">
-                <CheckCircle2 size={12} />
-                Connected as {user.handle}
+
+              <div className="flex flex-col gap-2">
+                <div className="relative">
+                  <input
+                    type={showToken ? "text" : "password"}
+                    value={pat}
+                    onChange={(e) => void handleTokenChange(e.target.value)}
+                    placeholder="figd_xxxxxxxxxxxxxxxx"
+                    className="w-full bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2 pr-9 text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent-ring"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowToken(!showToken)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-figma-icon-tertiary hover:text-figma-icon-secondary"
+                  >
+                    {showToken ? <EyeOff size={14} /> : <Eye size={14} />}
+                  </button>
+                </div>
+                {isValidating && authMethod !== "oauth" && (
+                  <div className="flex items-center gap-1.5 text-xs text-figma-text-secondary">
+                    <Loader2 size={12} className="animate-spin" />
+                    Validating token...
+                  </div>
+                )}
+                {user && authMethod === "pat" && (
+                  <div className="flex items-center gap-1.5 text-xs text-status-resolved">
+                    <CheckCircle2 size={12} />
+                    Connected as {user.handle}
+                  </div>
+                )}
               </div>
-            )}
-            {validationError && <FieldError>{validationError}</FieldError>}
-          </div>
+            </>
+          )}
+
+          {user && (
+            <div className="mt-3 bg-figma-bg-secondary border border-figma-border rounded-md p-3">
+              <div className="flex items-center gap-3">
+                {user.img_url && !avatarLoadFailed ? (
+                  <img
+                    src={user.img_url}
+                    alt={user.handle}
+                    className="w-10 h-10 rounded-full object-cover border border-figma-border"
+                    onError={() => setAvatarLoadFailed(true)}
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-figma-bg-tertiary flex items-center justify-center border border-figma-border">
+                    <UserIcon size={16} className="text-figma-icon-tertiary" />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-figma-text truncate">
+                    {user.handle}
+                  </p>
+                  <p className="text-xs text-figma-text-tertiary mt-0.5 truncate">
+                    {authMethod === "oauth"
+                      ? "Signed in with Figma"
+                      : "Using personal access token"}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => void useAuthStore.getState().logout()}
+                  className="p-2 rounded-md text-figma-icon-tertiary hover:bg-danger-bg hover:text-danger transition-colors shrink-0"
+                  title="Logout"
+                >
+                  <LogOut size={16} />
+                </button>
+              </div>
+
+              {authMethod === "oauth" && oauthAvailable && (
+                <button
+                  type="button"
+                  disabled={oauthBusy || isValidating}
+                  onClick={() => void handleSignInWithFigma()}
+                  className="w-full mt-3 py-2 rounded-md text-xs font-medium bg-figma-bg border border-figma-border text-figma-text hover:bg-figma-bg-tertiary disabled:opacity-40"
+                >
+                  {oauthBusy ? (
+                    <span className="inline-flex items-center justify-center gap-2">
+                      <Loader2 size={12} className="animate-spin" />
+                      Waiting for browser…
+                    </span>
+                  ) : (
+                    "Sign in again with Figma"
+                  )}
+                </button>
+              )}
+            </div>
+          )}
+
+          {validationError && (
+            <div className="mt-2">
+              <FieldError>{validationError}</FieldError>
+            </div>
+          )}
         </section>
 
-        {/* Section 2: File URL */}
         <section className="mb-5">
           <h2 className="text-sm font-medium text-figma-text mb-2 flex items-center gap-1.5">
             <Link size={14} className="text-accent" />
@@ -225,12 +391,11 @@ export function SetupScreen() {
         </section>
       </div>
 
-      {/* Footer */}
       <div className="px-5 py-4 border-t border-figma-border">
         <button
           type="button"
           disabled={!canSubmit}
-          onClick={handleSubmit}
+          onClick={() => void handleSubmit()}
           className="w-full py-2.5 rounded-md text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed bg-accent-bg text-white hover:bg-accent-hover active:bg-accent-hover"
         >
           Get Started

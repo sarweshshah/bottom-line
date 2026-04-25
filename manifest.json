@@ -23,6 +23,7 @@
       "https://lh3.googleusercontent.com",
       "https://*.googleusercontent.com",
       "https://openrouter.ai"
-    ]
+    ],
+    "devAllowedDomains": ["http://localhost:3847"]
   }
 }

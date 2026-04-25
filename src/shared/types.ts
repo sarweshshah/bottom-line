@@ -1,3 +1,5 @@
+export type FigmaAuthMethod = "pat" | "oauth";
+
 export interface FigmaUser {
   id: string;
   handle: string;

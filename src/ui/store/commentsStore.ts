@@ -52,42 +52,80 @@ export const useCommentsStore = create<CommentsState>((set, get) => ({
   },
 
   refreshComments: async () => {
-    const { pat, fileKey } = useAuthStore.getState();
-    if (!pat || !fileKey) return;
     if (get().isLoading) return;
+
+    const tryProactiveRefresh = async () => {
+      const { authMethod, tokenExpiresAt, tryRefreshOAuthToken } =
+        useAuthStore.getState();
+      if (
+        authMethod === "oauth" &&
+        tokenExpiresAt != null &&
+        Date.now() > tokenExpiresAt - 60_000
+      ) {
+        await tryRefreshOAuthToken();
+      }
+    };
+
+    await tryProactiveRefresh();
+
+    const { fileKey } = useAuthStore.getState();
+    const auth = useAuthStore.getState().getRestAuth();
+    if (!auth || !fileKey) return;
 
     set({ isLoading: true, error: null });
 
-    try {
-      const rawComments = await getComments(fileKey, pat);
-      const threads = normalizeComments(rawComments);
-      set({ threads, lastFetched: Date.now(), isLoading: false });
-      get().resolveCurrentPageThreads();
+    const load = async (isRetry: boolean) => {
+      const authNow = useAuthStore.getState().getRestAuth();
+      const fk = useAuthStore.getState().fileKey;
+      if (!authNow || !fk) {
+        set({ isLoading: false });
+        return;
+      }
 
-      const wfStore = useWorkflowStore.getState();
-      if (wfStore.initialized) {
-        wfStore.reconcileWithFigma(threads);
-        wfStore.cleanup(new Set(threads.map((t) => t.id)));
-      }
-    } catch (err) {
-      if (err instanceof FigmaApiError) {
-        if (err.code === "TOKEN_INVALID") {
-          useAuthStore.getState().showReconnect();
+      try {
+        const rawComments = await getComments(fk, authNow.token, authNow.mode);
+        const threads = normalizeComments(rawComments);
+        set({ threads, lastFetched: Date.now(), isLoading: false });
+        get().resolveCurrentPageThreads();
+
+        const wfStore = useWorkflowStore.getState();
+        if (wfStore.initialized) {
+          wfStore.reconcileWithFigma(threads);
+          wfStore.cleanup(new Set(threads.map((t) => t.id)));
         }
-        set({
-          isLoading: false,
-          error: { message: err.message, code: err.code },
-        });
-      } else {
-        set({
-          isLoading: false,
-          error: {
-            message: "An unexpected error occurred while fetching comments.",
-            code: "UNKNOWN",
-          },
-        });
+      } catch (err) {
+        if (err instanceof FigmaApiError) {
+          if (
+            err.code === "TOKEN_INVALID" &&
+            !isRetry &&
+            useAuthStore.getState().authMethod === "oauth"
+          ) {
+            const refreshed = await useAuthStore.getState().tryRefreshOAuthToken();
+            if (refreshed) {
+              await load(true);
+              return;
+            }
+          }
+          if (err.code === "TOKEN_INVALID") {
+            void useAuthStore.getState().showReconnect();
+          }
+          set({
+            isLoading: false,
+            error: { message: err.message, code: err.code },
+          });
+        } else {
+          set({
+            isLoading: false,
+            error: {
+              message: "An unexpected error occurred while fetching comments.",
+              code: "UNKNOWN",
+            },
+          });
+        }
       }
-    }
+    };
+
+    await load(false);
   },
 
   initializeCacheTTL: (minutes: CacheTTLMinutes) => {

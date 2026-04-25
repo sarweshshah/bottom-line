@@ -36,9 +36,26 @@ function normalizeCacheTTL(value: unknown): CacheTTLMinutes {
   return DEFAULT_CACHE_TTL_MINUTES;
 }
 
+function isAllowedExternalUrl(href: string): boolean {
+  if (href.startsWith("https://")) return true;
+  if (
+    href.startsWith("http://localhost/") ||
+    href.startsWith("http://localhost:") ||
+    href.startsWith("http://127.0.0.1/") ||
+    href.startsWith("http://127.0.0.1:")
+  ) {
+    return true;
+  }
+  return false;
+}
+
 async function sendInitData() {
   const [
     pat,
+    figmaAccessToken,
+    figmaRefreshToken,
+    figmaTokenExpiresAt,
+    authMethodRaw,
     fileKey,
     fileUrl,
     userName,
@@ -50,6 +67,10 @@ async function sendInitData() {
     cacheTTL,
   ] = await Promise.all([
     figma.clientStorage.getAsync("pat"),
+    figma.clientStorage.getAsync("figmaAccessToken"),
+    figma.clientStorage.getAsync("figmaRefreshToken"),
+    figma.clientStorage.getAsync("figmaTokenExpiresAt"),
+    figma.clientStorage.getAsync("authMethod"),
     figma.clientStorage.getAsync("fileKey"),
     figma.clientStorage.getAsync("fileUrl"),
     figma.clientStorage.getAsync("userName"),
@@ -61,9 +82,21 @@ async function sendInitData() {
     figma.clientStorage.getAsync("cacheTTL"),
   ]);
 
+  let authMethod: "pat" | "oauth" | null =
+    authMethodRaw === "oauth" || authMethodRaw === "pat" ? authMethodRaw : null;
+  if (!authMethod && pat) authMethod = "pat";
+  if (!authMethod && figmaAccessToken) authMethod = "oauth";
+
   const msg: InitDataMessage = {
     type: "INIT_DATA",
-    pat: pat ?? null,
+    pat: authMethod === "pat" ? pat ?? null : null,
+    figmaAccessToken: authMethod === "oauth" ? figmaAccessToken ?? null : null,
+    figmaRefreshToken: authMethod === "oauth" ? figmaRefreshToken ?? null : null,
+    figmaTokenExpiresAt:
+      authMethod === "oauth" && typeof figmaTokenExpiresAt === "number"
+        ? figmaTokenExpiresAt
+        : null,
+    authMethod,
     fileKey: fileKey ?? null,
     fileUrl: fileUrl ?? null,
     userName: userName ?? null,
@@ -212,6 +245,17 @@ figma.ui.onmessage = async (msg: SandboxMessage) => {
 
     case "REQUEST_INIT": {
       await sendInitData();
+      break;
+    }
+
+    case "OPEN_EXTERNAL": {
+      if (!isAllowedExternalUrl(msg.url)) {
+        figma.notify("This link cannot be opened from the plugin.", {
+          error: true,
+        });
+        break;
+      }
+      figma.openExternal(msg.url);
       break;
     }
 

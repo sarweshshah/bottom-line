@@ -18,6 +18,7 @@ import {
   Info,
   MessageSquare,
   ChevronDown,
+  ChevronRight,
   Sun,
   Moon,
 } from "lucide-react";
@@ -25,6 +26,12 @@ import { useAuthStore } from "@ui/store/authStore";
 import { useCommentsStore } from "@ui/store/commentsStore";
 import { useAIStore } from "@ui/store/aiStore";
 import { parseFileKey, isValidFigmaUrl } from "@ui/lib/parseFileUrl";
+import {
+  isFigmaOAuthConfigured,
+  beginOAuthSession,
+  pollOAuthUntilComplete,
+} from "@ui/lib/figmaOAuth";
+import { openExternalUrl } from "@ui/lib/openExternal";
 import { showToast } from "@ui/components/common/Toast";
 import { FieldError } from "@ui/components/common/FieldError";
 import { supportsVision, PROVIDER_MODEL_LABELS } from "@ui/ai/cloudProvider";
@@ -522,23 +529,37 @@ function BehaviorTab() {
 function AuthTab() {
   const {
     pat,
+    figmaAccessToken,
+    authMethod,
     user,
     validateAndSetToken,
+    applyOAuthSession,
     isValidating,
     validationError,
     logout,
   } = useAuthStore();
 
+  const oauthAvailable = isFigmaOAuthConfigured();
+  const [oauthBusy, setOauthBusy] = useState(false);
   const [editing, setEditing] = useState(false);
   const [newPat, setNewPat] = useState("");
   const [showToken, setShowToken] = useState(false);
   const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
+  const [showPatAdvanced, setShowPatAdvanced] = useState(authMethod !== "oauth");
 
   useEffect(() => {
     setAvatarLoadFailed(false);
   }, [user?.id, user?.img_url]);
 
-  const maskedPat = pat ? `${pat.slice(0, 8)}${"•".repeat(20)}` : "";
+  const maskedCredential =
+    authMethod === "oauth" && figmaAccessToken
+      ? `${figmaAccessToken.slice(0, 8)}${"•".repeat(12)}`
+      : pat
+        ? `${pat.slice(0, 8)}${"•".repeat(20)}`
+        : "";
+
+  const displaySecret =
+    authMethod === "oauth" ? figmaAccessToken || "" : pat || "";
 
   const handleSaveToken = useCallback(async () => {
     if (!newPat.trim()) return;
@@ -546,11 +567,40 @@ function AuthTab() {
       await validateAndSetToken(newPat.trim());
       setEditing(false);
       setNewPat("");
+      setShowPatAdvanced(true);
       showToast("Token updated successfully", "success");
     } catch {
       // validation error is surfaced by the store
     }
   }, [newPat, validateAndSetToken]);
+
+  const handleSignInWithFigma = useCallback(async () => {
+    useAuthStore.setState({ validationError: null });
+    setOauthBusy(true);
+    try {
+      const { sessionId, authorizeUrl } = await beginOAuthSession();
+      openExternalUrl(authorizeUrl);
+      const result = await pollOAuthUntilComplete(sessionId);
+      await applyOAuthSession({
+        access_token: result.access_token,
+        refresh_token: result.refresh_token,
+        expires_in: result.expires_in,
+      });
+      showToast("Figma account reconnected", "success");
+    } catch (e) {
+      useAuthStore.setState({
+        validationError:
+          e instanceof Error ? e.message : "Sign in with Figma failed.",
+      });
+    } finally {
+      setOauthBusy(false);
+    }
+  }, [applyOAuthSession]);
+
+  const connectionSubtitle =
+    authMethod === "oauth"
+      ? "Signed in with Figma"
+      : "Using personal access token";
 
   return (
     <div className="space-y-5">
@@ -558,37 +608,57 @@ function AuthTab() {
         <section>
           <h3 className="text-sm font-medium text-figma-text mb-2 flex items-center gap-1.5">
             <CheckCircle2 size={14} className="text-status-resolved" />
-            Connected Account
+            Account
           </h3>
-          <div className="flex items-center gap-3 bg-figma-bg-secondary border border-figma-border rounded-md p-3">
-            {user.img_url && !avatarLoadFailed ? (
-              <img
-                src={user.img_url}
-                alt={user.handle}
-                className="w-10 h-10 rounded-full object-cover border border-figma-border"
-                onError={() => setAvatarLoadFailed(true)}
-              />
-            ) : (
-              <div className="w-10 h-10 rounded-full bg-figma-bg-tertiary flex items-center justify-center border border-figma-border">
-                <UserIcon size={16} className="text-figma-icon-tertiary" />
+          <div className="bg-figma-bg-secondary border border-figma-border rounded-md p-3 space-y-3">
+            <div className="flex items-center gap-3">
+              {user.img_url && !avatarLoadFailed ? (
+                <img
+                  src={user.img_url}
+                  alt={user.handle}
+                  className="w-10 h-10 rounded-full object-cover border border-figma-border"
+                  onError={() => setAvatarLoadFailed(true)}
+                />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-figma-bg-tertiary flex items-center justify-center border border-figma-border">
+                  <UserIcon size={16} className="text-figma-icon-tertiary" />
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-figma-text truncate">
+                  {user.handle}
+                </p>
+                <p className="text-xs text-figma-text-tertiary mt-0.5 truncate">
+                  {connectionSubtitle}
+                </p>
               </div>
-            )}
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-figma-text truncate">
-                {user.handle}
-              </p>
-              <p className="text-xs text-figma-text-tertiary mt-0.5 truncate">
-                Connected via Token
-              </p>
+              <button
+                type="button"
+                onClick={() => void logout()}
+                className="p-2 rounded-md text-figma-icon-tertiary hover:bg-danger-bg hover:text-danger transition-colors shrink-0"
+                title="Logout"
+              >
+                <LogOut size={16} />
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => void logout()}
-              className="p-2 rounded-md text-figma-icon-tertiary hover:bg-danger-bg hover:text-danger transition-colors shrink-0"
-              title="Logout"
-            >
-              <LogOut size={16} />
-            </button>
+
+            {authMethod === "oauth" && oauthAvailable && (
+              <button
+                type="button"
+                disabled={oauthBusy || isValidating}
+                onClick={() => void handleSignInWithFigma()}
+                className="w-full py-2 rounded-md text-xs font-medium bg-figma-bg border border-figma-border text-figma-text hover:bg-figma-bg-tertiary disabled:opacity-40"
+              >
+                {oauthBusy ? (
+                  <span className="inline-flex items-center justify-center gap-2">
+                    <Loader2 size={12} className="animate-spin" />
+                    Waiting for browser…
+                  </span>
+                ) : (
+                  "Sign in again with Figma"
+                )}
+              </button>
+            )}
           </div>
         </section>
       )}
@@ -596,85 +666,105 @@ function AuthTab() {
       <section>
         <h3 className="text-sm font-medium text-figma-text mb-1 flex items-center gap-1.5">
           <ShieldCheck size={14} className="text-accent" />
-          Personal Access Token
+          Access token
         </h3>
         <p className="text-xs text-figma-text-tertiary mb-3">
-          Your token is stored locally in the plugin and never shared.{" "}
-          <a
-            href="https://help.figma.com/hc/en-us/articles/8085703771159-Manage-personal-access-tokens"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-accent hover:text-accent-hover transition-colors"
-          >
-            How to get one
-            <ExternalLink size={10} />
-          </a>
+          {authMethod === "oauth"
+            ? "OAuth tokens are stored only in this plugin. You can re-authenticate above or switch to a personal access token."
+            : "Your token is stored locally in the plugin and never shared."}{" "}
+          {authMethod !== "oauth" && (
+            <a
+              href="https://help.figma.com/hc/en-us/articles/8085703771159-Manage-personal-access-tokens"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-accent hover:text-accent-hover transition-colors"
+            >
+              How to get one
+              <ExternalLink size={10} />
+            </a>
+          )}
         </p>
 
-        {!editing ? (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2">
-              <code className="text-xs font-medium text-figma-text-secondary flex-1 truncate">
-                {showToken ? pat : maskedPat}
-              </code>
-              <button
-                type="button"
-                onClick={() => setShowToken(!showToken)}
-                className="text-figma-icon-tertiary hover:text-figma-icon-secondary shrink-0 p-0.5 rounded transition-colors"
-                title={showToken ? "Hide token" : "Show token"}
-              >
-                {showToken ? <EyeOff size={14} /> : <Eye size={14} />}
-              </button>
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                setEditing(true);
-                setNewPat("");
-              }}
-              className="px-3 py-1.5 rounded-md text-xs font-medium bg-figma-bg-secondary border border-figma-border text-figma-text hover:bg-figma-bg-tertiary hover:border-figma-border-strong transition-colors"
-            >
-              Change Token
-            </button>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            <input
-              type="password"
-              value={newPat}
-              onChange={(e) => setNewPat(e.target.value)}
-              placeholder="figd_xxxxxxxxxxxxxxxx"
-              className="w-full bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2 text-sm text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent-ring"
-              autoFocus
-            />
-            {isValidating && (
-              <div className="flex items-center gap-1.5 text-xs text-figma-text-tertiary">
-                <Loader2 size={12} className="animate-spin" />
-                Validating token...
+        {authMethod === "oauth" && (
+          <button
+            type="button"
+            onClick={() => setShowPatAdvanced((v) => !v)}
+            className="flex items-center gap-1 text-xs text-accent hover:underline mb-3"
+          >
+            {showPatAdvanced ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+            Use a personal access token instead
+          </button>
+        )}
+
+        {(authMethod === "pat" || (authMethod === "oauth" && showPatAdvanced)) && (
+          <>
+            {!editing ? (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2">
+                  <code className="text-xs font-medium text-figma-text-secondary flex-1 truncate">
+                    {showToken ? displaySecret : maskedCredential || "—"}
+                  </code>
+                  <button
+                    type="button"
+                    onClick={() => setShowToken(!showToken)}
+                    className="text-figma-icon-tertiary hover:text-figma-icon-secondary shrink-0 p-0.5 rounded transition-colors"
+                    title={showToken ? "Hide" : "Show"}
+                    disabled={!displaySecret}
+                  >
+                    {showToken ? <EyeOff size={14} /> : <Eye size={14} />}
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditing(true);
+                    setNewPat("");
+                  }}
+                  className="px-3 py-1.5 rounded-md text-xs font-medium bg-figma-bg-secondary border border-figma-border text-figma-text hover:bg-figma-bg-tertiary hover:border-figma-border-strong transition-colors"
+                >
+                  {authMethod === "oauth" ? "Paste personal access token" : "Change Token"}
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <input
+                  type="password"
+                  value={newPat}
+                  onChange={(e) => setNewPat(e.target.value)}
+                  placeholder="figd_xxxxxxxxxxxxxxxx"
+                  className="w-full bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2 text-sm text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent-ring"
+                  autoFocus
+                />
+                {isValidating && (
+                  <div className="flex items-center gap-1.5 text-xs text-figma-text-tertiary">
+                    <Loader2 size={12} className="animate-spin" />
+                    Validating token...
+                  </div>
+                )}
+                {validationError && <FieldError>{validationError}</FieldError>}
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => void handleSaveToken()}
+                    disabled={!newPat.trim() || isValidating}
+                    className="px-3 py-1.5 rounded-md text-xs font-medium bg-accent-bg text-white hover:bg-accent-hover disabled:opacity-40 transition-colors"
+                  >
+                    Save
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditing(false);
+                      setNewPat("");
+                    }}
+                    className="px-3 py-1.5 rounded-md text-xs font-medium bg-figma-bg-secondary border border-figma-border text-figma-text hover:bg-figma-bg-tertiary hover:border-figma-border-strong transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
             )}
-            {validationError && <FieldError>{validationError}</FieldError>}
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={handleSaveToken}
-                disabled={!newPat.trim() || isValidating}
-                className="px-3 py-1.5 rounded-md text-xs font-medium bg-accent-bg text-white hover:bg-accent-hover disabled:opacity-40 transition-colors"
-              >
-                Save
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setEditing(false);
-                  setNewPat("");
-                }}
-                className="px-3 py-1.5 rounded-md text-xs font-medium bg-figma-bg-secondary border border-figma-border text-figma-text hover:bg-figma-bg-tertiary hover:border-figma-border-strong transition-colors"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
+          </>
         )}
       </section>
     </div>
