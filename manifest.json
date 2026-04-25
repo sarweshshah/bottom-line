@@ -22,7 +22,8 @@
       "https://s3-alpha.figma.com",
       "https://lh3.googleusercontent.com",
       "https://*.googleusercontent.com",
-      "https://openrouter.ai"
+      "https://openrouter.ai",
+      "https://figma-bottom-line-oauth-prod.onrender.com"
     ],
     "devAllowedDomains": ["http://localhost:3847"]
   }

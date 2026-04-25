@@ -67,10 +67,10 @@ Outputs `dist/index.html` (UI) and `dist/code.js` (sandbox).
 For OAuth-enabled release builds, set your production backend origin before build:
 
 ```bash
-FIGMA_OAUTH_BACKEND_ORIGIN=https://oauth.example.com npm run build
+FIGMA_OAUTH_BACKEND_ORIGIN=https://figma-bottom-line-oauth-prod.onrender.com npm run build
 ```
 
-This adds your OAuth backend to `dist/manifest.json` `allowedDomains` and strips `devAllowedDomains` so localhost is not included in release artifacts.
+Release builds remove `devAllowedDomains` from `dist/manifest.json`. The production OAuth broker is already in `allowedDomains`; set `FIGMA_OAUTH_BACKEND_ORIGIN` before `npm run build` only if you use a different HTTPS OAuth backend and need that origin added.
 
 ### Type Checking
 
@@ -120,11 +120,11 @@ All settings are accessible from the plugin's **Settings** screen:
 Use an HTTPS OAuth backend in production and configure both frontend + server:
 
 - UI env (`.env`):
-  - `VITE_FIGMA_OAUTH_BACKEND_URL=https://oauth.example.com`
-- OAuth server env:
+  - `VITE_FIGMA_OAUTH_BACKEND_URL=https://figma-bottom-line-oauth-prod.onrender.com`
+- OAuth server env (see `server/env.example`):
   - `FIGMA_CLIENT_ID=...`
   - `FIGMA_CLIENT_SECRET=...`
-  - `OAUTH_REDIRECT_URI=https://oauth.example.com/api/figma/oauth/callback`
+  - `OAUTH_REDIRECT_URI=https://figma-bottom-line-oauth-prod.onrender.com/api/figma/oauth/callback`
   - `CORS_ALLOW_ORIGINS=https://www.figma.com,https://www.figma-beta.com`
 
 Do not expose `FIGMA_CLIENT_SECRET` to the UI or any `VITE_*` variable.
