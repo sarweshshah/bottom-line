@@ -1,5 +1,12 @@
 import { useMemo, useState } from "react";
-import { CheckSquare, Square, Sparkles, MessageSquare } from "lucide-react";
+import {
+  CheckSquare,
+  Square,
+  Sparkles,
+  MessageSquare,
+  ChevronDown,
+  ChevronRight,
+} from "lucide-react";
 import type { Task, TaskStatus, CommentThread } from "@shared/types";
 import { useAIStore } from "@ui/store/aiStore";
 import {
@@ -10,7 +17,7 @@ import { useCommentsStore } from "@ui/store/commentsStore";
 
 interface TaskGroup {
   assignee: string;
-  tasks: Task[];
+  tasks: DisplayTask[];
 }
 
 function normalizeAssignee(assignee: string | null): string | null {
@@ -19,11 +26,60 @@ function normalizeAssignee(assignee: string | null): string | null {
   return cleaned || null;
 }
 
-function groupByAssignee(tasks: Task[]): TaskGroup[] {
-  const groups = new Map<string, Task[]>();
+interface DisplayTask {
+  id: string;
+  threadId: string;
+  description: string;
+  type: Task["type"];
+  status: TaskStatus;
+  assignees: string[];
+  sourceTaskIds: string[];
+}
+
+function mergeDuplicateTasks(tasks: Task[]): DisplayTask[] {
+  const merged = new Map<string, DisplayTask>();
 
   for (const task of tasks) {
-    const key = normalizeAssignee(task.assignee) ?? "Unassigned";
+    const normalizedAssignee = normalizeAssignee(task.assignee);
+    const mergeKey = `${task.threadId}::${task.type}::${task.description.trim().toLowerCase()}`;
+    const existing = merged.get(mergeKey);
+    if (!existing) {
+      merged.set(mergeKey, {
+        id: mergeKey,
+        threadId: task.threadId,
+        description: task.description,
+        type: task.type,
+        status: task.status,
+        assignees: normalizedAssignee ? [normalizedAssignee] : [],
+        sourceTaskIds: [task.id],
+      });
+      continue;
+    }
+
+    existing.sourceTaskIds.push(task.id);
+    if (task.status === "pending") {
+      existing.status = "pending";
+    }
+    if (normalizedAssignee && !existing.assignees.includes(normalizedAssignee)) {
+      existing.assignees.push(normalizedAssignee);
+      existing.assignees.sort((a, b) => a.localeCompare(b));
+    }
+  }
+
+  return Array.from(merged.values());
+}
+
+function assigneeGroupKey(task: DisplayTask): string {
+  if (task.assignees.length === 0) return "Unassigned";
+  if (task.assignees.length === 1) return task.assignees[0];
+  return "Multiple assignees";
+}
+
+function groupByAssignee(tasks: DisplayTask[]): TaskGroup[] {
+  const groups = new Map<string, DisplayTask[]>();
+
+  for (const task of tasks) {
+    const key = assigneeGroupKey(task);
     const existing = groups.get(key);
     if (existing) {
       existing.push(task);
@@ -55,13 +111,18 @@ export function TasksView({ onSelectThread }: TasksViewProps) {
   const [statusFilter, setStatusFilter] = useState<Set<TaskStatus>>(
     () => new Set(["pending", "done"]),
   );
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(
+    () => new Set(),
+  );
 
   const pendingCount = allTasks.filter((t) => t.status === "pending").length;
   const doneCount = allTasks.filter((t) => t.status === "done").length;
 
+  const mergedTasks = useMemo(() => mergeDuplicateTasks(allTasks), [allTasks]);
+
   const filteredTasks = useMemo(
-    () => allTasks.filter((t) => statusFilter.has(t.status)),
-    [allTasks, statusFilter],
+    () => mergedTasks.filter((t) => statusFilter.has(t.status)),
+    [mergedTasks, statusFilter],
   );
   const groups = useMemo(() => groupByAssignee(filteredTasks), [filteredTasks]);
 
@@ -72,6 +133,18 @@ export function TasksView({ onSelectThread }: TasksViewProps) {
         if (next.size > 1) next.delete(status);
       } else {
         next.add(status);
+      }
+      return next;
+    });
+  };
+
+  const toggleGroup = (assignee: string) => {
+    setCollapsedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(assignee)) {
+        next.delete(assignee);
+      } else {
+        next.add(assignee);
       }
       return next;
     });
@@ -124,77 +197,99 @@ export function TasksView({ onSelectThread }: TasksViewProps) {
 
       {groups.map((group) => (
         <div key={group.assignee}>
-          <div className="px-4 py-2 bg-figma-bg-secondary border-b border-figma-border">
-            <span className="text-xs font-medium text-figma-text-secondary">
-              {group.assignee === "Unassigned"
-                ? "Unassigned"
-                : `@${group.assignee}`}
-            </span>
-            <span className="text-xs text-figma-text-disabled ml-2">
-              ({group.tasks.length})
-            </span>
-          </div>
+          <button
+            type="button"
+            onClick={() => toggleGroup(group.assignee)}
+            className="w-full flex items-center justify-between px-4 py-2 bg-figma-bg-secondary border-b border-figma-border text-left hover:bg-figma-bg-tertiary transition-colors"
+          >
+            <div className="flex items-center gap-1.5">
+              {collapsedGroups.has(group.assignee) ? (
+                <ChevronRight size={12} className="text-figma-icon-secondary" />
+              ) : (
+                <ChevronDown size={12} className="text-figma-icon-secondary" />
+              )}
+              <span className="text-xs font-medium text-figma-text-secondary">
+                {group.assignee === "Unassigned"
+                  ? "Unassigned"
+                  : group.assignee}
+              </span>
+              <span className="text-xs text-figma-text-disabled ml-2">
+                ({group.tasks.length})
+              </span>
+            </div>
+          </button>
 
-          <div className="divide-y divide-figma-border">
-            {group.tasks.map((task) => (
-              <div
-                key={task.id}
-                className="flex items-start gap-2.5 px-4 py-2.5"
-              >
-                <button
-                  type="button"
-                  onClick={() =>
-                    updateTaskStatus(
-                      task.id,
-                      task.status === "done" ? "pending" : "done",
-                    )
-                  }
-                  className="shrink-0 mt-0.5 text-figma-icon-secondary hover:text-figma-icon transition-colors"
+          {!collapsedGroups.has(group.assignee) && (
+            <div className="divide-y divide-figma-border">
+              {group.tasks.map((task) => (
+                <div
+                  key={task.id}
+                  className="flex items-start gap-2.5 px-4 py-2.5"
                 >
-                  {task.status === "done" ? (
-                    <CheckSquare size={14} className="text-status-resolved" />
-                  ) : (
-                    <Square size={14} />
-                  )}
-                </button>
-                <div className="flex-1 min-w-0">
-                  <p
-                    className={`text-[11px] leading-relaxed ${
-                      task.status === "done"
-                        ? "text-figma-text-disabled line-through"
-                        : "text-figma-text"
-                    }`}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      task.sourceTaskIds.forEach((sourceTaskId) =>
+                        updateTaskStatus(
+                          sourceTaskId,
+                          task.status === "done" ? "pending" : "done",
+                        ),
+                      )
+                    }
+                    className="shrink-0 mt-0.5 text-figma-icon-secondary hover:text-figma-icon transition-colors"
                   >
-                    {task.description}
-                  </p>
-                  <div className="flex items-center justify-between mt-1">
-                    <span
-                      className={`inline-block text-[9px] px-1.5 py-0.5 rounded-full font-medium ${TASK_TYPE_COLORS[task.type]}`}
-                    >
-                      {TASK_TYPE_LABELS[task.type]}
-                    </span>
-                    {threads.find((t) => t.id === task.threadId) && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const thread = threads.find(
-                            (t) => t.id === task.threadId,
-                          );
-                          if (thread) onSelectThread(thread);
-                        }}
-                        className="ml-2 shrink-0 p-1 rounded-md text-figma-icon-tertiary hover:bg-figma-bg-secondary hover:text-figma-icon transition-colors"
-                        data-tooltip="Open thread"
-                        data-tooltip-align="right"
-                        data-tooltip-pos="bottom"
-                      >
-                        <MessageSquare size={11} />
-                      </button>
+                    {task.status === "done" ? (
+                      <CheckSquare size={14} className="text-status-resolved" />
+                    ) : (
+                      <Square size={14} />
                     )}
+                  </button>
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className={`text-[11px] leading-relaxed ${
+                        task.status === "done"
+                          ? "text-figma-text-disabled line-through"
+                          : "text-figma-text"
+                      }`}
+                    >
+                      {task.description}
+                    </p>
+                    <div className="flex items-center justify-between mt-1">
+                      <div className="flex items-center gap-1.5">
+                        <span
+                          className={`inline-block text-[9px] px-1.5 py-0.5 rounded-full font-medium ${TASK_TYPE_COLORS[task.type]}`}
+                        >
+                          {TASK_TYPE_LABELS[task.type]}
+                        </span>
+                        {task.assignees.length > 1 && (
+                          <span className="text-[9px] text-figma-text-tertiary">
+                            {task.assignees.join(", ")}
+                          </span>
+                        )}
+                      </div>
+                      {threads.find((t) => t.id === task.threadId) && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const thread = threads.find(
+                              (t) => t.id === task.threadId,
+                            );
+                            if (thread) onSelectThread(thread);
+                          }}
+                          className="ml-2 shrink-0 p-1 rounded-md text-figma-icon-tertiary hover:bg-figma-bg-secondary hover:text-figma-icon transition-colors"
+                          data-tooltip="Open thread"
+                          data-tooltip-align="right"
+                          data-tooltip-pos="bottom"
+                        >
+                          <MessageSquare size={11} />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       ))}
     </div>

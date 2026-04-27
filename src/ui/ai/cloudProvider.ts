@@ -2,10 +2,11 @@ import type {
   AIProvider,
   CommentThread,
   CustomProviderConfig,
+  SummaryWordLimit,
   SummaryResult,
 } from "@shared/types";
 import {
-  SYSTEM_PROMPT,
+  buildSystemPrompt,
   formatThreadForPrompt,
   parseAIResponse,
 } from "./prompts";
@@ -95,6 +96,7 @@ function buildUserContent(
 async function callAnthropic(
   apiKey: string,
   threadText: string,
+  systemPrompt: string,
   images: ProcessedImage[],
 ): Promise<string> {
   const userContent = buildUserContent(threadText, images, "anthropic");
@@ -109,7 +111,7 @@ async function callAnthropic(
     body: JSON.stringify({
       model: ANTHROPIC_MODEL,
       max_tokens: 4096,
-      system: SYSTEM_PROMPT,
+      system: systemPrompt,
       messages: [{ role: "user", content: userContent }],
     }),
   });
@@ -132,6 +134,7 @@ async function callAnthropic(
 async function callOpenAI(
   apiKey: string,
   threadText: string,
+  systemPrompt: string,
   images: ProcessedImage[],
   baseUrl = "https://api.openai.com/v1",
   model = "gpt-4o-mini",
@@ -147,7 +150,7 @@ async function callOpenAI(
       model,
       max_tokens: 4096,
       messages: [
-        { role: "system", content: SYSTEM_PROMPT },
+        { role: "system", content: systemPrompt },
         { role: "user", content: userContent },
       ],
     }),
@@ -186,6 +189,7 @@ function geminiErrorMessage(status: number, body: string): string {
 async function callGeminiModel(
   apiKey: string,
   threadText: string,
+  systemPrompt: string,
   images: ProcessedImage[],
   model: string,
 ): Promise<string> {
@@ -197,7 +201,7 @@ async function callGeminiModel(
       inline_data: { mime_type: img.mimeType, data: img.base64 },
     });
   }
-  parts.push({ text: `${SYSTEM_PROMPT}\n\n${threadText}` });
+  parts.push({ text: `${systemPrompt}\n\n${threadText}` });
 
   const res = await fetchWithTimeout(url, {
     method: "POST",
@@ -225,6 +229,7 @@ async function callGeminiModel(
 async function callGemini(
   apiKey: string,
   threadText: string,
+  systemPrompt: string,
   images: ProcessedImage[],
 ): Promise<{ text: string; model: string }> {
   // Try the primary model with one retry on 503 before falling back.
@@ -233,6 +238,7 @@ async function callGemini(
       const text = await callGeminiModel(
         apiKey,
         threadText,
+        systemPrompt,
         images,
         GEMINI_PRIMARY_MODEL,
       );
@@ -251,6 +257,7 @@ async function callGemini(
   const text = await callGeminiModel(
     apiKey,
     threadText,
+    systemPrompt,
     images,
     GEMINI_FALLBACK_MODEL,
   );
@@ -261,24 +268,31 @@ export async function cloudSummarize(
   thread: CommentThread,
   provider: AIProvider,
   apiKey: string,
+  summaryWordLimit: SummaryWordLimit,
   images: ProcessedImage[],
   customConfig?: CustomProviderConfig,
 ): Promise<SummaryResult> {
   const threadText = formatThreadForPrompt(thread);
+  const systemPrompt = buildSystemPrompt(summaryWordLimit);
   let rawResponse: string;
   let modelName: string;
 
   switch (provider) {
     case "anthropic":
       modelName = ANTHROPIC_MODEL;
-      rawResponse = await callAnthropic(apiKey, threadText, images);
+      rawResponse = await callAnthropic(apiKey, threadText, systemPrompt, images);
       break;
     case "openai":
       modelName = "gpt-4o-mini";
-      rawResponse = await callOpenAI(apiKey, threadText, images);
+      rawResponse = await callOpenAI(apiKey, threadText, systemPrompt, images);
       break;
     case "gemini": {
-      const geminiResult = await callGemini(apiKey, threadText, images);
+      const geminiResult = await callGemini(
+        apiKey,
+        threadText,
+        systemPrompt,
+        images,
+      );
       modelName = geminiResult.model;
       rawResponse = geminiResult.text;
       break;
@@ -291,6 +305,7 @@ export async function cloudSummarize(
       rawResponse = await callOpenAI(
         customConfig.apiKey || apiKey,
         threadText,
+        systemPrompt,
         images,
         customConfig.baseUrl.replace(/\/+$/, ""),
         modelName,
@@ -301,7 +316,14 @@ export async function cloudSummarize(
       throw new CloudAIError(`Unsupported provider: ${provider}`);
   }
 
-  return parseAIResponse(rawResponse, thread.id, thread, provider, modelName);
+  return parseAIResponse(
+    rawResponse,
+    thread.id,
+    thread,
+    provider,
+    modelName,
+    summaryWordLimit,
+  );
 }
 
 const VISION_PROVIDERS = new Set<AIProvider>(["anthropic", "openai", "gemini"]);

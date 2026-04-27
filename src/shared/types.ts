@@ -95,6 +95,7 @@ export type CacheTTLMinutes = 5 | 10 | 15 | 30;
 
 export type ThemePreference = "system" | "light" | "dark";
 export type AIProvider = "anthropic" | "openai" | "gemini" | "custom";
+export type SummaryWordLimit = number;
 export type TaskType = "revision" | "approval" | "blocker" | "question" | "general";
 export type TaskStatus = "pending" | "done";
 
@@ -143,6 +144,7 @@ export interface StoredPreferences {
   openaiApiKey: string;
   geminiApiKey: string;
   customProviderConfig: CustomProviderConfig;
+  summaryWordLimit: SummaryWordLimit;
   imageAnalysisEnabled: boolean;
   cloudAiConsented: boolean;
   cloudAiConsentIncludesImages: boolean;

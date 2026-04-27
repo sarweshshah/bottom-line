@@ -54,6 +54,7 @@ async function fetchWithTimeout(
   try {
     return await rateLimitedFetch(input, {
       ...init,
+      cache: "no-store",
       signal: controller.signal,
     });
   } catch (err) {

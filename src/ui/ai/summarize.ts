@@ -93,7 +93,7 @@ export async function summarizeThread(
   skipCache = false,
 ): Promise<SummaryResult> {
   const store = useAIStore.getState();
-  const { provider, imageAnalysisEnabled } = store;
+  const { provider, imageAnalysisEnabled, summaryWordLimit } = store;
 
   if (!skipCache) {
     const cached = await getCachedSummary(thread.id, thread.lastUpdatedAt);
@@ -119,6 +119,7 @@ export async function summarizeThread(
     thread,
     provider,
     apiKey,
+    summaryWordLimit,
     images,
     provider === "custom" ? store.customConfig : undefined,
   );

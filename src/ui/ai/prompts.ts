@@ -3,16 +3,22 @@ import type {
   Task,
   SummaryResult,
   AIProvider,
+  SummaryWordLimit,
 } from "@shared/types";
 
-export const SYSTEM_PROMPT = `You are an assistant that analyzes Figma design comment threads.
+export function buildSystemPrompt(summaryWordLimit: SummaryWordLimit): string {
+  return `You are an assistant that analyzes Figma design comment threads.
 For each thread, provide:
 
-1. SUMMARY: A 2-4 sentence summary capturing the core feedback,
+1. SUMMARY: A concise 2-4 bullet summary capturing the core feedback,
    current state, decisions made, and key discussion points.
+   Use "-" for each bullet and keep each bullet to one sentence.
+   Put each bullet on its own line. Do not chain multiple bullets
+   within a single line using inline " - " separators.
    Write in present tense. Be specific about design elements
    mentioned. If images are attached, describe the relevant
    visual content and how it relates to the feedback.
+   Keep the summary at or below ${summaryWordLimit} words.
 
 2. TASKS: Extract any action items, requests, or assignments.
    For each task, provide:
@@ -30,8 +36,71 @@ Respond in JSON format:
 
 If no tasks are found, return an empty tasks array.
 Do not invent tasks that aren't clearly implied by the conversation.`;
+}
 
 const MAX_CHARS = 16000;
+const SUMMARY_SOFT_OVERAGE_WORDS = 10;
+
+function truncateToWordLimit(text: string, limit: SummaryWordLimit): string {
+  const normalized = text
+    .trim()
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n{3,}/g, "\n\n");
+  if (!normalized) return normalized;
+
+  const words = normalized.match(/\S+/g) ?? [];
+  if (words.length <= limit + SUMMARY_SOFT_OVERAGE_WORDS) return normalized;
+
+  const sentences = normalized.split(/(?<=[.!?])\s+/).filter(Boolean);
+  const keptSentences: string[] = [];
+  let runningWords = 0;
+  for (const sentence of sentences) {
+    const sentenceWordCount = (sentence.match(/\S+/g) ?? []).length;
+    if (runningWords + sentenceWordCount > limit) break;
+    keptSentences.push(sentence);
+    runningWords += sentenceWordCount;
+  }
+
+  if (keptSentences.length > 0) {
+    return `${keptSentences.join(" ")}...`;
+  }
+
+  return `${words.slice(0, limit).join(" ")}...`;
+}
+
+function ensureBulletedSummary(text: string): string {
+  const lines = text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+  if (lines.length === 0) return text;
+
+  if (lines.every((line) => /^[-*•]\s+/.test(line))) {
+    const expandedBullets = lines.flatMap((line) => {
+      const cleaned = line.replace(/^[-*•]\s+/, "").trim();
+      return cleaned
+        .split(/\s[-*•]\s+/)
+        .map((segment) => segment.trim())
+        .filter(Boolean);
+    });
+    return expandedBullets.map((line) => `- ${line}`).join("\n");
+  }
+
+  const sentences = text
+    .split(/(?<=[.!?])\s+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  if (sentences.length === 0) {
+    return `- ${text.trim()}`;
+  }
+
+  const bulletCount = Math.min(4, sentences.length);
+  return sentences
+    .slice(0, bulletCount)
+    .map((sentence) => `- ${sentence}`)
+    .join("\n");
+}
 
 export function formatThreadForPrompt(thread: CommentThread): string {
   const lines: string[] = [];
@@ -121,6 +190,7 @@ export function parseAIResponse(
   thread: CommentThread,
   provider: AIProvider,
   modelName: string,
+  summaryWordLimit: SummaryWordLimit,
 ): SummaryResult {
   const parsed = extractJSON(raw);
 
@@ -130,7 +200,9 @@ export function parseAIResponse(
       "Summary could not be generated. Please try again.";
 
     return {
-      summary: fallback,
+      summary: ensureBulletedSummary(
+        truncateToWordLimit(fallback, summaryWordLimit),
+      ),
       tasks: [],
       generatedAt: new Date().toISOString(),
       threadLastUpdatedAt: thread.lastUpdatedAt,
@@ -155,7 +227,9 @@ export function parseAIResponse(
     }));
 
   return {
-    summary: parsed.summary,
+    summary: ensureBulletedSummary(
+      truncateToWordLimit(parsed.summary, summaryWordLimit),
+    ),
     tasks,
     generatedAt: new Date().toISOString(),
     threadLastUpdatedAt: thread.lastUpdatedAt,

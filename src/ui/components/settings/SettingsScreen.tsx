@@ -39,6 +39,7 @@ import { clearAllCachedSummaries } from "@ui/ai/summarize";
 import type {
   AIProvider,
   CacheTTLMinutes,
+  SummaryWordLimit,
   ThemePreference,
 } from "@shared/types";
 
@@ -58,6 +59,7 @@ const PLUGIN_ID = "bottom-line-dev";
 const PLUGIN_VERSION = "0.1.0";
 
 const TTL_OPTIONS: CacheTTLMinutes[] = [5, 10, 15, 30];
+const SUMMARY_WORD_LIMITS: SummaryWordLimit[] = [50, 100, 150, 200];
 
 const PROVIDER_OPTIONS: {
   value: AIProvider;
@@ -154,7 +156,7 @@ function GeneralTab() {
             ? "Paste a new URL to switch the connected Figma file."
             : "The Figma file to analyze comments for."}
         </p>
-        <div className="space-y-2">
+        <div className="p-3 bg-figma-bg-secondary border border-figma-border rounded-md space-y-2">
           <input
             type="text"
             value={url}
@@ -184,11 +186,13 @@ function AITab() {
     geminiApiKey,
     customConfig,
     imageAnalysisEnabled,
+    summaryWordLimit,
     setProvider,
     setAnthropicApiKey,
     setOpenaiApiKey,
     setGeminiApiKey,
     setCustomConfig,
+    setSummaryWordLimit,
     setImageAnalysisEnabled,
   } = useAIStore();
 
@@ -406,6 +410,55 @@ function AITab() {
               </div>
             );
           })}
+        </div>
+      </section>
+
+      <section>
+        <h3 className="text-sm font-medium text-figma-text mb-1 flex items-center gap-1.5">
+          <MessageSquare size={14} className="text-accent" />
+          Summary length
+        </h3>
+        <p className="text-xs text-figma-text-tertiary mb-3">
+          Cap summary length in words.
+        </p>
+        <div className="p-3 rounded-md border border-figma-border bg-figma-bg space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-figma-text">Word limit</span>
+            <span className="text-xs font-medium text-figma-text">
+              {summaryWordLimit} words
+            </span>
+          </div>
+          <input
+            type="range"
+            min={50}
+            max={200}
+            step={10}
+            value={summaryWordLimit}
+            onChange={(e) =>
+              setSummaryWordLimit(Number(e.target.value) as SummaryWordLimit)
+            }
+            className="w-full h-1 appearance-none rounded-full bg-figma-bg-tertiary cursor-pointer
+              [&::-webkit-slider-thumb]:appearance-none
+              [&::-webkit-slider-thumb]:h-4
+              [&::-webkit-slider-thumb]:w-4
+              [&::-webkit-slider-thumb]:rounded-full
+              [&::-webkit-slider-thumb]:bg-accent
+              [&::-webkit-slider-thumb]:border-2
+              [&::-webkit-slider-thumb]:border-figma-bg
+              [&::-webkit-slider-thumb]:shadow-sm
+              [&::-moz-range-thumb]:h-4
+              [&::-moz-range-thumb]:w-4
+              [&::-moz-range-thumb]:rounded-full
+              [&::-moz-range-thumb]:bg-accent
+              [&::-moz-range-thumb]:border-2
+              [&::-moz-range-thumb]:border-figma-bg
+              [&::-moz-range-thumb]:shadow-sm"
+          />
+          <div className="flex items-center justify-between text-[11px] text-figma-text-secondary">
+            {SUMMARY_WORD_LIMITS.map((limit) => (
+              <span key={limit}>{limit}</span>
+            ))}
+          </div>
         </div>
       </section>
 

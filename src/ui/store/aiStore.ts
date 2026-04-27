@@ -2,6 +2,7 @@ import { create } from "zustand";
 import type {
   AIProvider,
   CustomProviderConfig,
+  SummaryWordLimit,
   SummaryResult,
   Task,
   TaskStatus,
@@ -22,6 +23,7 @@ interface AIState {
   openaiApiKey: string;
   geminiApiKey: string;
   customConfig: CustomProviderConfig;
+  summaryWordLimit: SummaryWordLimit;
   imageAnalysisEnabled: boolean;
   cloudAiConsented: boolean;
   cloudAiConsentIncludesImages: boolean;
@@ -34,6 +36,7 @@ interface AIState {
   setOpenaiApiKey: (key: string) => void;
   setGeminiApiKey: (key: string) => void;
   setCustomConfig: (config: CustomProviderConfig) => void;
+  setSummaryWordLimit: (limit: SummaryWordLimit) => void;
   setImageAnalysisEnabled: (enabled: boolean) => void;
   setCloudAiConsented: (consented: boolean, includesImages: boolean) => void;
 
@@ -60,12 +63,18 @@ const DEFAULT_CUSTOM_CONFIG: CustomProviderConfig = {
   modelName: "",
 };
 
+function normalizeSummaryWordLimit(limit: number): SummaryWordLimit {
+  const clamped = Math.min(200, Math.max(50, Math.round(limit)));
+  return Math.round(clamped / 10) * 10;
+}
+
 export const useAIStore = create<AIState>((set, get) => ({
   provider: "anthropic",
   anthropicApiKey: "",
   openaiApiKey: "",
   geminiApiKey: "",
   customConfig: { ...DEFAULT_CUSTOM_CONFIG },
+  summaryWordLimit: 150,
   imageAnalysisEnabled: false,
   cloudAiConsented: false,
   cloudAiConsentIncludesImages: false,
@@ -96,6 +105,12 @@ export const useAIStore = create<AIState>((set, get) => ({
   setCustomConfig: (config) => {
     set({ customConfig: config });
     setStorage("customProviderConfig", config);
+  },
+
+  setSummaryWordLimit: (limit) => {
+    const normalized = normalizeSummaryWordLimit(limit);
+    set({ summaryWordLimit: normalized });
+    setStorage("summaryWordLimit", normalized);
   },
 
   setImageAnalysisEnabled: (enabled) => {
@@ -220,6 +235,7 @@ export const useAIStore = create<AIState>((set, get) => ({
       openaiKey,
       geminiKey,
       customConfig,
+      summaryWordLimit,
       imageEnabled,
       consented,
       consentImages,
@@ -229,6 +245,7 @@ export const useAIStore = create<AIState>((set, get) => ({
       getStorage<string>("openaiApiKey"),
       getStorage<string>("geminiApiKey"),
       getStorage<CustomProviderConfig>("customProviderConfig"),
+      getStorage<SummaryWordLimit>("summaryWordLimit"),
       getStorage<boolean>("imageAnalysisEnabled"),
       getStorage<boolean>("cloudAiConsented"),
       getStorage<boolean>("cloudAiConsentIncludesImages"),
@@ -240,6 +257,7 @@ export const useAIStore = create<AIState>((set, get) => ({
       openaiApiKey: openaiKey ?? "",
       geminiApiKey: geminiKey ?? "",
       customConfig: customConfig ?? { ...DEFAULT_CUSTOM_CONFIG },
+      summaryWordLimit: normalizeSummaryWordLimit(summaryWordLimit ?? 150),
       imageAnalysisEnabled: imageEnabled ?? false,
       cloudAiConsented: consented ?? false,
       cloudAiConsentIncludesImages: consentImages ?? false,

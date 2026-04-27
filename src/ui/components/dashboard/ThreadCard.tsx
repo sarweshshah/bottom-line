@@ -99,12 +99,10 @@ export function ThreadCard({
               {threadHasImages(thread) && (
                 <Image size={11} className="text-figma-text-tertiary" />
               )}
-              {thread.replyCount > 0 && (
-                <span className="flex items-center gap-1 text-xs text-figma-text-tertiary">
-                  <MessageCircle size={11} />
-                  {thread.replyCount}
-                </span>
-              )}
+              <span className="flex items-center gap-1 text-xs text-figma-text-tertiary">
+                <MessageCircle size={11} />
+                {thread.replyCount + 1}
+              </span>
               {thread.clientMeta && !bulkMode && (
                 <button
                   type="button"
