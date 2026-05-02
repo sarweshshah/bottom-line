@@ -1,49 +1,9 @@
+import { mapOAuthErrorToPublicMessage } from "@shared/oauthPublicMessages.mjs";
+
 function oauthBackendBase(): string | null {
   const raw = import.meta.env.VITE_FIGMA_OAUTH_BACKEND_URL?.trim();
   if (!raw) return null;
   return raw.replace(/\/+$/, "");
-}
-
-function normalizeOAuthErrorMessage(message: string): string {
-  const lower = message.toLowerCase();
-  if (
-    lower.includes("failed to fetch") ||
-    lower.includes("networkerror when attempting to fetch resource")
-  ) {
-    return "Could not start sign-in right now. Please check your connection and try again.";
-  }
-  if (lower.includes("origin not allowed")) {
-    return "Sign-in is blocked for this environment. Please contact support.";
-  }
-  if (lower.includes("invalid oauth callback") || lower.includes("invalid callback")) {
-    return "Sign-in could not be completed. Please try again.";
-  }
-  if (lower.includes("unknown session")) {
-    return "Your sign-in session expired. Please start again.";
-  }
-  if (lower.includes("invalid_client")) {
-    return "Sign-in is temporarily unavailable. Please try again in a moment.";
-  }
-  if (
-    lower.includes("server missing oauth credentials") ||
-    lower.includes("server missing figma_client_id") ||
-    lower.includes("server missing")
-  ) {
-    return "Sign-in is temporarily unavailable. Please try again later.";
-  }
-  if (lower.includes("refresh_token required")) {
-    return "Your session could not be refreshed. Please sign in again.";
-  }
-  if (lower.includes("token exchange failed") || lower.includes("oauth failed")) {
-    return "Sign-in could not be completed. Please try again.";
-  }
-  if (lower.includes("refresh failed") || lower.includes("figma refresh error")) {
-    return "Your session could not be refreshed. Please sign in again.";
-  }
-  if (lower.includes("authorization timed out")) {
-    return "Sign-in timed out. Please try again and complete authorization in your browser.";
-  }
-  return "Sign in with Figma failed. Please try again.";
 }
 
 async function fetchWithRetry(
@@ -91,8 +51,9 @@ export async function beginOAuthSession(): Promise<BeginOAuthResponse> {
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : "Sign in with Figma failed.";
-    const normalized = normalizeOAuthErrorMessage(message);
-    throw new Error(normalized);
+    throw new Error(
+      mapOAuthErrorToPublicMessage(message, { includeBrowserErrors: true }),
+    );
   }
   const text = await res.text();
   if (!res.ok) {
@@ -103,7 +64,7 @@ export async function beginOAuthSession(): Promise<BeginOAuthResponse> {
     } catch {
       if (text) msg = text;
     }
-    throw new Error(normalizeOAuthErrorMessage(msg));
+    throw new Error(mapOAuthErrorToPublicMessage(msg, { includeBrowserErrors: true }));
   }
   const data = JSON.parse(text) as BeginOAuthResponse;
   if (!data.sessionId || !data.authorizeUrl) {
@@ -135,11 +96,15 @@ export async function fetchOAuthSessionStatus(
     res = await fetch(`${base}/api/figma/oauth/session/${sessionId}`);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Sign in with Figma failed.";
-    throw new Error(normalizeOAuthErrorMessage(message));
+    throw new Error(mapOAuthErrorToPublicMessage(message, { includeBrowserErrors: true }));
   }
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(normalizeOAuthErrorMessage(text || `OAuth session poll failed (${res.status})`));
+    throw new Error(
+      mapOAuthErrorToPublicMessage(text || `OAuth session poll failed (${res.status})`, {
+        includeBrowserErrors: true,
+      }),
+    );
   }
   return res.json() as Promise<OAuthSessionComplete | OAuthSessionPoll>;
 }
@@ -154,12 +119,20 @@ export async function pollOAuthUntilComplete(
     const data = await fetchOAuthSessionStatus(sessionId);
     if (data.status === "complete") return data;
     if (data.status === "error") {
-      throw new Error(normalizeOAuthErrorMessage(data.error || "Sign in with Figma failed."));
+      throw new Error(
+        mapOAuthErrorToPublicMessage(data.error || "Sign in with Figma failed.", {
+          includeBrowserErrors: true,
+        }),
+      );
     }
     await new Promise((r) => setTimeout(r, delay));
     delay = Math.min(Math.floor(delay * 1.25), 3000);
   }
-  throw new Error(normalizeOAuthErrorMessage("Authorization timed out. Close this message and try again."));
+  throw new Error(
+    mapOAuthErrorToPublicMessage("Authorization timed out. Close this message and try again.", {
+      includeBrowserErrors: true,
+    }),
+  );
 }
 
 export interface RefreshResponse {
@@ -181,13 +154,13 @@ export async function refreshOAuthAccessToken(
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Session refresh failed.";
-    throw new Error(normalizeOAuthErrorMessage(message));
+    throw new Error(mapOAuthErrorToPublicMessage(message, { includeBrowserErrors: true }));
   }
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     const message =
       typeof err.error === "string" ? err.error : `Token refresh failed (${res.status})`;
-    throw new Error(normalizeOAuthErrorMessage(message));
+    throw new Error(mapOAuthErrorToPublicMessage(message, { includeBrowserErrors: true }));
   }
   return res.json() as Promise<RefreshResponse>;
 }

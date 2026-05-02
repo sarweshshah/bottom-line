@@ -95,7 +95,39 @@ export type CacheTTLMinutes = 5 | 10 | 15 | 30;
 
 export type ThemePreference = "system" | "light" | "dark";
 export type AIProvider = "anthropic" | "openai" | "gemini" | "custom";
+
+/** Stored preference; values are clamped to min/max and snapped to step at persistence boundaries. */
 export type SummaryWordLimit = number;
+
+export const SUMMARY_WORD_LIMIT_MIN = 50;
+export const SUMMARY_WORD_LIMIT_MAX = 200;
+/** Slider snap / normalization step (words). */
+export const SUMMARY_WORD_LIMIT_STEP = 10;
+export const SUMMARY_WORD_LIMIT_DEFAULT = 150;
+
+const SUMMARY_WORD_LIMIT_LABEL_INTERVAL = 50;
+
+export function normalizeSummaryWordLimit(limit: number): SummaryWordLimit {
+  const clamped = Math.min(
+    SUMMARY_WORD_LIMIT_MAX,
+    Math.max(SUMMARY_WORD_LIMIT_MIN, Math.round(limit)),
+  );
+  return Math.round(clamped / SUMMARY_WORD_LIMIT_STEP) * SUMMARY_WORD_LIMIT_STEP;
+}
+
+/** Labels under the summary word-limit slider (every 50 words). */
+export const SUMMARY_WORD_LIMIT_SLIDER_TICKS: SummaryWordLimit[] = (() => {
+  const out: SummaryWordLimit[] = [];
+  for (
+    let v = SUMMARY_WORD_LIMIT_MIN;
+    v <= SUMMARY_WORD_LIMIT_MAX;
+    v += SUMMARY_WORD_LIMIT_LABEL_INTERVAL
+  ) {
+    out.push(normalizeSummaryWordLimit(v));
+  }
+  return out;
+})();
+
 export type TaskType = "revision" | "approval" | "blocker" | "question" | "general";
 export type TaskStatus = "pending" | "done";
 

@@ -10,6 +10,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { mapOAuthErrorToPublicMessage } from "../src/shared/oauthPublicMessages.mjs";
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 function loadDotEnv() {
@@ -56,34 +58,6 @@ const sessions = new Map();
 const stateToSession = new Map();
 
 const SESSION_TTL_MS = 15 * 60 * 1000;
-
-function publicOAuthError(message, fallback = "Request failed. Please try again.") {
-  const lower = String(message || "").toLowerCase();
-  if (
-    lower.includes("invalid_client") ||
-    lower.includes("server missing oauth credentials") ||
-    lower.includes("server missing figma_client_id") ||
-    lower.includes("server missing")
-  ) {
-    return "Sign-in is temporarily unavailable. Please try again later.";
-  }
-  if (lower.includes("invalid oauth callback") || lower.includes("invalid callback")) {
-    return "Sign-in could not be completed. Please try again.";
-  }
-  if (lower.includes("unknown session")) {
-    return "Your sign-in session expired. Please start again.";
-  }
-  if (lower.includes("refresh_token required")) {
-    return "Your session could not be refreshed. Please sign in again.";
-  }
-  if (lower.includes("refresh failed") || lower.includes("figma refresh error")) {
-    return "Your session could not be refreshed. Please sign in again.";
-  }
-  if (lower.includes("token exchange failed") || lower.includes("oauth failed")) {
-    return "Sign-in could not be completed. Please try again.";
-  }
-  return fallback;
-}
 
 function base64url(buf) {
   return Buffer.from(buf)
@@ -306,7 +280,9 @@ const server = http.createServer(async (req, res) => {
         const rawError = e instanceof Error ? e.message : String(e);
         console.error("OAuth code exchange failed:", rawError);
         session.status = "error";
-        session.error = publicOAuthError(rawError, "Sign-in could not be completed. Please try again.");
+        session.error = mapOAuthErrorToPublicMessage(rawError, {
+          fallback: "Sign-in could not be completed. Please try again.",
+        });
       }
 
       res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
@@ -373,10 +349,9 @@ const server = http.createServer(async (req, res) => {
         const rawError = e instanceof Error ? e.message : String(e);
         console.error("OAuth token refresh failed:", rawError);
         json(req, res, 401, {
-          error: publicOAuthError(
-            rawError,
-            "Your session could not be refreshed. Please sign in again.",
-          ),
+          error: mapOAuthErrorToPublicMessage(rawError, {
+            fallback: "Your session could not be refreshed. Please sign in again.",
+          }),
         });
       }
       return;

@@ -1,13 +1,17 @@
 import { create } from "zustand";
 import type {
   AIProvider,
+  CommentThread,
   CustomProviderConfig,
-  SummaryWordLimit,
   SummaryResult,
+  SummaryWordLimit,
   Task,
   TaskStatus,
 } from "@shared/types";
-import type { CommentThread } from "@shared/types";
+import {
+  SUMMARY_WORD_LIMIT_DEFAULT,
+  normalizeSummaryWordLimit,
+} from "@shared/types";
 import { getStorage, setStorage } from "@ui/lib/storage";
 import { getCachedSummary, isTooShort } from "@ui/ai/summarize";
 
@@ -63,18 +67,13 @@ const DEFAULT_CUSTOM_CONFIG: CustomProviderConfig = {
   modelName: "",
 };
 
-function normalizeSummaryWordLimit(limit: number): SummaryWordLimit {
-  const clamped = Math.min(200, Math.max(50, Math.round(limit)));
-  return Math.round(clamped / 10) * 10;
-}
-
 export const useAIStore = create<AIState>((set, get) => ({
   provider: "anthropic",
   anthropicApiKey: "",
   openaiApiKey: "",
   geminiApiKey: "",
   customConfig: { ...DEFAULT_CUSTOM_CONFIG },
-  summaryWordLimit: 150,
+  summaryWordLimit: SUMMARY_WORD_LIMIT_DEFAULT,
   imageAnalysisEnabled: false,
   cloudAiConsented: false,
   cloudAiConsentIncludesImages: false,
@@ -257,7 +256,9 @@ export const useAIStore = create<AIState>((set, get) => ({
       openaiApiKey: openaiKey ?? "",
       geminiApiKey: geminiKey ?? "",
       customConfig: customConfig ?? { ...DEFAULT_CUSTOM_CONFIG },
-      summaryWordLimit: normalizeSummaryWordLimit(summaryWordLimit ?? 150),
+      summaryWordLimit: normalizeSummaryWordLimit(
+        summaryWordLimit ?? SUMMARY_WORD_LIMIT_DEFAULT,
+      ),
       imageAnalysisEnabled: imageEnabled ?? false,
       cloudAiConsented: consented ?? false,
       cloudAiConsentIncludesImages: consentImages ?? false,

@@ -42,6 +42,12 @@ import type {
   SummaryWordLimit,
   ThemePreference,
 } from "@shared/types";
+import {
+  SUMMARY_WORD_LIMIT_MAX,
+  SUMMARY_WORD_LIMIT_MIN,
+  SUMMARY_WORD_LIMIT_SLIDER_TICKS,
+  SUMMARY_WORD_LIMIT_STEP,
+} from "@shared/types";
 
 type SettingsTab = "general" | "ai" | "behavior" | "auth" | "display" | "about";
 
@@ -59,7 +65,6 @@ const PLUGIN_ID = "bottom-line-dev";
 const PLUGIN_VERSION = "0.1.0";
 
 const TTL_OPTIONS: CacheTTLMinutes[] = [5, 10, 15, 30];
-const SUMMARY_WORD_LIMITS: SummaryWordLimit[] = [50, 100, 150, 200];
 
 const PROVIDER_OPTIONS: {
   value: AIProvider;
@@ -162,7 +167,7 @@ function GeneralTab() {
             value={url}
             onChange={(e) => handleUrlChange(e.target.value)}
             placeholder="https://www.figma.com/design/abc123/..."
-            className="w-full bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2 text-sm text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent-ring"
+            className="w-full bg-figma-bg text-figma-text border border-figma-border rounded-md px-3 py-2 text-sm placeholder:text-figma-text-tertiary focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent-ring"
           />
           {urlError && <FieldError>{urlError}</FieldError>}
           <button
@@ -430,32 +435,32 @@ function AITab() {
           </div>
           <input
             type="range"
-            min={50}
-            max={200}
-            step={10}
+            min={SUMMARY_WORD_LIMIT_MIN}
+            max={SUMMARY_WORD_LIMIT_MAX}
+            step={SUMMARY_WORD_LIMIT_STEP}
             value={summaryWordLimit}
             onChange={(e) =>
               setSummaryWordLimit(Number(e.target.value) as SummaryWordLimit)
             }
-            className="w-full h-1 appearance-none rounded-full bg-figma-bg-tertiary cursor-pointer
+            className="w-full h-0.5 appearance-none rounded-full bg-figma-bg-tertiary cursor-pointer
               [&::-webkit-slider-thumb]:appearance-none
-              [&::-webkit-slider-thumb]:h-4
-              [&::-webkit-slider-thumb]:w-4
+              [&::-webkit-slider-thumb]:h-2.5
+              [&::-webkit-slider-thumb]:w-2.5
               [&::-webkit-slider-thumb]:rounded-full
               [&::-webkit-slider-thumb]:bg-accent
-              [&::-webkit-slider-thumb]:border-2
+              [&::-webkit-slider-thumb]:border
               [&::-webkit-slider-thumb]:border-figma-bg
               [&::-webkit-slider-thumb]:shadow-sm
-              [&::-moz-range-thumb]:h-4
-              [&::-moz-range-thumb]:w-4
+              [&::-moz-range-thumb]:h-2.5
+              [&::-moz-range-thumb]:w-2.5
               [&::-moz-range-thumb]:rounded-full
               [&::-moz-range-thumb]:bg-accent
-              [&::-moz-range-thumb]:border-2
+              [&::-moz-range-thumb]:border
               [&::-moz-range-thumb]:border-figma-bg
               [&::-moz-range-thumb]:shadow-sm"
           />
           <div className="flex items-center justify-between text-[11px] text-figma-text-secondary">
-            {SUMMARY_WORD_LIMITS.map((limit) => (
+            {SUMMARY_WORD_LIMIT_SLIDER_TICKS.map((limit) => (
               <span key={limit}>{limit}</span>
             ))}
           </div>

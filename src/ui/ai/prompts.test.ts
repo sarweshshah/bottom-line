@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
 import type { CommentThread } from "@shared/types";
+import {
+  SUMMARY_WORD_LIMIT_DEFAULT,
+  SUMMARY_WORD_LIMIT_MAX,
+} from "@shared/types";
 import { buildSystemPrompt, parseAIResponse } from "./prompts";
 
 const thread: CommentThread = {
@@ -36,7 +40,14 @@ describe("parseAIResponse", () => {
       ],
     });
 
-    const result = parseAIResponse(raw, thread.id, thread, "anthropic", "claude", 150);
+    const result = parseAIResponse(
+      raw,
+      thread.id,
+      thread,
+      "anthropic",
+      "claude",
+      SUMMARY_WORD_LIMIT_DEFAULT,
+    );
 
     expect(result.summary).toContain("Adjust spacing");
     expect(result.summary.startsWith("- ")).toBe(true);
@@ -55,7 +66,14 @@ describe("parseAIResponse", () => {
 
   it("falls back to extracted summary text when JSON is malformed", () => {
     const raw = '"summary": "Partial summary from truncated output';
-    const result = parseAIResponse(raw, thread.id, thread, "openai", "gpt", 150);
+    const result = parseAIResponse(
+      raw,
+      thread.id,
+      thread,
+      "openai",
+      "gpt",
+      SUMMARY_WORD_LIMIT_DEFAULT,
+    );
 
     expect(result.summary).toContain("Partial summary");
     expect(result.summary.startsWith("- ")).toBe(true);
@@ -68,7 +86,14 @@ describe("parseAIResponse", () => {
       tasks: [],
     });
 
-    const result = parseAIResponse(raw, thread.id, thread, "openai", "gpt", 150);
+    const result = parseAIResponse(
+      raw,
+      thread.id,
+      thread,
+      "openai",
+      "gpt",
+      SUMMARY_WORD_LIMIT_DEFAULT,
+    );
     const lines = result.summary.split("\n");
     expect(lines.length).toBeGreaterThan(1);
     expect(lines.every((line) => line.startsWith("- "))).toBe(true);
@@ -81,7 +106,14 @@ describe("parseAIResponse", () => {
       tasks: [],
     });
 
-    const result = parseAIResponse(raw, thread.id, thread, "openai", "gpt", 150);
+    const result = parseAIResponse(
+      raw,
+      thread.id,
+      thread,
+      "openai",
+      "gpt",
+      SUMMARY_WORD_LIMIT_DEFAULT,
+    );
     const lines = result.summary.split("\n");
     expect(lines).toHaveLength(3);
     expect(lines[0]).toContain("Akshay identifies");
@@ -117,8 +149,10 @@ describe("parseAIResponse", () => {
 
 describe("buildSystemPrompt", () => {
   it("includes configured summary word limit instruction", () => {
-    const prompt = buildSystemPrompt(200);
-    expect(prompt).toContain("Keep the summary at or below 200 words.");
+    const prompt = buildSystemPrompt(SUMMARY_WORD_LIMIT_MAX);
+    expect(prompt).toContain(
+      `Keep the summary at or below ${SUMMARY_WORD_LIMIT_MAX} words.`,
+    );
     expect(prompt).toContain("A concise 2-4 bullet summary");
     expect(prompt).toContain("Put each bullet on its own line.");
   });
