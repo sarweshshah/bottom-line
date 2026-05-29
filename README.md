@@ -9,12 +9,6 @@ AI-powered comment intelligence for design teams — a Figma plugin that surface
 - **AI Summaries**: Summarize long comment threads into concise digests using your choice of AI provider, with a configurable word limit (50–200 words).
 - **Task Extraction**: Automatically detect action items (revisions, approvals, blockers, questions) from thread conversations and track them in a unified Tasks view.
 - **Image Analysis**: Optionally include thread images in AI context for richer, design-aware summaries (vision-capable providers only).
-- **Navigate to Comment**: Jump directly to a comment's location on the Figma canvas.
-- **Page Scoping**: Filter threads to the current page or view the full document.
-- **Summary Caching**: Reuse cached summaries until a thread changes; configurable TTL for comment refresh polling.
-- **Auto-Refresh**: Configurable polling interval to keep threads up to date.
-- **Resizable UI**: Drag edges to resize the plugin window within Figma.
-- **Figma Sign-In**: Connect with Figma OAuth (when configured) or a Personal Access Token for REST API access.
 
 ## Using Bottom Line in Figma
 On first launch, complete the setup screen:
