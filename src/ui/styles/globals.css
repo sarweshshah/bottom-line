@@ -3,9 +3,9 @@
 @tailwind utilities;
 
 :root {
-  --bl-accent: #7C3AED;
-  --bl-accent-bg: #7C3AED;
-  --bl-accent-hover: #6D28D9;
+  --bl-accent: #7B52E8;
+  --bl-accent-bg: #7B52E8;
+  --bl-accent-hover: #6D42D8;
 
   --bl-status-open: #3B82F6;
   --bl-status-open-bg: #EFF6FF;
@@ -39,11 +39,11 @@
   --bl-status-blocked: #EF4444;
   --bl-status-blocked-bg: #FEE2E2;
   --bl-status-blocked-text: #991B1B;
-  --bl-addressed: rgba(124, 58, 237, 0.08);
-  --bl-addressed-border: rgba(124, 58, 237, 0.4);
+  --bl-addressed: rgba(123, 82, 232, 0.08);
+  --bl-addressed-border: rgba(123, 82, 232, 0.35);
 
-  --bl-accent-ring: rgba(124, 58, 237, 0.3);
-  --bl-accent-subtle: rgba(124, 58, 237, 0.08);
+  --bl-accent-ring: rgba(123, 82, 232, 0.28);
+  --bl-accent-subtle: rgba(123, 82, 232, 0.12);
   --bl-ai-bg: rgba(245, 240, 255, 0.6);
   --bl-ai-bg-a: rgba(245, 240, 255, 0.5);
   --bl-ai-bg-b: rgba(237, 228, 255, 0.4);
@@ -62,13 +62,13 @@
   --bl-ai-cta-c3: #c9d6f8;
   --bl-ai-cta-c4: #c5e4f0;
   --bl-ai-cta-c5: #caece5;
-  --bl-elbow: #D1D5DB;
+  --bl-elbow: #d4d0da;
 }
 
 .figma-dark {
-  --bl-accent: #A78BFA;
-  --bl-accent-bg: #5B21B6;
-  --bl-accent-hover: #4C1D95;
+  --bl-accent: #9B8FD4;
+  --bl-accent-bg: #6E5DB8;
+  --bl-accent-hover: #5F4FA8;
 
   --bl-status-open: #A78BFA;
   --bl-status-open-bg: rgba(167, 139, 250, 0.12);
@@ -102,11 +102,11 @@
   --bl-status-blocked: #F87171;
   --bl-status-blocked-bg: rgba(248, 113, 113, 0.12);
   --bl-status-blocked-text: #FCA5A5;
-  --bl-addressed: rgba(167, 139, 250, 0.06);
-  --bl-addressed-border: rgba(167, 139, 250, 0.4);
+  --bl-addressed: rgba(155, 143, 212, 0.06);
+  --bl-addressed-border: rgba(155, 143, 212, 0.32);
 
-  --bl-accent-ring: rgba(167, 139, 250, 0.3);
-  --bl-accent-subtle: rgba(167, 139, 250, 0.1);
+  --bl-accent-ring: rgba(155, 143, 212, 0.22);
+  --bl-accent-subtle: rgba(155, 143, 212, 0.12);
   --bl-ai-bg: rgba(124, 58, 237, 0.08);
   --bl-ai-bg-a: rgba(124, 58, 237, 0.07);
   --bl-ai-bg-b: rgba(109, 40, 217, 0.05);
@@ -123,7 +123,7 @@
   --bl-ai-cta-c3: rgba(99, 102, 241, 0.32);
   --bl-ai-cta-c4: rgba(56, 189, 248, 0.26);
   --bl-ai-cta-c5: rgba(45, 212, 191, 0.24);
-  --bl-elbow: #4B5563;
+  --bl-elbow: #504e58;
 }
 
 html,
@@ -136,8 +136,8 @@ body,
   font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 14px;
   line-height: 1.4;
-  color: var(--figma-color-text, #221E22);
-  background: var(--figma-color-bg, #fff);
+  color: var(--figma-color-text, #333333);
+  background: var(--figma-color-bg, #ffffff);
   overflow: hidden;
 }
 
@@ -167,8 +167,8 @@ body,
   line-height: 1.3;
   font-weight: 500;
   white-space: nowrap;
-  color: #fff;
-  background: #221E22;
+  color: #F0EDF5;
+  background: #1A1726;
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.15s;

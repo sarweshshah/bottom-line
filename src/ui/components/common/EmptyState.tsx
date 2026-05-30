@@ -41,13 +41,17 @@ interface EmptyStateProps {
 
 export function EmptyState({ variant, action }: EmptyStateProps) {
   const { Icon, title, description } = variants[variant];
+  const isError = variant === "api-error";
+
   return (
     <div
       className="flex flex-col items-center px-6 text-center"
       style={{ paddingTop: "33%" }}
     >
-      <div className="w-10 h-10 rounded-full bg-figma-bg-secondary flex items-center justify-center mb-3">
-        <Icon size={20} className="text-figma-icon-tertiary" />
+      <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-3 ${
+        isError ? "bg-danger-bg" : "bg-accent/10"
+      }`}>
+        <Icon size={20} className={isError ? "text-danger" : "text-accent"} />
       </div>
       <h3 className="text-sm font-medium text-figma-text mb-1">{title}</h3>
       <p className="text-sm text-figma-text-tertiary mb-4 max-w-[240px]">

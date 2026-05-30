@@ -50,13 +50,13 @@ function BulkStateDropdown({ onSelect }: { onSelect: (state: WorkflowState) => v
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium bg-accent-bg text-white hover:bg-accent-hover transition-colors"
+        className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-accent-bg text-white hover:bg-accent-hover transition-colors"
       >
         Set state
         <ChevronDown size={10} />
       </button>
       {open && (
-        <div className="absolute right-0 bottom-full mb-1 bg-figma-bg border border-figma-border rounded-md shadow-lg z-30 min-w-[150px]">
+        <div className="absolute right-0 bottom-full mb-1 bg-figma-bg border border-figma-border rounded-lg shadow-lg z-30 min-w-[150px]">
           {BULK_STATE_OPTIONS.map((opt) => {
             const Icon = opt.Icon;
             return (
@@ -189,31 +189,43 @@ export function DashboardLayout() {
           <button
             type="button"
             onClick={() => setActiveTab("threads")}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
               activeTab === "threads"
-                ? "bg-figma-bg-secondary text-figma-text"
+                ? "bg-accent-subtle text-accent"
                 : "text-figma-text-tertiary hover:text-figma-text-secondary"
             }`}
           >
             <MessageSquare size={13} />
             Threads
-            <span className="text-[10px] bg-figma-bg-tertiary px-1.5 py-0.5 rounded-full">
+            <span
+              className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
+                activeTab === "threads"
+                  ? "bg-accent-bg text-white"
+                  : "bg-figma-bg-tertiary"
+              }`}
+            >
               {filteredCount}
             </span>
           </button>
           <button
             type="button"
             onClick={() => setActiveTab("tasks")}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
               activeTab === "tasks"
-                ? "bg-figma-bg-secondary text-figma-text"
+                ? "bg-accent-subtle text-accent"
                 : "text-figma-text-tertiary hover:text-figma-text-secondary"
             }`}
           >
             <CheckSquare size={13} />
             Tasks
             {taskCount > 0 && (
-              <span className="text-[10px] bg-figma-bg-tertiary px-1.5 py-0.5 rounded-full">
+              <span
+                className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
+                  activeTab === "tasks"
+                    ? "bg-accent-bg text-white"
+                    : "bg-figma-bg-tertiary"
+                }`}
+              >
                 {taskCount}
               </span>
             )}
@@ -231,7 +243,7 @@ export function DashboardLayout() {
                     setBulkMode(true);
                   }
                 }}
-                className={`p-1.5 rounded-md transition-colors ${
+                className={`p-1.5 rounded-lg transition-colors ${
                   bulkMode
                     ? "bg-accent-subtle text-accent"
                     : "text-figma-icon-secondary hover:bg-figma-bg-secondary hover:text-figma-icon"
@@ -246,7 +258,7 @@ export function DashboardLayout() {
                 type="button"
                 onClick={refreshComments}
                 disabled={isLoading}
-                className="p-1.5 rounded-md text-figma-icon-secondary hover:bg-figma-bg-secondary hover:text-figma-icon disabled:opacity-40 transition-colors"
+                className="p-1.5 rounded-lg text-figma-icon-secondary hover:bg-figma-bg-secondary hover:text-figma-icon disabled:opacity-40 transition-colors"
                 data-tooltip="Refresh comments"
                 data-tooltip-align="right"
                 data-tooltip-pos="bottom"
@@ -262,7 +274,7 @@ export function DashboardLayout() {
           <button
             type="button"
             onClick={showSettings}
-            className="p-1.5 rounded-md text-figma-icon-secondary hover:bg-figma-bg-secondary hover:text-figma-icon transition-colors"
+            className="p-1.5 rounded-lg text-figma-icon-secondary hover:bg-figma-bg-secondary hover:text-figma-icon transition-colors"
             data-tooltip="Settings"
             data-tooltip-align="right"
             data-tooltip-pos="bottom"
@@ -288,8 +300,8 @@ export function DashboardLayout() {
 
       {/* Bulk action bar */}
       {bulkMode && selectedIds.size > 0 && (
-        <div className="px-4 py-2.5 border-t border-figma-border bg-figma-bg flex items-center justify-between">
-          <span className="text-xs text-figma-text-secondary">
+        <div className="px-4 py-2.5 border-t border-figma-border bg-accent-subtle flex items-center justify-between">
+          <span className="text-xs font-medium text-accent">
             {selectedIds.size} selected
           </span>
           <div className="flex items-center gap-2">
@@ -297,7 +309,7 @@ export function DashboardLayout() {
             <button
               type="button"
               onClick={exitBulkMode}
-              className="p-1.5 rounded-md text-figma-icon-secondary hover:bg-figma-bg-secondary hover:text-figma-icon transition-colors"
+              className="p-1.5 rounded-lg text-figma-icon-secondary hover:bg-figma-bg-secondary hover:text-figma-icon transition-colors"
             >
               <X size={14} />
             </button>

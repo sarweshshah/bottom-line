@@ -117,7 +117,7 @@ function StateSelector({ thread }: { thread: CommentThread }) {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-1 bg-figma-bg border border-figma-border rounded-md shadow-lg z-30 min-w-[160px]">
+        <div className="absolute right-0 top-full mt-1 bg-figma-bg border border-figma-border rounded-lg shadow-lg z-30 min-w-[160px]">
           {STATE_ORDER.map((state) => {
             const cfg = WORKFLOW_STATE_CONFIG[state];
             const Icon = cfg.Icon;
@@ -144,6 +144,11 @@ function StateSelector({ thread }: { thread: CommentThread }) {
   );
 }
 
+/** Comment thread layout: w-6 avatar; trunk/corner align to avatar center (12px). */
+const ELBOW_TRUNK_LEFT = "left-3";
+const ELBOW_CORNER_TOP = "top-0";
+const REPLY_THREAD_INDENT = "pl-7";
+
 function CommentBubble({
   author,
   message,
@@ -157,8 +162,8 @@ function CommentBubble({
   const showImage = Boolean(author.img_url) && !avatarLoadFailed;
 
   return (
-    <div className="flex gap-2.5">
-      <div className="shrink-0 mt-0.5 w-8 h-8 rounded-full bg-figma-bg-tertiary overflow-hidden flex items-center justify-center">
+    <div className="flex gap-2">
+      <div className="shrink-0 w-6 h-6 rounded-full bg-figma-bg-tertiary overflow-hidden flex items-center justify-center ring-1 ring-figma-border">
         {showImage ? (
           <img
             src={author.img_url}
@@ -167,7 +172,7 @@ function CommentBubble({
             onError={() => setAvatarLoadFailed(true)}
           />
         ) : (
-          <User size={14} className="text-figma-icon-tertiary" />
+          <User size={12} className="text-figma-icon-tertiary" />
         )}
       </div>
       <div className="flex-1 min-w-0">
@@ -175,11 +180,11 @@ function CommentBubble({
           <span className="text-sm font-medium text-figma-text">
             {author.handle}
           </span>
-          <span className="text-xs text-figma-text-secondary">
+          <span className="text-[10px] text-figma-text-tertiary">
             {timeAgo(createdAt)}
           </span>
         </div>
-        <p className="text-[11px] text-figma-text leading-relaxed whitespace-pre-wrap break-words">
+        <p className="text-[11px] text-figma-text-secondary leading-relaxed whitespace-pre-wrap break-words">
           {renderMentions(message)}
         </p>
       </div>
@@ -301,7 +306,7 @@ function SummarySection({ thread }: { thread: CommentThread }) {
             <button
               type="button"
               onClick={handleCopySummary}
-              className="p-1 rounded-md text-figma-icon-tertiary hover:bg-figma-bg-secondary hover:text-figma-icon transition-colors"
+              className="p-1 rounded-lg text-figma-icon-tertiary hover:bg-figma-bg-secondary hover:text-figma-icon transition-colors"
               data-tooltip={copiedSummary ? "Copied" : "Copy summary"}
               data-tooltip-align="right"
               data-tooltip-pos="bottom"
@@ -312,7 +317,7 @@ function SummarySection({ thread }: { thread: CommentThread }) {
               type="button"
               onClick={() => handleSummarize(true)}
               disabled={isLoading}
-              className="p-1 rounded-md text-figma-icon-tertiary hover:bg-figma-bg-secondary hover:text-figma-icon transition-colors"
+              className="p-1 rounded-lg text-figma-icon-tertiary hover:bg-figma-bg-secondary hover:text-figma-icon transition-colors"
               data-tooltip="Regenerate summary"
               data-tooltip-align="right"
               data-tooltip-pos="bottom"
@@ -328,7 +333,7 @@ function SummarySection({ thread }: { thread: CommentThread }) {
                 clearCachedSummary(thread.id, thread.lastUpdatedAt);
                 clearThreadSummary(thread.id);
               }}
-              className="p-1 rounded-md text-figma-icon-tertiary hover:bg-danger-bg hover:text-danger transition-colors"
+              className="p-1 rounded-lg text-figma-icon-tertiary hover:bg-danger-bg hover:text-danger transition-colors"
               data-tooltip="Clear summary"
               data-tooltip-align="right"
             >
@@ -345,7 +350,7 @@ function SummarySection({ thread }: { thread: CommentThread }) {
               type="button"
               onClick={() => handleSummarize()}
               disabled={isLoading}
-              className="summarize-cta-button flex items-center gap-2 px-3 py-2 rounded-md text-xs font-medium bg-ai-shimmer-cta bg-ai-shimmer-static text-figma-text border border-figma-border-strong/80 overflow-hidden hover:brightness-[0.96] active:brightness-[0.92] transition-[filter] duration-150"
+              className="summarize-cta-button flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium bg-ai-shimmer-cta bg-ai-shimmer-static text-figma-text border border-figma-border-strong/80 overflow-hidden hover:brightness-[0.96] active:brightness-[0.92] transition-[filter] duration-150"
             >
               <span className="inline-flex min-w-0 flex-wrap items-baseline gap-x-1 gap-y-0.5">
                 <span>Summarize ({thread.replyCount + 1} comments)</span>
@@ -368,7 +373,7 @@ function SummarySection({ thread }: { thread: CommentThread }) {
           )}
 
           {error && (
-            <div className="flex items-start gap-2 p-2.5 rounded-md bg-danger-bg border border-danger-border">
+            <div className="flex items-start gap-2 p-2.5 rounded-lg bg-danger-bg border border-danger-border">
               <AlertCircle size={14} className="text-danger shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0 flex flex-col">
                 <p className="text-xs text-danger leading-relaxed">{error}</p>
@@ -412,7 +417,7 @@ function SummarySection({ thread }: { thread: CommentThread }) {
                   </p>
                 );
               })()}
-              <span className="text-[10px] text-figma-text-tertiary mt-1 block">
+              <span className="text-[10px] text-figma-text-disabled mt-1.5 block">
                 Generated by{" "}
                 {formatModelName(result.modelName ?? result.provider)} &middot;{" "}
                 {timeAgo(result.generatedAt)}
@@ -527,12 +532,12 @@ export function ThreadDetail({ thread, onBack }: ThreadDetailProps) {
         <button
           type="button"
           onClick={onBack}
-          className="p-1 rounded-md text-figma-icon-secondary hover:bg-figma-bg-secondary hover:text-figma-icon transition-colors"
+          className="p-1.5 rounded-lg text-figma-icon-secondary hover:bg-figma-bg-secondary hover:text-figma-icon transition-colors"
         >
-          <ArrowLeft size={16} />
+          <ArrowLeft size={15} />
         </button>
         <div className="flex-1 min-w-0">
-          <span className="text-xs text-figma-text-secondary truncate block">
+          <span className="text-xs font-medium text-figma-text-secondary truncate block">
             Thread #{thread.orderNumber ?? thread.id.slice(0, 8)}
           </span>
         </div>
@@ -574,11 +579,13 @@ export function ThreadDetail({ thread, onBack }: ThreadDetailProps) {
 
           {threadExpanded && (
             <div>
-              <div className="relative">
+              {/* Root comment — pb-3 keeps the gap INSIDE the element so the trunk
+                  reaches bottom-0 without negative offsets */}
+              <div className={`relative ${thread.replies.length > 0 ? "pb-3" : ""}`}>
                 {showThreadElbows && thread.replies.length > 0 && (
                   <span
                     aria-hidden
-                    className="pointer-events-none absolute left-4 top-9 bottom-0 border-l-[1.5px] border-elbow"
+                    className={`pointer-events-none absolute ${ELBOW_TRUNK_LEFT} top-6 bottom-0 border-l-[1.5px] border-elbow`}
                   />
                 )}
                 <CommentBubble
@@ -588,25 +595,24 @@ export function ThreadDetail({ thread, onBack }: ThreadDetailProps) {
                 />
               </div>
               {thread.replies.length > 0 && (
-                <div className="mt-3 mb-3 space-y-3">
+                <div className="mb-3">
                   {thread.replies.map((reply, index) => {
                     const isLast = index === thread.replies.length - 1;
                     return (
-                      <div key={reply.id} className="relative pl-10">
+                      <div
+                        key={reply.id}
+                        className={`relative ${REPLY_THREAD_INDENT} ${!isLast ? "pb-3" : ""}`}
+                      >
                         {showThreadElbows && (
                           <>
                             <span
                               aria-hidden
-                              className="pointer-events-none absolute left-4 -top-3 h-3 border-l-[1.5px] border-elbow"
-                            />
-                            <span
-                              aria-hidden
-                              className="pointer-events-none absolute left-4 top-0 h-4 w-5 rounded-bl-xl border-l-[1.5px] border-b-[1.5px] border-elbow"
+                              className={`pointer-events-none absolute ${ELBOW_TRUNK_LEFT} ${ELBOW_CORNER_TOP} h-3 w-4 rounded-bl-xl border-l-[1.5px] border-b-[1.5px] border-elbow`}
                             />
                             {!isLast && (
                               <span
                                 aria-hidden
-                                className="pointer-events-none absolute left-4 top-4 -bottom-3 border-l-[1.5px] border-elbow"
+                                className={`pointer-events-none absolute ${ELBOW_TRUNK_LEFT} top-3 bottom-0 border-l-[1.5px] border-elbow`}
                               />
                             )}
                           </>
@@ -633,7 +639,7 @@ export function ThreadDetail({ thread, onBack }: ThreadDetailProps) {
             type="button"
             onClick={handleNavigate}
             disabled={navigating}
-            className="w-full flex items-center justify-center gap-2 py-2 rounded-md text-xs font-medium bg-accent-bg text-white hover:bg-accent-hover disabled:opacity-40 transition-colors"
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-medium bg-accent-bg text-white hover:bg-accent-hover active:scale-[0.98] disabled:opacity-40 transition-all duration-150"
           >
             {navigating ? (
               <Loader2 size={13} className="animate-spin" />

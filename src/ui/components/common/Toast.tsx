@@ -71,7 +71,7 @@ function ToastBar({
   const Icon = icons[toast.type];
 
   return (
-    <div className="flex items-center gap-2 px-3 py-2.5 bg-indigo-600 text-white border-t border-indigo-500 text-xs animate-in slide-in-from-bottom">
+    <div className="flex items-center gap-2 px-3 py-2.5 bg-accent-bg text-white border-t border-accent-hover text-xs animate-in slide-in-from-bottom">
       <Icon size={13} className="shrink-0 opacity-80" />
       <span className="flex-1">{toast.message}</span>
       <button

@@ -33,28 +33,28 @@ export function ConsentDialog() {
     : PROVIDER_MODEL_LABELS[provider] ?? provider;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40">
-      <div className="bg-figma-bg rounded-lg shadow-xl w-[340px] max-w-[90vw] border border-figma-border">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-figma-border">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50">
+      <div className="bg-figma-bg rounded-xl shadow-xl w-[340px] max-w-[90vw] border border-figma-border overflow-hidden">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-figma-border bg-figma-bg-secondary">
           <div className="flex items-center gap-2">
             <ShieldAlert size={16} className="text-warning" />
-            <span className="text-sm font-medium text-figma-text">
+            <span className="text-sm font-semibold text-figma-text">
               Cloud AI Consent
             </span>
           </div>
           <button
             type="button"
             onClick={handleCancel}
-            className="p-1 rounded-md text-figma-icon-tertiary hover:bg-figma-bg-secondary hover:text-figma-icon transition-colors"
+            className="p-1.5 rounded-lg text-figma-icon-tertiary hover:bg-figma-bg-tertiary hover:text-figma-icon transition-colors"
           >
-            <X size={14} />
+            <X size={13} />
           </button>
         </div>
 
         <div className="px-4 py-4 space-y-3">
           <p className="text-xs text-figma-text-secondary leading-relaxed">
             To generate AI summaries, comment text from your Figma threads will
-            be sent to <strong>{providerName}</strong>.
+            be sent to <strong className="text-figma-text">{providerName}</strong>.
           </p>
 
           {imageAnalysisEnabled && (
@@ -64,9 +64,9 @@ export function ConsentDialog() {
             </p>
           )}
 
-          <div className="p-2.5 bg-figma-bg-secondary rounded-md">
+          <div className="p-3 bg-figma-bg-secondary rounded-lg border border-figma-border">
             <p className="text-[11px] text-figma-text-tertiary leading-relaxed">
-              Your Figma token and personal data are <strong>never</strong> sent
+              Your Figma token and personal data are <strong className="text-figma-text-secondary">never</strong> sent
               to AI providers. Only the comment text
               {imageAnalysisEnabled ? " and images" : ""} within a single thread
               are transmitted per request.
@@ -78,14 +78,14 @@ export function ConsentDialog() {
           <button
             type="button"
             onClick={handleCancel}
-            className="px-3 py-1.5 rounded-md text-xs font-medium bg-figma-bg-secondary text-figma-text-secondary hover:bg-figma-bg-tertiary transition-colors"
+            className="px-3.5 py-2 rounded-lg text-xs font-medium bg-figma-bg-secondary text-figma-text-secondary hover:bg-figma-bg-tertiary transition-colors"
           >
             Cancel
           </button>
           <button
             type="button"
             onClick={handleAccept}
-            className="px-3 py-1.5 rounded-md text-xs font-medium bg-accent-bg text-white hover:bg-accent-hover transition-colors"
+            className="px-3.5 py-2 rounded-lg text-xs font-medium bg-accent-bg text-white hover:bg-accent-hover active:scale-[0.98] transition-all duration-150"
           >
             I understand, continue
           </button>

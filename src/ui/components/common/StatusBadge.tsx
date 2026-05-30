@@ -34,10 +34,10 @@ export function StatusBadge({ status }: StatusBadgeProps) {
   const { label, dotClass, bgClass } = config[status];
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-1 py-0.5 rounded ${bgClass}`}
+      className={`inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded-md ${bgClass}`}
     >
       <span className={`w-1.5 h-1.5 rounded-full ${dotClass}`} />
-      <span className="font-mono text-[10px] font-semibold tracking-widest leading-none">
+      <span className="font-mono text-[9px] font-bold tracking-widest leading-none uppercase">
         {label}
       </span>
     </span>

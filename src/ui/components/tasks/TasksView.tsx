@@ -156,13 +156,15 @@ export function TasksView({ onSelectThread }: TasksViewProps) {
         className="flex-1 flex flex-col items-center px-6 text-center"
         style={{ paddingTop: "33%" }}
       >
-        <Sparkles size={32} className="text-figma-icon-tertiary mb-3" />
-        <p className="text-sm font-medium text-figma-text-secondary mb-1">
+        <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center mb-3">
+          <Sparkles size={20} className="text-accent" />
+        </div>
+        <p className="text-sm font-medium text-figma-text mb-1">
           No tasks yet
         </p>
-        <p className="text-xs text-figma-text-tertiary">
+        <p className="text-xs text-figma-text-tertiary leading-relaxed">
           Summarize threads to extract tasks. <br /> Open a thread and click
-          "Summarize" to get started.
+          &ldquo;Summarize&rdquo; to get started.
         </p>
       </div>
     );
@@ -170,13 +172,13 @@ export function TasksView({ onSelectThread }: TasksViewProps) {
 
   return (
     <div className="flex-1 overflow-y-auto">
-      <div className="flex items-center gap-1.5 px-4 py-3 border-b border-figma-border bg-figma-bg">
+      <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-figma-border bg-figma-bg">
         <button
           type="button"
           onClick={() => toggleFilter("pending")}
-          className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded transition-colors ${
+          className={`flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-lg transition-all duration-150 ${
             statusFilter.has("pending")
-              ? "bg-accent-subtle text-accent"
+              ? "bg-accent-bg text-white shadow-sm"
               : "bg-figma-bg-secondary text-figma-text-secondary hover:text-figma-text"
           }`}
         >
@@ -185,9 +187,9 @@ export function TasksView({ onSelectThread }: TasksViewProps) {
         <button
           type="button"
           onClick={() => toggleFilter("done")}
-          className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded transition-colors ${
+          className={`flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-lg transition-all duration-150 ${
             statusFilter.has("done")
-              ? "bg-accent-subtle text-accent"
+              ? "bg-accent-bg text-white shadow-sm"
               : "bg-figma-bg-secondary text-figma-text-secondary hover:text-figma-text"
           }`}
         >

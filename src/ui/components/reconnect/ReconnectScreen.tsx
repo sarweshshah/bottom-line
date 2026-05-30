@@ -22,7 +22,6 @@ import {
   FIGMA_PAT_HELP_URL,
   FIGMA_PAT_REQUIRED_SCOPES,
 } from "@shared/figmaPat";
-import pluginLogo from "@ui/assets/plugin-logo.png";
 
 export function ReconnectScreen() {
   const oauthAvailable = isFigmaOAuthConfigured();
@@ -96,14 +95,8 @@ export function ReconnectScreen() {
     <div className="flex flex-col h-full bg-figma-bg">
       <div className="flex-1 overflow-y-auto px-5 py-6">
         <div className="flex flex-col items-center text-center mb-6">
-          <img
-            src={pluginLogo}
-            alt=""
-            className="h-14 w-14 rounded-xl object-cover mb-3 opacity-60"
-            aria-hidden
-          />
-          <div className="w-10 h-10 rounded-full bg-danger-bg border border-danger-border flex items-center justify-center mb-3">
-            <ShieldAlert size={20} className="text-danger" />
+          <div className="w-12 h-12 rounded-full bg-danger-bg border border-danger-border flex items-center justify-center mb-3">
+            <ShieldAlert size={24} className="text-danger" />
           </div>
           <h1 className="text-lg font-semibold text-figma-text mb-1">
             Reconnect to Figma
@@ -120,7 +113,7 @@ export function ReconnectScreen() {
               type="button"
               disabled={oauthBusy || isValidating}
               onClick={() => void handleSignInWithFigma()}
-              className="w-full py-2.5 rounded-md text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed bg-figma-bg-secondary border border-figma-border text-figma-text hover:bg-figma-bg-tertiary"
+              className="w-full py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed bg-figma-bg-secondary border border-figma-border text-figma-text hover:bg-figma-bg-tertiary"
             >
               {oauthBusy ? (
                 <span className="inline-flex items-center justify-center gap-2">
@@ -178,7 +171,7 @@ export function ReconnectScreen() {
                   value={pat}
                   onChange={(e) => void handleTokenChange(e.target.value)}
                   placeholder="Paste your new token here"
-                  className="w-full bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2 pr-9 text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent-ring"
+                  className="w-full bg-figma-bg-secondary border border-figma-border rounded-lg px-3 py-2 pr-9 text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent-ring"
                 />
                 <button
                   type="button"
@@ -223,7 +216,7 @@ export function ReconnectScreen() {
           type="button"
           disabled={!authReady || isValidating || oauthBusy}
           onClick={handleReconnect}
-          className="w-full py-2.5 rounded-md text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed bg-accent-bg text-white hover:bg-accent-hover active:bg-accent-hover"
+          className="w-full py-2.5 rounded-lg text-sm font-medium transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed bg-accent-bg text-white hover:bg-accent-hover active:scale-[0.98]"
         >
           Reconnect
         </button>

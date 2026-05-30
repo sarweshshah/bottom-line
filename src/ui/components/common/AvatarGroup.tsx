@@ -46,7 +46,7 @@ export function AvatarGroup({ users, max = 5, size = 18 }: AvatarGroupProps) {
       {overflow > 0 && (
         <div
           style={{ width: size, height: size, minWidth: size, minHeight: size }}
-          className="rounded-full bg-figma-bg-tertiary flex items-center justify-center text-xs font-medium text-figma-text-secondary"
+          className="rounded-full bg-accent-subtle flex items-center justify-center text-[10px] font-semibold text-accent"
           title={`${overflow} more`}
         >
           +{overflow}

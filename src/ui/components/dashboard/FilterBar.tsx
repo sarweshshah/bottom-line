@@ -63,7 +63,7 @@ export function FilterBar() {
       : `${workflowFilter.length} states`;
 
   return (
-    <div className="flex items-center gap-1.5 px-4 py-3 border-b border-figma-border bg-figma-bg">
+    <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-figma-border bg-figma-bg">
       {/* Status dropdown (multi-select) */}
       <div className="relative" ref={statusRef}>
         <button
@@ -73,9 +73,9 @@ export function FilterBar() {
             setSortOpen(false);
             setScopeOpen(false);
           }}
-          className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded transition-colors ${
+          className={`flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-lg transition-all duration-150 ${
             workflowFilter.length > 0
-              ? "bg-accent-subtle text-accent"
+              ? "bg-accent-bg text-white shadow-sm"
               : "bg-figma-bg-secondary text-figma-text-secondary hover:text-figma-text"
           }`}
         >
@@ -84,7 +84,7 @@ export function FilterBar() {
         </button>
 
         {statusOpen && (
-          <div className="absolute left-0 top-full mt-1 bg-figma-bg border border-figma-border rounded-md shadow-lg z-20 min-w-[140px]">
+          <div className="absolute left-0 top-full mt-1 bg-figma-bg border border-figma-border rounded-lg shadow-lg z-20 min-w-[140px]">
             <button
               type="button"
               onClick={() => {
@@ -132,9 +132,9 @@ export function FilterBar() {
       <button
         type="button"
         onClick={() => setAddressedToMe(!addressedToMe)}
-        className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded transition-colors ${
+        className={`flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-lg transition-all duration-150 ${
           addressedToMe
-            ? "bg-accent-subtle text-accent"
+            ? "bg-accent-bg text-white shadow-sm"
             : "bg-figma-bg-secondary text-figma-text-secondary hover:text-figma-text"
         }`}
       >
@@ -153,14 +153,14 @@ export function FilterBar() {
             setSortOpen(false);
             setStatusOpen(false);
           }}
-          className="flex items-center gap-1 text-xs text-figma-text-secondary hover:text-figma-text px-2 py-1 rounded bg-figma-bg-secondary"
+          className="flex items-center gap-1 text-xs text-figma-text-secondary hover:text-figma-text px-2.5 py-1 rounded-lg bg-figma-bg-secondary transition-colors"
         >
           {SCOPE_OPTIONS.find((o) => o.value === commentScope)?.label}
           <ChevronDown size={10} />
         </button>
 
         {scopeOpen && (
-          <div className="absolute right-0 top-full mt-1 bg-figma-bg border border-figma-border rounded-md shadow-lg z-20 min-w-[130px]">
+          <div className="absolute right-0 top-full mt-1 bg-figma-bg border border-figma-border rounded-lg shadow-lg z-20 min-w-[130px]">
             {SCOPE_OPTIONS.map((opt) => (
               <button
                 key={opt.value}
@@ -191,14 +191,14 @@ export function FilterBar() {
             setScopeOpen(false);
             setStatusOpen(false);
           }}
-          className="flex items-center gap-1 text-xs text-figma-text-secondary hover:text-figma-text px-2 py-1 rounded bg-figma-bg-secondary"
+          className="flex items-center gap-1 text-xs text-figma-text-secondary hover:text-figma-text px-2.5 py-1 rounded-lg bg-figma-bg-secondary transition-colors"
         >
           {activeSort?.label}
           <DirIcon size={10} />
         </button>
 
         {sortOpen && (
-          <div className="absolute right-0 top-full mt-1 bg-figma-bg border border-figma-border rounded-md shadow-lg z-20 min-w-[140px]">
+          <div className="absolute right-0 top-full mt-1 bg-figma-bg border border-figma-border rounded-lg shadow-lg z-20 min-w-[140px]">
             {SORT_OPTIONS.map((opt) => {
               const isActive = sortField === opt.value;
               return (

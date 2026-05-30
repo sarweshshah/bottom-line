@@ -51,8 +51,8 @@ export function ThreadCard({
         {bulkMode && (
           <div className="shrink-0 flex items-start pt-0.5">
             <span
-              className={`w-3.5 h-3.5 rounded border flex items-center justify-center ${
-                isSelected ? "bg-accent border-accent" : "border-figma-border"
+              className={`w-3.5 h-3.5 rounded border flex items-center justify-center transition-colors ${
+                isSelected ? "bg-accent border-accent" : "border-figma-border-strong"
               }`}
             >
               {isSelected && (
@@ -74,8 +74,11 @@ export function ThreadCard({
           {/* Row 1: Timestamp + badges */}
           <div className="flex items-center justify-between gap-1.5">
             <div className="flex items-center gap-1.5">
-              <span className="text-xs text-figma-text-tertiary">
-                #{thread.orderNumber ?? thread.id.slice(0, 8)} &middot;{" "}
+              <span className="text-[11px] text-figma-text-tertiary font-medium">
+                #{thread.orderNumber ?? thread.id.slice(0, 8)}
+              </span>
+              <span className="text-[10px] text-figma-text-disabled">&middot;</span>
+              <span className="text-[11px] text-figma-text-tertiary">
                 {timeAgo(thread.lastUpdatedAt)}
               </span>
               {isAddressed && (
@@ -88,19 +91,19 @@ export function ThreadCard({
           </div>
 
           {/* Row 2: Message preview */}
-          <p className="text-[11px] text-figma-text leading-snug opacity-80 line-clamp-3">
+          <p className="text-[11px] text-figma-text leading-snug line-clamp-3">
             {renderMentions(thread.message)}
           </p>
 
           {/* Row 3: Avatars + Reply count + Navigate */}
           <div className="flex items-center justify-between">
-            <AvatarGroup users={thread.participants} max={5} size={26} />
+            <AvatarGroup users={thread.participants} max={5} size={24} />
             <div className="flex items-center gap-2">
               {threadHasImages(thread) && (
                 <Image size={11} className="text-figma-text-tertiary" />
               )}
-              <span className="flex items-center gap-1 text-xs text-figma-text-tertiary">
-                <MessageCircle size={11} />
+              <span className="flex items-center gap-1 text-[11px] text-figma-text-tertiary">
+                <MessageCircle size={10} />
                 {thread.replyCount + 1}
               </span>
               {thread.clientMeta && !bulkMode && (
@@ -111,14 +114,14 @@ export function ThreadCard({
                     handleNavigate();
                   }}
                   disabled={navigating}
-                  className="p-1 rounded-md text-figma-icon-tertiary hover:text-accent hover:bg-figma-bg-secondary disabled:opacity-40 transition-colors"
+                  className="p-1 rounded-lg text-figma-icon-tertiary hover:text-accent hover:bg-accent-subtle disabled:opacity-40 transition-colors"
                   data-tooltip="Navigate to comment"
                   data-tooltip-align="right"
                 >
                   {navigating ? (
-                    <Loader2 size={13} className="animate-spin" />
+                    <Loader2 size={12} className="animate-spin" />
                   ) : (
-                    <Crosshair size={13} />
+                    <Crosshair size={12} />
                   )}
                 </button>
               )}

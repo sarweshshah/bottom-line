@@ -38,7 +38,7 @@ export function ThreadList({
             <button
               type="button"
               onClick={() => useCommentsStore.getState().refreshComments()}
-              className="px-3 py-1.5 rounded-md text-xs font-medium bg-accent-bg text-white hover:bg-accent-hover"
+              className="px-3 py-1.5 rounded-lg text-xs font-medium bg-accent-bg text-white hover:bg-accent-hover"
             >
               Retry
             </button>
@@ -68,7 +68,7 @@ export function ThreadList({
             <button
               type="button"
               onClick={clearFilters}
-              className="px-3 py-1.5 rounded-md text-xs font-medium bg-figma-bg-secondary text-figma-text-secondary hover:bg-figma-bg-tertiary"
+              className="px-3 py-1.5 rounded-lg text-xs font-medium bg-figma-bg-secondary text-figma-text-secondary hover:bg-figma-bg-tertiary"
             >
               Clear filters
             </button>
@@ -83,7 +83,7 @@ export function ThreadList({
           <button
             type="button"
             onClick={clearFilters}
-            className="px-3 py-1.5 rounded-md text-xs font-medium bg-figma-bg-secondary text-figma-text-secondary hover:bg-figma-bg-tertiary"
+            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-figma-bg-secondary text-figma-text-secondary hover:bg-figma-bg-tertiary"
           >
             Clear filters
           </button>

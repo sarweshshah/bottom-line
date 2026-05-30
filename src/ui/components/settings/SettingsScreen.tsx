@@ -132,7 +132,7 @@ function GeneralTab() {
             <CheckCircle2 size={14} className="text-status-resolved" />
             Connected File
           </h3>
-          <div className="bg-figma-bg-secondary border border-figma-border rounded-md p-3 space-y-2">
+          <div className="bg-figma-bg-secondary border border-figma-border rounded-lg p-3 space-y-2">
             <div className="flex items-center justify-between gap-3">
               <span className="text-xs text-figma-text-tertiary">File key</span>
               <code className="text-xs text-figma-text font-medium bg-figma-bg px-1.5 py-0.5 rounded truncate max-w-[60%]">
@@ -161,19 +161,19 @@ function GeneralTab() {
             ? "Paste a new URL to switch the connected Figma file."
             : "The Figma file to analyze comments for."}
         </p>
-        <div className="p-3 bg-figma-bg-secondary border border-figma-border rounded-md space-y-2">
+        <div className="p-3 bg-figma-bg-secondary border border-figma-border rounded-lg space-y-2">
           <input
             type="text"
             value={url}
             onChange={(e) => handleUrlChange(e.target.value)}
             placeholder="https://www.figma.com/design/abc123/..."
-            className="w-full bg-figma-bg text-figma-text border border-figma-border rounded-md px-3 py-2 text-sm placeholder:text-figma-text-tertiary focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent-ring"
+            className="w-full bg-figma-bg text-figma-text border border-figma-border rounded-lg px-3 py-2 text-sm placeholder:text-figma-text-tertiary focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent-ring"
           />
           {urlError && <FieldError>{urlError}</FieldError>}
           <button
             type="button"
             onClick={handleSaveUrl}
-            className="px-3 py-1.5 rounded-md text-xs font-medium bg-figma-bg-secondary border border-figma-border text-figma-text hover:bg-figma-bg-tertiary hover:border-figma-border-strong transition-colors"
+            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-figma-bg-secondary border border-figma-border text-figma-text hover:bg-figma-bg-tertiary hover:border-figma-border-strong transition-colors"
           >
             {fileKey ? "Update File" : "Connect File"}
           </button>
@@ -262,7 +262,7 @@ function AITab() {
           Choose how thread summaries and tasks are generated.
         </p>
 
-        <div className="border border-figma-border rounded-md overflow-hidden">
+        <div className="border border-figma-border rounded-lg overflow-hidden">
           {PROVIDER_OPTIONS.map((opt) => {
             const isSelected = provider === opt.value;
             return (
@@ -426,7 +426,7 @@ function AITab() {
         <p className="text-xs text-figma-text-tertiary mb-3">
           Cap summary length in words.
         </p>
-        <div className="p-3 rounded-md border border-figma-border bg-figma-bg space-y-2">
+        <div className="p-3 rounded-lg border border-figma-border bg-figma-bg space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs text-figma-text">Word limit</span>
             <span className="text-xs font-medium text-figma-text">
@@ -505,7 +505,7 @@ function ClearCacheSection() {
           type="button"
           onClick={handleClear}
           disabled={clearing || cleared}
-          className="px-3 py-1.5 rounded-md text-xs font-medium text-danger bg-danger-bg border border-danger-border hover:border-danger disabled:opacity-40 transition-colors"
+          className="px-3 py-1.5 rounded-lg text-xs font-medium text-danger bg-danger-bg border border-danger-border hover:border-danger disabled:opacity-40 transition-colors"
         >
           {clearing
             ? "Clearing..."
@@ -534,7 +534,7 @@ function BehaviorTab() {
         </p>
 
         <div className="space-y-3">
-          <label className="flex items-center justify-between gap-3 p-3 bg-figma-bg-secondary border border-figma-border rounded-md cursor-pointer transition-colors hover:border-figma-border-hover">
+          <label className="flex items-center justify-between gap-3 p-3 bg-figma-bg-secondary border border-figma-border rounded-lg cursor-pointer transition-colors hover:border-figma-border-strong">
             <div>
               <p className="text-sm font-medium text-figma-text">
                 Show comment reminder
@@ -551,7 +551,7 @@ function BehaviorTab() {
             />
           </label>
 
-          <label className="flex items-center justify-between gap-3 p-3 bg-figma-bg-secondary border border-figma-border rounded-md cursor-pointer transition-colors hover:border-figma-border-hover">
+          <label className="flex items-center justify-between gap-3 p-3 bg-figma-bg-secondary border border-figma-border rounded-lg cursor-pointer transition-colors hover:border-figma-border-strong">
             <div>
               <p className="text-sm font-medium text-figma-text">
                 Auto-refresh interval
@@ -565,7 +565,7 @@ function BehaviorTab() {
               onChange={(e) =>
                 setCacheTTLMinutes(Number(e.target.value) as CacheTTLMinutes)
               }
-              className="bg-figma-bg border border-figma-border rounded-md pl-2 pr-6 py-1.5 text-xs font-medium text-figma-text focus:outline-none focus:border-accent cursor-pointer appearance-none bg-[length:12px] bg-[right_6px_center] bg-no-repeat"
+              className="bg-figma-bg border border-figma-border rounded-lg pl-2 pr-6 py-1.5 text-xs font-medium text-figma-text focus:outline-none focus:border-accent cursor-pointer appearance-none bg-[length:12px] bg-[right_6px_center] bg-no-repeat"
               style={{
                 backgroundImage:
                   "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")",
@@ -668,7 +668,7 @@ function AuthTab() {
             <CheckCircle2 size={14} className="text-status-resolved" />
             Account
           </h3>
-          <div className="bg-figma-bg-secondary border border-figma-border rounded-md p-3 space-y-3">
+          <div className="bg-figma-bg-secondary border border-figma-border rounded-lg p-3 space-y-3">
             <div className="flex items-center gap-3">
               {user.img_url && !avatarLoadFailed ? (
                 <img
@@ -693,7 +693,7 @@ function AuthTab() {
               <button
                 type="button"
                 onClick={() => void logout()}
-                className="p-2 rounded-md text-figma-icon-tertiary hover:bg-danger-bg hover:text-danger transition-colors shrink-0"
+                className="p-2 rounded-lg text-figma-icon-tertiary hover:bg-danger-bg hover:text-danger transition-colors shrink-0"
                 title="Logout"
               >
                 <LogOut size={16} />
@@ -705,7 +705,7 @@ function AuthTab() {
                 type="button"
                 disabled={oauthBusy || isValidating}
                 onClick={() => void handleSignInWithFigma()}
-                className="w-full py-2 rounded-md text-xs font-medium bg-figma-bg border border-figma-border text-figma-text hover:bg-figma-bg-tertiary disabled:opacity-40"
+                className="w-full py-2 rounded-lg text-xs font-medium bg-figma-bg border border-figma-border text-figma-text hover:bg-figma-bg-tertiary disabled:opacity-40"
               >
                 {oauthBusy ? (
                   <span className="inline-flex items-center justify-center gap-2">
@@ -771,7 +771,7 @@ function AuthTab() {
 
             {!editing ? (
               <div className="space-y-2">
-                <div className="flex items-center gap-2 bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2">
+                <div className="flex items-center gap-2 bg-figma-bg-secondary border border-figma-border rounded-lg px-3 py-2">
                   <code className="text-xs font-medium text-figma-text-secondary flex-1 truncate">
                     {showToken ? displaySecret : maskedCredential || "—"}
                   </code>
@@ -791,7 +791,7 @@ function AuthTab() {
                     setEditing(true);
                     setNewPat("");
                   }}
-                  className="px-3 py-1.5 rounded-md text-xs font-medium bg-figma-bg-secondary border border-figma-border text-figma-text hover:bg-figma-bg-tertiary hover:border-figma-border-strong transition-colors"
+                  className="px-3 py-1.5 rounded-lg text-xs font-medium bg-figma-bg-secondary border border-figma-border text-figma-text hover:bg-figma-bg-tertiary hover:border-figma-border-strong transition-colors"
                 >
                   {authMethod === "oauth" ? "Paste personal access token" : "Change Token"}
                 </button>
@@ -803,7 +803,7 @@ function AuthTab() {
                   value={newPat}
                   onChange={(e) => setNewPat(e.target.value)}
                   placeholder="figd_xxxxxxxxxxxxxxxx"
-                  className="w-full bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2 text-sm text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent-ring"
+                  className="w-full bg-figma-bg-secondary border border-figma-border rounded-lg px-3 py-2 text-sm text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent-ring"
                   autoFocus
                 />
                 {isValidating && (
@@ -818,7 +818,7 @@ function AuthTab() {
                     type="button"
                     onClick={() => void handleSaveToken()}
                     disabled={!newPat.trim() || isValidating}
-                    className="px-3 py-1.5 rounded-md text-xs font-medium bg-accent-bg text-white hover:bg-accent-hover disabled:opacity-40 transition-colors"
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium bg-accent-bg text-white hover:bg-accent-hover disabled:opacity-40 transition-colors"
                   >
                     Save
                   </button>
@@ -828,7 +828,7 @@ function AuthTab() {
                       setEditing(false);
                       setNewPat("");
                     }}
-                    className="px-3 py-1.5 rounded-md text-xs font-medium bg-figma-bg-secondary border border-figma-border text-figma-text hover:bg-figma-bg-tertiary hover:border-figma-border-strong transition-colors"
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium bg-figma-bg-secondary border border-figma-border text-figma-text hover:bg-figma-bg-tertiary hover:border-figma-border-strong transition-colors"
                   >
                     Cancel
                   </button>
@@ -879,10 +879,10 @@ function DisplayTab() {
                 key={opt.value}
                 type="button"
                 onClick={() => setThemePreference(opt.value)}
-                className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium border transition-colors ${
+                className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border transition-all duration-150 ${
                   isActive
-                    ? "bg-accent-subtle border-accent text-accent"
-                    : "bg-figma-bg-secondary border-figma-border text-figma-text-secondary hover:bg-figma-bg-tertiary hover:border-figma-border-strong"
+                    ? "bg-accent-bg border-accent text-white shadow-sm"
+                    : "bg-figma-bg-secondary border-figma-border text-figma-text-secondary hover:border-figma-border-strong"
                 }`}
               >
                 <Icon size={13} />
@@ -901,7 +901,7 @@ function DisplayTab() {
         <p className="text-xs text-figma-text-tertiary mb-3">
           Customize how comment threads are displayed.
         </p>
-        <label className="flex items-center justify-between gap-3 p-3 bg-figma-bg-secondary border border-figma-border rounded-md cursor-pointer transition-colors hover:bg-figma-bg-tertiary hover:border-figma-border-strong">
+        <label className="flex items-center justify-between gap-3 p-3 bg-figma-bg-secondary border border-figma-border rounded-lg cursor-pointer transition-colors hover:border-figma-border-strong">
           <div>
             <p className="text-sm font-medium text-figma-text">
               Show reply elbows
@@ -936,16 +936,16 @@ export function SettingsScreen({ onBack }: SettingsScreenProps) {
         <button
           type="button"
           onClick={onBack}
-          className="p-1 rounded-md text-figma-icon-secondary hover:bg-figma-bg-secondary hover:text-figma-icon transition-colors"
+          className="p-1.5 rounded-lg text-figma-icon-secondary hover:bg-figma-bg-secondary hover:text-figma-icon transition-colors"
         >
-          <ArrowLeft size={16} />
+          <ArrowLeft size={15} />
         </button>
-        <Settings size={16} className="text-figma-icon" />
+        <Settings size={15} className="text-accent" />
         <span className="text-sm font-medium text-figma-text">Settings</span>
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-figma-border px-4">
+      <div className="flex border-b border-figma-border px-2">
         {TABS.map((tab) => (
           <button
             key={tab.id}
@@ -954,7 +954,7 @@ export function SettingsScreen({ onBack }: SettingsScreenProps) {
             className={`px-3 py-2 text-xs font-medium border-b-2 transition-colors ${
               activeTab === tab.id
                 ? "border-accent text-accent"
-                : "border-transparent text-figma-text-secondary hover:text-figma-text"
+                : "border-transparent text-figma-text-tertiary hover:text-figma-text-secondary"
             }`}
           >
             {tab.label}

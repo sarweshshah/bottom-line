@@ -26,8 +26,7 @@ function MentionLink({ name }: { name: string }) {
       onKeyDown={(e) => {
         if (e.key === "Enter") window.open(profileUrl, "_blank");
       }}
-      style={{ color: "#3b82f6" }}
-      className="font-semibold cursor-pointer hover:underline"
+      className="font-semibold cursor-pointer hover:underline text-accent"
     >
       @{name}
     </span>
