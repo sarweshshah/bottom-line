@@ -2,9 +2,7 @@
   <img src="src/ui/assets/plugin-logo.png" alt="Bottom Line" width="128" height="128" />
 </p>
 <h1 align="center">Bottom Line</h1>
-<p align="center">AI-powered comment intelligence for design teams</p>
-
-A Figma plugin that surfaces, summarizes, and extracts actionable tasks from your file's comment threads.
+<p align="center">A Figma plugin that surfaces, summarizes, and extracts actionable tasks from your file's comment threads.</p>
 
 ## Features
 
