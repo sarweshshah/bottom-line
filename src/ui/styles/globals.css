@@ -3,9 +3,9 @@
 @tailwind utilities;
 
 :root {
-  --bl-accent: #4F46E5;
-  --bl-accent-bg: #4F46E5;
-  --bl-accent-hover: #4338CA;
+  --bl-accent: #7C3AED;
+  --bl-accent-bg: #7C3AED;
+  --bl-accent-hover: #6D28D9;
 
   --bl-status-open: #3B82F6;
   --bl-status-open-bg: #EFF6FF;
@@ -39,41 +39,41 @@
   --bl-status-blocked: #EF4444;
   --bl-status-blocked-bg: #FEE2E2;
   --bl-status-blocked-text: #991B1B;
-  --bl-addressed: rgba(79, 70, 229, 0.08);
-  --bl-addressed-border: rgba(79, 70, 229, 0.4);
+  --bl-addressed: rgba(124, 58, 237, 0.08);
+  --bl-addressed-border: rgba(124, 58, 237, 0.4);
 
-  --bl-accent-ring: rgba(79, 70, 229, 0.3);
-  --bl-accent-subtle: rgba(79, 70, 229, 0.08);
-  --bl-ai-bg: rgba(238, 242, 255, 0.6);
-  --bl-ai-bg-a: rgba(238, 242, 255, 0.5);
-  --bl-ai-bg-b: rgba(224, 231, 255, 0.4);
-  /* AI strip shimmer — soft multi-hue wash (indigo → violet → sky → cyan) */
-  --bl-ai-shimmer-c0: #f1f3ff;
-  --bl-ai-shimmer-c1: #eef2ff;
-  --bl-ai-shimmer-c2: #f4f2ff;
-  --bl-ai-shimmer-c3: #eff6ff;
-  --bl-ai-shimmer-c4: #eefcfd;
-  --bl-ai-shimmer-c5: #f0fdfa;
+  --bl-accent-ring: rgba(124, 58, 237, 0.3);
+  --bl-accent-subtle: rgba(124, 58, 237, 0.08);
+  --bl-ai-bg: rgba(245, 240, 255, 0.6);
+  --bl-ai-bg-a: rgba(245, 240, 255, 0.5);
+  --bl-ai-bg-b: rgba(237, 228, 255, 0.4);
+  /* AI strip shimmer — soft multi-hue wash (purple → violet → sky → cyan) */
+  --bl-ai-shimmer-c0: #f5f0ff;
+  --bl-ai-shimmer-c1: #f0ebff;
+  --bl-ai-shimmer-c2: #ede5ff;
+  --bl-ai-shimmer-c3: #e8efff;
+  --bl-ai-shimmer-c4: #e4f7fd;
+  --bl-ai-shimmer-c5: #e6faf6;
   /* Summarize CTA — richer fill for static button (WCAG-friendly with dark text) */
-  --bl-ai-cta-bg: #e2e8ff;
-  --bl-ai-cta-c0: #d8defe;
-  --bl-ai-cta-c1: #d1d9fd;
-  --bl-ai-cta-c2: #ddd6f5;
-  --bl-ai-cta-c3: #c9dcf8;
-  --bl-ai-cta-c4: #c5e8f0;
+  --bl-ai-cta-bg: #e4d8ff;
+  --bl-ai-cta-c0: #ddd0fe;
+  --bl-ai-cta-c1: #d6c8fd;
+  --bl-ai-cta-c2: #e0d0f5;
+  --bl-ai-cta-c3: #c9d6f8;
+  --bl-ai-cta-c4: #c5e4f0;
   --bl-ai-cta-c5: #caece5;
   --bl-elbow: #D1D5DB;
 }
 
 .figma-dark {
-  --bl-accent: #818CF8;
-  --bl-accent-bg: #3730A3;
-  --bl-accent-hover: #312E81;
+  --bl-accent: #A78BFA;
+  --bl-accent-bg: #5B21B6;
+  --bl-accent-hover: #4C1D95;
 
-  --bl-status-open: #818CF8;
-  --bl-status-open-bg: rgba(129, 140, 248, 0.12);
-  --bl-status-open-text: #A5B4FC;
-  --bl-status-open-glow: rgba(129, 140, 248, 0.4);
+  --bl-status-open: #A78BFA;
+  --bl-status-open-bg: rgba(167, 139, 250, 0.12);
+  --bl-status-open-text: #C4B5FD;
+  --bl-status-open-glow: rgba(167, 139, 250, 0.4);
 
   --bl-status-done: #34D399;
   --bl-status-done-bg: #064E3B;
@@ -102,27 +102,27 @@
   --bl-status-blocked: #F87171;
   --bl-status-blocked-bg: rgba(248, 113, 113, 0.12);
   --bl-status-blocked-text: #FCA5A5;
-  --bl-addressed: rgba(129, 140, 248, 0.06);
-  --bl-addressed-border: rgba(129, 140, 248, 0.4);
+  --bl-addressed: rgba(167, 139, 250, 0.06);
+  --bl-addressed-border: rgba(167, 139, 250, 0.4);
 
-  --bl-accent-ring: rgba(129, 140, 248, 0.3);
-  --bl-accent-subtle: rgba(129, 140, 248, 0.1);
-  --bl-ai-bg: rgba(99, 102, 241, 0.08);
-  --bl-ai-bg-a: rgba(99, 102, 241, 0.07);
-  --bl-ai-bg-b: rgba(79, 70, 229, 0.05);
-  --bl-ai-shimmer-c0: rgba(67, 56, 202, 0.2);
-  --bl-ai-shimmer-c1: rgba(79, 70, 229, 0.16);
-  --bl-ai-shimmer-c2: rgba(109, 40, 217, 0.14);
-  --bl-ai-shimmer-c3: rgba(37, 99, 235, 0.12);
-  --bl-ai-shimmer-c4: rgba(8, 145, 178, 0.1);
-  --bl-ai-shimmer-c5: rgba(13, 148, 136, 0.09);
-  --bl-ai-cta-bg: rgba(79, 70, 229, 0.35);
-  --bl-ai-cta-c0: rgba(67, 56, 202, 0.42);
-  --bl-ai-cta-c1: rgba(79, 70, 229, 0.38);
-  --bl-ai-cta-c2: rgba(109, 40, 217, 0.34);
-  --bl-ai-cta-c3: rgba(37, 99, 235, 0.32);
-  --bl-ai-cta-c4: rgba(8, 145, 178, 0.26);
-  --bl-ai-cta-c5: rgba(13, 148, 136, 0.24);
+  --bl-accent-ring: rgba(167, 139, 250, 0.3);
+  --bl-accent-subtle: rgba(167, 139, 250, 0.1);
+  --bl-ai-bg: rgba(124, 58, 237, 0.08);
+  --bl-ai-bg-a: rgba(124, 58, 237, 0.07);
+  --bl-ai-bg-b: rgba(109, 40, 217, 0.05);
+  --bl-ai-shimmer-c0: rgba(91, 33, 182, 0.2);
+  --bl-ai-shimmer-c1: rgba(109, 40, 217, 0.16);
+  --bl-ai-shimmer-c2: rgba(124, 58, 237, 0.14);
+  --bl-ai-shimmer-c3: rgba(99, 102, 241, 0.12);
+  --bl-ai-shimmer-c4: rgba(56, 189, 248, 0.1);
+  --bl-ai-shimmer-c5: rgba(45, 212, 191, 0.09);
+  --bl-ai-cta-bg: rgba(109, 40, 217, 0.35);
+  --bl-ai-cta-c0: rgba(91, 33, 182, 0.42);
+  --bl-ai-cta-c1: rgba(109, 40, 217, 0.38);
+  --bl-ai-cta-c2: rgba(124, 58, 237, 0.34);
+  --bl-ai-cta-c3: rgba(99, 102, 241, 0.32);
+  --bl-ai-cta-c4: rgba(56, 189, 248, 0.26);
+  --bl-ai-cta-c5: rgba(45, 212, 191, 0.24);
   --bl-elbow: #4B5563;
 }
 
@@ -300,4 +300,48 @@ body,
     animation: none;
     background-position: 0% 50%;
   }
+}
+
+/* ─── Onboarding ─── */
+
+@keyframes onboarding-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes onboarding-pulse {
+  0%, 100% { opacity: 0.6; }
+  50%      { opacity: 1; }
+}
+
+.onboarding-step-enter {
+  animation: onboarding-fade-in 0.3s ease-out both;
+}
+
+.onboarding-logo-glow {
+  box-shadow: 0 0 40px rgba(124, 58, 237, 0.25), 0 0 80px rgba(99, 102, 241, 0.1);
+}
+
+.figma-dark .onboarding-logo-glow {
+  box-shadow: 0 0 40px rgba(167, 139, 250, 0.2), 0 0 80px rgba(124, 58, 237, 0.08);
+}
+
+.onboarding-hero-gradient {
+  background: linear-gradient(135deg,
+    rgba(124, 58, 237, 0.06) 0%,
+    rgba(99, 102, 241, 0.04) 40%,
+    rgba(56, 189, 248, 0.03) 100%
+  );
+}
+
+.figma-dark .onboarding-hero-gradient {
+  background: linear-gradient(135deg,
+    rgba(124, 58, 237, 0.12) 0%,
+    rgba(99, 102, 241, 0.08) 40%,
+    rgba(56, 189, 248, 0.04) 100%
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .onboarding-step-enter { animation: none; }
 }

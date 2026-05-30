@@ -22,6 +22,7 @@ import {
   FIGMA_PAT_HELP_URL,
   FIGMA_PAT_REQUIRED_SCOPES,
 } from "@shared/figmaPat";
+import pluginLogo from "@ui/assets/plugin-logo.png";
 
 export function ReconnectScreen() {
   const oauthAvailable = isFigmaOAuthConfigured();
@@ -95,8 +96,14 @@ export function ReconnectScreen() {
     <div className="flex flex-col h-full bg-figma-bg">
       <div className="flex-1 overflow-y-auto px-5 py-6">
         <div className="flex flex-col items-center text-center mb-6">
-          <div className="w-12 h-12 rounded-full bg-danger-bg border border-danger-border flex items-center justify-center mb-3">
-            <ShieldAlert size={24} className="text-danger" />
+          <img
+            src={pluginLogo}
+            alt=""
+            className="h-14 w-14 rounded-xl object-cover mb-3 opacity-60"
+            aria-hidden
+          />
+          <div className="w-10 h-10 rounded-full bg-danger-bg border border-danger-border flex items-center justify-center mb-3">
+            <ShieldAlert size={20} className="text-danger" />
           </div>
           <h1 className="text-lg font-semibold text-figma-text mb-1">
             Reconnect to Figma
