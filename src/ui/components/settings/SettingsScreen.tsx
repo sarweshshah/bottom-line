@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, type MouseEvent } from "react";
 import {
   ArrowLeft,
   User as UserIcon,
@@ -31,6 +31,10 @@ import {
   pollOAuthUntilComplete,
 } from "@ui/lib/figmaOAuth";
 import { openExternalUrl } from "@ui/lib/openExternal";
+import {
+  FIGMA_PAT_HELP_URL,
+  FIGMA_PAT_REQUIRED_SCOPES,
+} from "@shared/figmaPat";
 import { showToast } from "@ui/components/common/Toast";
 import { FieldError } from "@ui/components/common/FieldError";
 import { supportsVision, PROVIDER_MODEL_LABELS } from "@ui/ai/cloudProvider";
@@ -725,18 +729,7 @@ function AuthTab() {
         <p className="text-xs text-figma-text-tertiary mb-3">
           {authMethod === "oauth"
             ? "OAuth tokens are stored only in this plugin. You can re-authenticate above or switch to a personal access token."
-            : "Your token is stored locally in the plugin and never shared."}{" "}
-          {authMethod !== "oauth" && (
-            <a
-              href="https://help.figma.com/hc/en-us/articles/8085703771159-Manage-personal-access-tokens"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-accent hover:text-accent-hover transition-colors"
-            >
-              How to get one
-              <ExternalLink size={10} />
-            </a>
-          )}
+            : "Your token is stored locally in the plugin and never shared."}
         </p>
 
         {authMethod === "oauth" && (
@@ -752,6 +745,30 @@ function AuthTab() {
 
         {(authMethod === "pat" || (authMethod === "oauth" && showPatAdvanced)) && (
           <>
+            <div className="mb-3 text-xs text-figma-text-secondary space-y-2">
+              <p className="text-figma-text-tertiary">
+                When generating a token, enable these permissions:
+              </p>
+              <ul className="list-disc list-inside space-y-0.5 text-figma-text-tertiary">
+                {FIGMA_PAT_REQUIRED_SCOPES.map((scope) => (
+                  <li key={scope}>
+                    <code className="font-mono text-xs">{scope}</code>
+                  </li>
+                ))}
+              </ul>
+              <a
+                href={FIGMA_PAT_HELP_URL}
+                className="inline-flex items-center gap-1 text-accent hover:underline"
+                onClick={(e: MouseEvent<HTMLAnchorElement>) => {
+                  e.preventDefault();
+                  openExternalUrl(FIGMA_PAT_HELP_URL);
+                }}
+              >
+                How to generate a personal access token
+                <ExternalLink size={10} />
+              </a>
+            </div>
+
             {!editing ? (
               <div className="space-y-2">
                 <div className="flex items-center gap-2 bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2">

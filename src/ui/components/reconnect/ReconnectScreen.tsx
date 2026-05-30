@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, type MouseEvent } from "react";
 import {
   Eye,
   EyeOff,
@@ -18,6 +18,10 @@ import {
   pollOAuthUntilComplete,
 } from "@ui/lib/figmaOAuth";
 import { openExternalUrl } from "@ui/lib/openExternal";
+import {
+  FIGMA_PAT_HELP_URL,
+  FIGMA_PAT_REQUIRED_SCOPES,
+} from "@shared/figmaPat";
 
 export function ReconnectScreen() {
   const oauthAvailable = isFigmaOAuthConfigured();
@@ -136,14 +140,26 @@ export function ReconnectScreen() {
 
         {showPatAdvanced && (
           <>
-            <div className="mb-4">
+            <div className="mb-4 text-xs text-figma-text-secondary space-y-2">
+              <p className="text-figma-text-tertiary">
+                When generating a token, enable these permissions:
+              </p>
+              <ul className="list-disc list-inside space-y-0.5 text-figma-text-tertiary">
+                {FIGMA_PAT_REQUIRED_SCOPES.map((scope) => (
+                  <li key={scope}>
+                    <code className="font-mono text-xs">{scope}</code>
+                  </li>
+                ))}
+              </ul>
               <a
-                href="https://www.figma.com/settings"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-accent hover:underline text-xs"
+                href={FIGMA_PAT_HELP_URL}
+                className="inline-flex items-center gap-1 text-accent hover:underline"
+                onClick={(e: MouseEvent<HTMLAnchorElement>) => {
+                  e.preventDefault();
+                  openExternalUrl(FIGMA_PAT_HELP_URL);
+                }}
               >
-                Open Figma Settings to create a new token
+                How to generate a personal access token
                 <ExternalLink size={12} />
               </a>
             </div>

@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, type MouseEvent } from "react";
 import {
   Eye,
   EyeOff,
@@ -24,6 +24,10 @@ import {
   pollOAuthUntilComplete,
 } from "@ui/lib/figmaOAuth";
 import { openExternalUrl } from "@ui/lib/openExternal";
+import {
+  FIGMA_PAT_HELP_URL,
+  FIGMA_PAT_REQUIRED_SCOPES,
+} from "@shared/figmaPat";
 
 const PAT_TRANSPARENCY_ITEMS = [
   { allow: true, label: "Read comment threads" },
@@ -239,32 +243,27 @@ export function SetupScreen() {
 
               <div className="text-xs text-figma-text-secondary mb-3 space-y-1.5">
                 <p className="font-medium text-figma-text-secondary">How to get your token:</p>
-                <ol className="list-decimal list-inside space-y-0.5 text-figma-text-tertiary">
-                  <li>Open Figma Settings &rarr; Security</li>
-                  <li>Generate a new token named &quot;Bottom Line&quot;</li>
-                  <li>
-                    Include these scopes:{" "}
-                    <code className="bg-figma-bg-secondary px-1 py-0.5 rounded text-xs">
-                      current_user:read
-                    </code>
-                    ,{" "}
-                    <code className="bg-figma-bg-secondary px-1 py-0.5 rounded text-xs">
-                      file_comments:read
-                    </code>
-                    , and{" "}
-                    <code className="bg-figma-bg-secondary px-1 py-0.5 rounded text-xs">
-                      file_content:read
-                    </code>
-                  </li>
-                  <li>Copy and paste it below</li>
-                </ol>
+                <p className="text-figma-text-tertiary">
+                  Follow Figma&apos;s guide to create a token named &quot;Bottom Line&quot; and
+                  enable these permissions:
+                </p>
+                <ul className="list-disc list-inside space-y-0.5 text-figma-text-tertiary">
+                  {FIGMA_PAT_REQUIRED_SCOPES.map((scope) => (
+                    <li key={scope}>
+                      <code className="font-mono text-xs">{scope}</code>
+                    </li>
+                  ))}
+                </ul>
+                <p className="text-figma-text-tertiary">Copy the token and paste it below.</p>
                 <a
-                  href="https://www.figma.com/settings"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href={FIGMA_PAT_HELP_URL}
                   className="inline-flex items-center gap-1 text-accent hover:underline text-xs mt-1"
+                  onClick={(e: MouseEvent<HTMLAnchorElement>) => {
+                    e.preventDefault();
+                    openExternalUrl(FIGMA_PAT_HELP_URL);
+                  }}
                 >
-                  Open Figma Settings
+                  How to generate a personal access token
                   <ExternalLink size={10} />
                 </a>
               </div>
