@@ -15,7 +15,6 @@ import {
   Settings,
   Sparkles,
   Image,
-  Info,
   MessageSquare,
   ChevronDown,
   ChevronRight,
@@ -42,6 +41,7 @@ import type {
   SummaryWordLimit,
   ThemePreference,
 } from "@shared/types";
+import { AboutTab } from "@ui/components/settings/AboutTab";
 import {
   SUMMARY_WORD_LIMIT_MAX,
   SUMMARY_WORD_LIMIT_MIN,
@@ -59,10 +59,6 @@ const TABS: { id: SettingsTab; label: string }[] = [
   { id: "display", label: "Display" },
   { id: "about", label: "About" },
 ];
-
-const PLUGIN_NAME = "Bottom Line";
-const PLUGIN_ID = "bottom-line-dev";
-const PLUGIN_VERSION = "0.1.0";
 
 const TTL_OPTIONS: CacheTTLMinutes[] = [5, 10, 15, 30];
 
@@ -904,42 +900,6 @@ function DisplayTab() {
             className="accent-accent w-4 h-4 cursor-pointer shrink-0"
           />
         </label>
-      </section>
-    </div>
-  );
-}
-
-function AboutTab() {
-  return (
-    <div className="space-y-5">
-      <section>
-        <h3 className="text-sm font-medium text-figma-text mb-1 flex items-center gap-1.5">
-          <Info size={14} className="text-accent" />
-          About
-        </h3>
-        <p className="text-xs text-figma-text-tertiary mb-3">
-          AI-powered comment intelligence for design teams.
-        </p>
-        <div className="bg-figma-bg-secondary border border-figma-border rounded-md p-3 space-y-2">
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-xs text-figma-text-tertiary">Plugin</span>
-            <span className="text-xs text-figma-text font-medium">
-              {PLUGIN_NAME}
-            </span>
-          </div>
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-xs text-figma-text-tertiary">Version</span>
-            <code className="text-[11px] font-medium text-figma-text-secondary bg-figma-bg border border-figma-border px-1.5 py-0.5 rounded">
-              v{PLUGIN_VERSION}
-            </code>
-          </div>
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-xs text-figma-text-tertiary">Plugin ID</span>
-            <code className="text-[11px] font-medium text-figma-text-secondary bg-figma-bg border border-figma-border px-1.5 py-0.5 rounded">
-              {PLUGIN_ID}
-            </code>
-          </div>
-        </div>
       </section>
     </div>
   );
