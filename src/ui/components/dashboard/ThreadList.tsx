@@ -1,7 +1,7 @@
 import type { CommentThread } from "@shared/types";
 import { ThreadCard } from "./ThreadCard";
+import { ThreadCardSkeleton } from "./ThreadCardSkeleton";
 import { EmptyState } from "@ui/components/common/EmptyState";
-import { LoadingSpinner } from "@ui/components/common/LoadingSpinner";
 import { useCommentsStore } from "@ui/store/commentsStore";
 import { useFilterStore, isAddressedToMe } from "@ui/store/filterStore";
 import { useWorkflowStore } from "@ui/store/workflowStore";
@@ -26,7 +26,13 @@ export function ThreadList({
   const user = useAuthStore((s) => s.user);
 
   if (isLoading && threads.length === 0) {
-    return <LoadingSpinner message="Fetching comments..." />;
+    return (
+      <div className="flex-1 overflow-y-auto">
+        {Array.from({ length: 5 }, (_, i) => (
+          <ThreadCardSkeleton key={i} />
+        ))}
+      </div>
+    );
   }
 
   if (error) {
