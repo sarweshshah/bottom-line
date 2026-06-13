@@ -127,13 +127,13 @@ export const useAIStore = create<AIState>((set, get) => ({
     const p = provider ?? get().provider;
     switch (p) {
       case "anthropic":
-        return get().anthropicApiKey.trim();
+        return (get().anthropicApiKey || "").trim();
       case "openai":
-        return get().openaiApiKey.trim();
+        return (get().openaiApiKey || "").trim();
       case "gemini":
-        return get().geminiApiKey.trim();
+        return (get().geminiApiKey || "").trim();
       case "custom":
-        return get().customConfig.apiKey.trim();
+        return (get().customConfig.apiKey || "").trim();
       default:
         return "";
     }

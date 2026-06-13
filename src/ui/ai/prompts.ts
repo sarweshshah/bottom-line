@@ -138,7 +138,7 @@ const VALID_TASK_TYPES = new Set([
 ]);
 
 function normalizeAssignee(assignee?: string): string | null {
-  if (!assignee) return null;
+  if (!assignee || typeof assignee !== "string") return null;
   const cleaned = assignee.trim().replace(/^@+/, "");
   if (!cleaned || cleaned.toLowerCase() === "unassigned") {
     return null;
@@ -194,7 +194,14 @@ export function parseAIResponse(
 ): SummaryResult {
   const parsed = extractJSON(raw);
 
-  if (!parsed || !parsed.summary) {
+  const summary =
+    typeof parsed?.summary === "string"
+      ? parsed.summary
+      : Array.isArray(parsed?.summary)
+        ? (parsed.summary as string[]).map(String).join("\n")
+        : null;
+
+  if (!summary) {
     const fallback =
       cleanSummaryText(raw) ||
       "Summary could not be generated. Please try again.";
@@ -211,13 +218,18 @@ export function parseAIResponse(
     };
   }
 
-  const tasks: Task[] = (parsed.tasks ?? [])
-    .filter((t): t is RawAITask => !!t?.description)
+  const tasks: Task[] = (parsed!.tasks ?? [])
+    .filter(
+      (t): t is RawAITask =>
+        !!t?.description && typeof t.description === "string",
+    )
     .map((t, i) => ({
       id: `task_${threadId}_${i}`,
       threadId,
       description: t.description!,
-      assignee: normalizeAssignee(t.assignee),
+      assignee: normalizeAssignee(
+        typeof t.assignee === "string" ? t.assignee : undefined,
+      ),
       status: "pending" as const,
       sourceCommentId: threadId,
       detectedPattern: "cloud_ai",
@@ -228,7 +240,7 @@ export function parseAIResponse(
 
   return {
     summary: ensureBulletedSummary(
-      truncateToWordLimit(parsed.summary, summaryWordLimit),
+      truncateToWordLimit(summary, summaryWordLimit),
     ),
     tasks,
     generatedAt: new Date().toISOString(),

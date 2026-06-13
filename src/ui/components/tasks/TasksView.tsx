@@ -21,7 +21,7 @@ interface TaskGroup {
 }
 
 function normalizeAssignee(assignee: string | null): string | null {
-  if (!assignee) return null;
+  if (!assignee || typeof assignee !== "string") return null;
   const cleaned = assignee.trim().replace(/^@+/, "");
   return cleaned || null;
 }
@@ -41,7 +41,8 @@ function mergeDuplicateTasks(tasks: Task[]): DisplayTask[] {
 
   for (const task of tasks) {
     const normalizedAssignee = normalizeAssignee(task.assignee);
-    const mergeKey = `${task.threadId}::${task.type}::${task.description.trim().toLowerCase()}`;
+    const desc = typeof task.description === "string" ? task.description : String(task.description ?? "");
+    const mergeKey = `${task.threadId}::${task.type}::${desc.trim().toLowerCase()}`;
     const existing = merged.get(mergeKey);
     if (!existing) {
       merged.set(mergeKey, {
