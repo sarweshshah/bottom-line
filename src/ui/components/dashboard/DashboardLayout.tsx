@@ -1,4 +1,5 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
+import { useShallow } from "zustand/react/shallow";
 import {
   RefreshCw,
   MessageSquare,
@@ -9,9 +10,8 @@ import {
   X,
   ChevronDown,
   Circle,
-  Wrench,
-  Ban,
   CheckCircle2,
+  FileText,
 } from "lucide-react";
 import type { CommentThread, WorkflowState } from "@shared/types";
 import { useCommentsStore } from "@ui/store/commentsStore";
@@ -28,8 +28,6 @@ type DashboardTab = "threads" | "tasks";
 
 const BULK_STATE_OPTIONS: { value: WorkflowState; label: string; Icon: typeof Circle }[] = [
   { value: "open", label: "Open", Icon: Circle },
-  { value: "in_progress", label: "In Progress", Icon: Wrench },
-  { value: "blocked", label: "Blocked", Icon: Ban },
   { value: "resolved", label: "Resolved", Icon: CheckCircle2 },
 ];
 
@@ -88,9 +86,26 @@ export function DashboardLayout() {
     refreshComments,
     cacheTTLMinutes,
     currentPageThreadIds,
+    isResolvingPages,
   } = useCommentsStore();
-  const { applyFilters } = useFilterStore();
-  const { showSettings, user } = useAuthStore();
+  const {
+    applyFilters,
+    commentScope,
+    workflowStateFilter,
+    addressedToMe,
+    sortField,
+    sortDirection,
+  } = useFilterStore(
+    useShallow((s) => ({
+      applyFilters: s.applyFilters,
+      commentScope: s.commentScope,
+      workflowStateFilter: s.workflowStateFilter,
+      addressedToMe: s.addressedToMe,
+      sortField: s.sortField,
+      sortDirection: s.sortDirection,
+    })),
+  );
+  const { showSettings, user, fileName } = useAuthStore();
   const taskCount = useAIStore((s) => s.allTasks.length);
   const getWorkflowState = useWorkflowStore((s) => s.getState);
   const initStates = useWorkflowStore((s) => s.initStates);
@@ -167,19 +182,38 @@ export function DashboardLayout() {
     setSelectedIds(new Set());
   };
 
+  const isResolvingCurrentPage =
+    commentScope === "current_page" &&
+    (isResolvingPages || currentPageThreadIds === null);
+
+  const filteredThreads = useMemo(() => {
+    if (isResolvingCurrentPage) return [];
+    return applyFilters(
+      threads,
+      currentPageThreadIds,
+      getWorkflowState,
+      user?.handle ?? null,
+    );
+  }, [
+    isResolvingCurrentPage,
+    applyFilters,
+    threads,
+    currentPageThreadIds,
+    getWorkflowState,
+    user?.handle,
+    workflowStateFilter,
+    addressedToMe,
+    sortField,
+    sortDirection,
+    commentScope,
+  ]);
+  const filteredCount = filteredThreads.length;
+
   if (selectedThread) {
     const freshThread =
       threads.find((t) => t.id === selectedThread.id) ?? selectedThread;
     return <ThreadDetail thread={freshThread} onBack={handleBack} />;
   }
-
-  const filteredThreads = applyFilters(
-    threads,
-    currentPageThreadIds,
-    getWorkflowState,
-    user?.handle ?? null,
-  );
-  const filteredCount = filteredThreads.length;
 
   return (
     <div className="flex flex-col h-full bg-figma-bg">
@@ -283,6 +317,18 @@ export function DashboardLayout() {
           </button>
         </div>
       </div>
+
+      {fileName && (
+        <div
+          className="shrink-0 px-4 py-2 border-b border-figma-border bg-figma-bg-secondary flex items-center gap-1.5 min-h-2"
+          title={fileName}
+        >
+          <FileText size={14} className="shrink-0 text-figma-icon-secondary" />
+          <span className="text-[11px] text-figma-text-primary truncate min-w-0">
+            {fileName}
+          </span>
+        </div>
+      )}
 
       {activeTab === "threads" && (
         <>

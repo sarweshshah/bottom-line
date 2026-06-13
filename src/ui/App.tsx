@@ -118,8 +118,7 @@ export function App() {
   const { screen, initFromSandbox, showDashboard, themePreference, fileName } =
     useAuthStore();
   const resizeDragStateRef = useRef<ResizeDragState | null>(null);
-  const showFileBar =
-    (screen === "dashboard" || screen === "settings") && !!fileName;
+  const showFileBar = screen === "settings" && !!fileName;
 
   useEffect(() => {
     applyTheme(themePreference);
@@ -230,7 +229,9 @@ export function App() {
           useCommentsStore.getState().setCurrentPageId(msg.pageId);
           break;
         case "PAGE_THREADS_RESOLVED":
-          useCommentsStore.getState().setCurrentPageThreadIds(msg.threadIds);
+          useCommentsStore
+            .getState()
+            .setCurrentPageThreadIds(msg.requestId, msg.threadIds);
           break;
       }
     }
