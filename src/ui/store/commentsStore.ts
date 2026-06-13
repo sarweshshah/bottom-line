@@ -27,11 +27,12 @@ interface CommentsState {
   setCacheTTLMinutes: (minutes: CacheTTLMinutes) => void;
   clearComments: () => void;
   setCurrentPageId: (pageId: string) => void;
-  setCurrentPageThreadIds: (threadIds: string[]) => void;
+  setCurrentPageThreadIds: (requestId: string, threadIds: string[]) => void;
   resolveCurrentPageThreads: () => void;
 }
 
 let resolveCounter = 0;
+let pendingPageResolveRequestId: string | null = null;
 
 export const useCommentsStore = create<CommentsState>((set, get) => ({
   threads: [],
@@ -146,7 +147,9 @@ export const useCommentsStore = create<CommentsState>((set, get) => ({
     get().resolveCurrentPageThreads();
   },
 
-  setCurrentPageThreadIds: (threadIds: string[]) => {
+  setCurrentPageThreadIds: (requestId: string, threadIds: string[]) => {
+    if (requestId !== pendingPageResolveRequestId) return;
+    pendingPageResolveRequestId = null;
     set({ currentPageThreadIds: new Set(threadIds), isResolvingPages: false });
   },
 
@@ -166,8 +169,9 @@ export const useCommentsStore = create<CommentsState>((set, get) => ({
       return;
     }
 
-    set({ isResolvingPages: true });
+    set({ isResolvingPages: true, currentPageThreadIds: null });
     const requestId = `page_resolve_${++resolveCounter}`;
+    pendingPageResolveRequestId = requestId;
     const msg: ResolvePageThreadsMessage = {
       type: "RESOLVE_PAGE_THREADS",
       requestId,

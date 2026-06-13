@@ -1,3 +1,5 @@
+import { useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
 import type { CommentThread } from "@shared/types";
 import { ThreadCard } from "./ThreadCard";
 import { ThreadCardSkeleton } from "./ThreadCardSkeleton";
@@ -20,10 +22,66 @@ export function ThreadList({
   selectedIds,
   onToggleSelect,
 }: ThreadListProps) {
-  const { threads, isLoading, error, currentPageThreadIds } = useCommentsStore();
-  const { applyFilters, clearFilters, addressedToMe } = useFilterStore();
+  const { threads, isLoading, error, currentPageThreadIds, isResolvingPages } =
+    useCommentsStore(
+      useShallow((s) => ({
+        threads: s.threads,
+        isLoading: s.isLoading,
+        error: s.error,
+        currentPageThreadIds: s.currentPageThreadIds,
+        isResolvingPages: s.isResolvingPages,
+      })),
+    );
+  const {
+    applyFilters,
+    clearFilters,
+    addressedToMe,
+    commentScope,
+    workflowStateFilter,
+    sortField,
+    sortDirection,
+  } = useFilterStore(
+    useShallow((s) => ({
+      applyFilters: s.applyFilters,
+      clearFilters: s.clearFilters,
+      addressedToMe: s.addressedToMe,
+      commentScope: s.commentScope,
+      workflowStateFilter: s.workflowStateFilter,
+      sortField: s.sortField,
+      sortDirection: s.sortDirection,
+    })),
+  );
   const getWorkflowState = useWorkflowStore((s) => s.getState);
   const user = useAuthStore((s) => s.user);
+
+  const isResolvingCurrentPage =
+    commentScope === "current_page" &&
+    (isResolvingPages || currentPageThreadIds === null);
+
+  const filtered = useMemo(
+    () => {
+      if (isResolvingCurrentPage) return [];
+      return applyFilters(
+        threads,
+        currentPageThreadIds,
+        getWorkflowState,
+        user?.handle ?? null,
+      );
+    },
+    [
+      isResolvingCurrentPage,
+      applyFilters,
+      threads,
+      currentPageThreadIds,
+      getWorkflowState,
+      user?.handle,
+      workflowStateFilter,
+      addressedToMe,
+      sortField,
+      sortDirection,
+      commentScope,
+    ],
+  );
 
   if (isLoading && threads.length === 0) {
     return (
@@ -58,12 +116,15 @@ export function ThreadList({
     return <EmptyState variant="no-comments" />;
   }
 
-  const filtered = applyFilters(
-    threads,
-    currentPageThreadIds,
-    getWorkflowState,
-    user?.handle ?? null,
-  );
+  if (isResolvingCurrentPage) {
+    return (
+      <div className="flex-1 overflow-y-auto">
+        {Array.from({ length: 3 }, (_, i) => (
+          <ThreadCardSkeleton key={i} />
+        ))}
+      </div>
+    );
+  }
 
   if (filtered.length === 0) {
     if (addressedToMe) {
