@@ -7,16 +7,10 @@ import type {
   CommentThread,
 } from "@shared/types";
 import { getStorage, setStorage } from "@ui/lib/storage";
+import { useCommentsStore } from "@ui/store/commentsStore";
 
 const DEFAULT_SORT_FIELD: SortField = "replies";
 const DEFAULT_SORT_DIR: SortDirection = "desc";
-
-const ALL_WORKFLOW_STATES: WorkflowState[] = [
-  "open",
-  "in_progress",
-  "blocked",
-  "resolved",
-];
 
 const DEFAULT_DIRECTIONS: Record<SortField, SortDirection> = {
   replies: "desc",
@@ -37,18 +31,33 @@ export function isAddressedToMe(
     thread.replyCount > 0
   )
     return true;
+  if (
+    thread.participants.some(
+      (p) => p.handle.toLowerCase().trim() === handle,
+    )
+  )
+    return true;
   return false;
 }
 
+function normalizeStoredWorkflowFilter(
+  stored: WorkflowState | WorkflowState[] | null | undefined,
+): WorkflowState | null {
+  if (stored == null) return null;
+  if (Array.isArray(stored)) {
+    return stored.length === 1 ? stored[0] : null;
+  }
+  return stored;
+}
+
 interface FilterState {
-  workflowFilter: WorkflowState[];
+  workflowStateFilter: WorkflowState | null;
   addressedToMe: boolean;
   sortField: SortField;
   sortDirection: SortDirection;
   commentScope: CommentScope;
 
-  setWorkflowFilter: (states: WorkflowState[]) => void;
-  toggleWorkflowState: (state: WorkflowState) => void;
+  setWorkflowStateFilter: (state: WorkflowState | null) => void;
   setAddressedToMe: (enabled: boolean) => void;
   toggleSort: (field: SortField) => void;
   setCommentScope: (scope: CommentScope) => void;
@@ -56,8 +65,8 @@ interface FilterState {
   initFromStorage: () => Promise<void>;
   applyFilters: (
     threads: CommentThread[],
-    currentPageThreadIds?: Set<string> | null,
-    getWorkflowState?: (threadId: string) => WorkflowState,
+    currentPageThreadIds: Set<string> | null | undefined,
+    getWorkflowState: (threadId: string) => WorkflowState,
     userHandle?: string | null,
   ) => CommentThread[];
 }
@@ -89,24 +98,15 @@ function compare(
 }
 
 export const useFilterStore = create<FilterState>((set, get) => ({
-  workflowFilter: ALL_WORKFLOW_STATES,
+  workflowStateFilter: null,
   addressedToMe: false,
   sortField: DEFAULT_SORT_FIELD,
   sortDirection: DEFAULT_SORT_DIR,
   commentScope: "full_file",
 
-  setWorkflowFilter: (states) => {
-    set({ workflowFilter: states });
-    setStorage("workflowFilter", states);
-  },
-
-  toggleWorkflowState: (state) => {
-    const current = get().workflowFilter;
-    const next = current.includes(state)
-      ? current.filter((s) => s !== state)
-      : [...current, state];
-    set({ workflowFilter: next });
-    setStorage("workflowFilter", next);
+  setWorkflowStateFilter: (state) => {
+    set({ workflowStateFilter: state });
+    setStorage("workflowFilter", state);
   },
 
   setAddressedToMe: (enabled) => {
@@ -129,17 +129,20 @@ export const useFilterStore = create<FilterState>((set, get) => ({
 
   setCommentScope: (commentScope) => {
     set({ commentScope });
+    if (commentScope === "current_page") {
+      useCommentsStore.getState().resolveCurrentPageThreads();
+    }
   },
 
   clearFilters: () => {
     set({
-      workflowFilter: ALL_WORKFLOW_STATES,
+      workflowStateFilter: null,
       addressedToMe: false,
       sortField: DEFAULT_SORT_FIELD,
       sortDirection: DEFAULT_SORT_DIR,
       commentScope: "full_file",
     });
-    setStorage("workflowFilter", ALL_WORKFLOW_STATES);
+    setStorage("workflowFilter", null);
     setStorage("addressedToMe", false);
     setStorage("sortField", DEFAULT_SORT_FIELD);
     setStorage("sortDirection", DEFAULT_SORT_DIR);
@@ -147,13 +150,13 @@ export const useFilterStore = create<FilterState>((set, get) => ({
 
   initFromStorage: async () => {
     const [wf, atm, sf, sd] = await Promise.all([
-      getStorage<WorkflowState[]>("workflowFilter"),
+      getStorage<WorkflowState | WorkflowState[] | null>("workflowFilter"),
       getStorage<boolean>("addressedToMe"),
       getStorage<SortField>("sortField"),
       getStorage<SortDirection>("sortDirection"),
     ]);
     set({
-      workflowFilter: wf ?? ALL_WORKFLOW_STATES,
+      workflowStateFilter: normalizeStoredWorkflowFilter(wf),
       addressedToMe: atm ?? false,
       sortField: sf ?? DEFAULT_SORT_FIELD,
       sortDirection: sd ?? DEFAULT_SORT_DIR,
@@ -167,7 +170,7 @@ export const useFilterStore = create<FilterState>((set, get) => ({
     userHandle,
   ) => {
     const {
-      workflowFilter,
+      workflowStateFilter,
       addressedToMe,
       sortField,
       sortDirection,
@@ -176,13 +179,17 @@ export const useFilterStore = create<FilterState>((set, get) => ({
 
     let filtered = threads;
 
-    if (commentScope === "current_page" && currentPageThreadIds) {
-      filtered = filtered.filter((t) => currentPageThreadIds.has(t.id));
+    if (commentScope === "current_page") {
+      if (!currentPageThreadIds) {
+        filtered = [];
+      } else {
+        filtered = filtered.filter((t) => currentPageThreadIds.has(t.id));
+      }
     }
 
-    if (workflowFilter.length > 0 && getWorkflowState) {
-      filtered = filtered.filter((t) =>
-        workflowFilter.includes(getWorkflowState(t.id)),
+    if (workflowStateFilter) {
+      filtered = filtered.filter(
+        (t) => getWorkflowState(t.id) === workflowStateFilter,
       );
     }
 

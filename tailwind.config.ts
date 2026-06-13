@@ -28,12 +28,6 @@ export default {
           resolved: "var(--bl-status-done)",
           "resolved-bg": "var(--bl-status-done-bg)",
           "resolved-text": "var(--bl-status-done-text)",
-          progress: "var(--bl-status-progress)",
-          "progress-bg": "var(--bl-status-progress-bg)",
-          "progress-text": "var(--bl-status-progress-text)",
-          blocked: "var(--bl-status-blocked)",
-          "blocked-bg": "var(--bl-status-blocked-bg)",
-          "blocked-text": "var(--bl-status-blocked-text)",
         },
         addressed: {
           DEFAULT: "var(--bl-addressed)",

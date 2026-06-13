@@ -9,16 +9,6 @@ const config: Record<
     dotClass: "bg-status-open shadow-status-open",
     bgClass: "bg-status-open-bg text-status-open-text",
   },
-  in_progress: {
-    label: "WIP",
-    dotClass: "bg-status-progress",
-    bgClass: "bg-status-progress-bg text-status-progress-text",
-  },
-  blocked: {
-    label: "BLOCKED",
-    dotClass: "bg-status-blocked",
-    bgClass: "bg-status-blocked-bg text-status-blocked-text",
-  },
   resolved: {
     label: "DONE",
     dotClass: "bg-status-resolved shadow-status-done",

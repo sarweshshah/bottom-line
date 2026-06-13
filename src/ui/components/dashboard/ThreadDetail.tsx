@@ -15,8 +15,6 @@ import {
   Square,
   X,
   Circle,
-  Wrench,
-  Ban,
   CheckCircle2,
 } from "lucide-react";
 import type { CommentThread, WorkflowState } from "@shared/types";
@@ -45,15 +43,11 @@ const WORKFLOW_STATE_CONFIG: Record<
   { label: string; Icon: typeof Circle }
 > = {
   open: { label: "Open", Icon: Circle },
-  in_progress: { label: "In Progress", Icon: Wrench },
-  blocked: { label: "Blocked", Icon: Ban },
   resolved: { label: "Resolved", Icon: CheckCircle2 },
 };
 
 const STATE_ORDER: WorkflowState[] = [
   "open",
-  "in_progress",
-  "blocked",
   "resolved",
 ];
 
