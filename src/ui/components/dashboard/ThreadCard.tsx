@@ -52,7 +52,9 @@ export function ThreadCard({
           <div className="shrink-0 flex items-start pt-0.5">
             <span
               className={`w-3.5 h-3.5 rounded border flex items-center justify-center transition-colors ${
-                isSelected ? "bg-accent border-accent" : "border-figma-border-strong"
+                isSelected
+                  ? "bg-accent border-accent"
+                  : "border-figma-border-strong"
               }`}
             >
               {isSelected && (
@@ -77,7 +79,9 @@ export function ThreadCard({
               <span className="text-[11px] text-figma-text-tertiary font-medium">
                 #{thread.orderNumber ?? thread.id.slice(0, 8)}
               </span>
-              <span className="text-[10px] text-figma-text-disabled">&middot;</span>
+              <span className="text-[10px] text-figma-text-disabled">
+                &middot;
+              </span>
               <span className="text-[11px] text-figma-text-tertiary">
                 {timeAgo(thread.lastUpdatedAt)}
               </span>
@@ -97,7 +101,7 @@ export function ThreadCard({
 
           {/* Row 3: Avatars + Reply count + Navigate */}
           <div className="flex items-center justify-between">
-            <AvatarGroup users={thread.participants} max={5} size={24} />
+            <AvatarGroup users={thread.participants} max={10} size={18} />
             <div className="flex items-center gap-2">
               {threadHasImages(thread) && (
                 <Image size={11} className="text-figma-text-tertiary" />
