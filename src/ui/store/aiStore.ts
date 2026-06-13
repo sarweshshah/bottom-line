@@ -21,6 +21,13 @@ interface ThreadSummaryState {
   error: string | null;
 }
 
+interface BulkSummaryProgress {
+  total: number;
+  completed: number;
+  failed: number;
+  inProgress: boolean;
+}
+
 interface AIState {
   provider: AIProvider;
   anthropicApiKey: string;
@@ -34,6 +41,7 @@ interface AIState {
 
   threadSummaries: Map<string, ThreadSummaryState>;
   allTasks: Task[];
+  bulkSummaryProgress: BulkSummaryProgress | null;
 
   setProvider: (provider: AIProvider) => void;
   setAnthropicApiKey: (key: string) => void;
@@ -56,6 +64,11 @@ interface AIState {
 
   updateTaskStatus: (taskId: string, status: TaskStatus) => void;
   refreshAllTasks: () => void;
+
+  startBulkSummary: (total: number) => void;
+  recordBulkSummaryProgress: (success: boolean) => void;
+  finishBulkSummary: () => void;
+  dismissBulkSummary: () => void;
 
   initFromStorage: () => Promise<void>;
   restoreCachedSummaries: (threads: CommentThread[]) => Promise<void>;
@@ -80,6 +93,7 @@ export const useAIStore = create<AIState>((set, get) => ({
 
   threadSummaries: new Map(),
   allTasks: [],
+  bulkSummaryProgress: null,
 
   setProvider: (provider) => {
     set({ provider });
@@ -225,6 +239,43 @@ export const useAIStore = create<AIState>((set, get) => ({
       }
     }
     set({ allTasks: tasks });
+  },
+
+  startBulkSummary: (total) => {
+    set({
+      bulkSummaryProgress: {
+        total,
+        completed: 0,
+        failed: 0,
+        inProgress: true,
+      },
+    });
+  },
+
+  recordBulkSummaryProgress: (success) => {
+    set((state) => {
+      const current = state.bulkSummaryProgress;
+      if (!current) return {};
+      return {
+        bulkSummaryProgress: {
+          ...current,
+          completed: success ? current.completed + 1 : current.completed,
+          failed: success ? current.failed : current.failed + 1,
+        },
+      };
+    });
+  },
+
+  finishBulkSummary: () => {
+    set((state) => {
+      const current = state.bulkSummaryProgress;
+      if (!current) return {};
+      return { bulkSummaryProgress: { ...current, inProgress: false } };
+    });
+  },
+
+  dismissBulkSummary: () => {
+    set({ bulkSummaryProgress: null });
   },
 
   initFromStorage: async () => {

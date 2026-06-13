@@ -22,14 +22,13 @@ export function ThreadList({
   selectedIds,
   onToggleSelect,
 }: ThreadListProps) {
-  const { threads, isLoading, error, currentPageThreadIds, isResolvingPages } =
+  const { threads, isLoading, error, currentPageThreadIds } =
     useCommentsStore(
       useShallow((s) => ({
         threads: s.threads,
         isLoading: s.isLoading,
         error: s.error,
         currentPageThreadIds: s.currentPageThreadIds,
-        isResolvingPages: s.isResolvingPages,
       })),
     );
   const {
@@ -56,7 +55,8 @@ export function ThreadList({
 
   const isResolvingCurrentPage =
     commentScope === "current_page" &&
-    (isResolvingPages || currentPageThreadIds === null);
+    currentPageThreadIds === null &&
+    threads.length > 0;
 
   const filtered = useMemo(
     () => {

@@ -266,18 +266,15 @@ figma.ui.onmessage = async (msg: SandboxMessage) => {
     }
 
     case "RESOLVE_PAGE_THREADS": {
+      const pageNodeIds = new Set<string>([figma.currentPage.id]);
+      for (const node of figma.currentPage.findAll()) {
+        pageNodeIds.add(node.id);
+      }
+
       const matched: string[] = [];
       for (const entry of msg.threads) {
-        try {
-          const node = await figma.getNodeByIdAsync(entry.nodeId);
-          if (node) {
-            const page = findPageForNode(node);
-            if (page && page.id === figma.currentPage.id) {
-              matched.push(entry.threadId);
-            }
-          }
-        } catch {
-          // node not found, skip
+        if (pageNodeIds.has(entry.nodeId)) {
+          matched.push(entry.threadId);
         }
       }
       const resolved: PageThreadsResolvedMessage = {

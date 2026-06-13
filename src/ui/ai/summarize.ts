@@ -150,3 +150,56 @@ export async function summarizeThread(
   await cacheSummary(resultWithPersistedTaskState, thread.id);
   return resultWithPersistedTaskState;
 }
+
+export async function bulkSummarizeThreads(
+  threads: CommentThread[],
+): Promise<void> {
+  const eligible = threads.filter((t) => !isTooShort(t));
+  const skipped = threads.length - eligible.length;
+
+  if (eligible.length === 0) {
+    showToast(
+      "Selected threads are too short to summarize (need 3+ comments).",
+      "info",
+    );
+    return;
+  }
+
+  const store = useAIStore.getState();
+  store.startBulkSummary(eligible.length);
+
+  for (const thread of eligible) {
+    const ai = useAIStore.getState();
+    ai.setThreadLoading(thread.id);
+    try {
+      const result = await summarizeThread(thread);
+      ai.setThreadResult(thread.id, result);
+      ai.recordBulkSummaryProgress(true);
+    } catch (err) {
+      ai.setThreadError(
+        thread.id,
+        err instanceof Error ? err.message : "Summary generation failed",
+      );
+      ai.recordBulkSummaryProgress(false);
+    }
+  }
+
+  const finalProgress = useAIStore.getState().bulkSummaryProgress;
+  useAIStore.getState().finishBulkSummary();
+
+  if (finalProgress) {
+    const { completed, failed } = finalProgress;
+    if (failed === 0) {
+      showToast(
+        `Summarized ${completed} thread${completed === 1 ? "" : "s"}` +
+          (skipped > 0 ? ` (${skipped} too short)` : ""),
+        "success",
+      );
+    } else {
+      showToast(
+        `Summarized ${completed}, ${failed} failed`,
+        completed > 0 ? "info" : "error",
+      );
+    }
+  }
+}

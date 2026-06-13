@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { ShieldAlert, X } from "lucide-react";
 import { useAIStore } from "@ui/store/aiStore";
 import { PROVIDER_MODEL_LABELS } from "@ui/ai/cloudProvider";
@@ -8,9 +8,12 @@ export function ConsentDialog() {
   const provider = useAIStore((s) => s.provider);
   const imageAnalysisEnabled = useAIStore((s) => s.imageAnalysisEnabled);
   const setCloudAiConsented = useAIStore((s) => s.setCloudAiConsented);
+  const pendingActionRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
-    function handleShow() {
+    function handleShow(e: Event) {
+      const detail = (e as CustomEvent<{ onConsent?: () => void }>).detail;
+      pendingActionRef.current = detail?.onConsent ?? null;
       setVisible(true);
     }
     window.addEventListener("show-ai-consent", handleShow);
@@ -20,9 +23,13 @@ export function ConsentDialog() {
   const handleAccept = useCallback(() => {
     setCloudAiConsented(true, imageAnalysisEnabled);
     setVisible(false);
+    const action = pendingActionRef.current;
+    pendingActionRef.current = null;
+    action?.();
   }, [imageAnalysisEnabled, setCloudAiConsented]);
 
   const handleCancel = useCallback(() => {
+    pendingActionRef.current = null;
     setVisible(false);
   }, []);
 

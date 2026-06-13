@@ -339,6 +339,13 @@ export const PROVIDER_MODEL_LABELS: Record<AIProvider, string> = {
   custom: "Custom",
 };
 
+/** Console pages where users can create an API key for each provider. */
+export const PROVIDER_API_KEY_URLS: Partial<Record<AIProvider, string>> = {
+  anthropic: "https://console.anthropic.com/settings/keys",
+  openai: "https://platform.openai.com/api-keys",
+  gemini: "https://aistudio.google.com/app/apikey",
+};
+
 const MODEL_DISPLAY_NAMES: Record<string, string> = {
   [ANTHROPIC_MODEL]: "Claude Haiku 4.5",
   "gpt-4o-mini": "GPT-4o mini",

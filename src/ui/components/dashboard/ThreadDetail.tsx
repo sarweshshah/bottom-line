@@ -225,7 +225,9 @@ function SummarySection({ thread }: { thread: CommentThread }) {
   const handleSummarize = useCallback(
     async (skipCache = false) => {
       if (needsConsent()) {
-        const event = new CustomEvent("show-ai-consent");
+        const event = new CustomEvent("show-ai-consent", {
+          detail: { onConsent: () => handleSummarize(skipCache) },
+        });
         window.dispatchEvent(event);
         return;
       }

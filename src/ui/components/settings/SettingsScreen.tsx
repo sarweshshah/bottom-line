@@ -37,7 +37,11 @@ import {
 } from "@shared/figmaPat";
 import { showToast } from "@ui/components/common/Toast";
 import { FieldError } from "@ui/components/common/FieldError";
-import { supportsVision, PROVIDER_MODEL_LABELS } from "@ui/ai/cloudProvider";
+import {
+  supportsVision,
+  PROVIDER_MODEL_LABELS,
+  PROVIDER_API_KEY_URLS,
+} from "@ui/ai/cloudProvider";
 import { clearAllCachedSummaries } from "@ui/ai/summarize";
 import type {
   AIProvider,
@@ -70,21 +74,25 @@ const PROVIDER_OPTIONS: {
   value: AIProvider;
   label: string;
   description: string;
+  apiKeyUrl?: string;
 }[] = [
   {
     value: "anthropic",
     label: "Anthropic",
     description: PROVIDER_MODEL_LABELS.anthropic,
+    apiKeyUrl: PROVIDER_API_KEY_URLS.anthropic,
   },
   {
     value: "openai",
     label: "OpenAI",
     description: PROVIDER_MODEL_LABELS.openai,
+    apiKeyUrl: PROVIDER_API_KEY_URLS.openai,
   },
   {
     value: "gemini",
     label: "Google",
     description: PROVIDER_MODEL_LABELS.gemini,
+    apiKeyUrl: PROVIDER_API_KEY_URLS.gemini,
   },
   {
     value: "custom",
@@ -251,6 +259,13 @@ function AITab() {
 
   const hasVision = supportsVision(provider);
 
+  // Progressive disclosure: settings that depend on a configured provider only
+  // surface once the provider actually has credentials.
+  const hasKey =
+    provider === "custom"
+      ? Boolean(customConfig.baseUrl.trim())
+      : Boolean(currentKey.trim());
+
   return (
     <div className="space-y-5">
       <section>
@@ -303,9 +318,9 @@ function AITab() {
                   }`}
                 >
                   <div className="overflow-hidden">
-                    <div className="px-3 pb-2.5 pt-1.5 bg-accent-subtle space-y-2.5">
+                    <div className="px-3 pb-2.5 pt-1.5 bg-accent-subtle space-y-2">
                       {opt.value !== "custom" ? (
-                        <div>
+                        <>
                           <div className="flex items-center gap-2 bg-figma-bg border border-figma-border rounded px-2.5 py-1.5">
                             <input
                               type={showKey ? "text" : "password"}
@@ -339,7 +354,20 @@ function AITab() {
                               )}
                             </button>
                           </div>
-                        </div>
+                          {opt.apiKeyUrl && (
+                            <a
+                              href={opt.apiKeyUrl}
+                              onClick={(e: MouseEvent<HTMLAnchorElement>) => {
+                                e.preventDefault();
+                                openExternalUrl(opt.apiKeyUrl!);
+                              }}
+                              className="inline-flex items-center gap-1 text-[11px] text-accent hover:underline"
+                            >
+                              Get your {opt.label} API key
+                              <ExternalLink size={9} />
+                            </a>
+                          )}
+                        </>
                       ) : (
                         <div className="space-y-2">
                           <input
@@ -380,35 +408,6 @@ function AITab() {
                           />
                         </div>
                       )}
-
-                      <label className="flex items-center justify-between gap-2 cursor-pointer">
-                        <span className="text-[11px] text-figma-text-secondary flex items-center gap-1.5">
-                          <Image size={11} className="shrink-0" />
-                          Image analysis
-                          {!hasVision && (
-                            <span className="text-warning flex items-center gap-0.5">
-                              <AlertCircle size={9} />
-                              {provider === "custom"
-                                ? "text-only"
-                                : "unsupported"}
-                            </span>
-                          )}
-                          {imageAnalysisEnabled && hasVision && (
-                            <span className="text-warning flex items-center gap-0.5">
-                              <AlertCircle size={9} />
-                              Costs more tokens
-                            </span>
-                          )}
-                        </span>
-                        <input
-                          type="checkbox"
-                          checked={imageAnalysisEnabled}
-                          onChange={(e) =>
-                            setImageAnalysisEnabled(e.target.checked)
-                          }
-                          className="accent-accent w-3.5 h-3.5 cursor-pointer shrink-0"
-                        />
-                      </label>
                     </div>
                   </div>
                 </div>
@@ -418,15 +417,51 @@ function AITab() {
         </div>
       </section>
 
-      <section>
-        <h3 className="text-sm font-medium text-figma-text mb-1 flex items-center gap-1.5">
-          <MessageSquare size={14} className="text-accent" />
-          Summary length
-        </h3>
-        <p className="text-xs text-figma-text-tertiary mb-3">
-          Cap summary length in words.
-        </p>
-        <div className="p-3 rounded-lg border border-figma-border bg-figma-bg space-y-2">
+      {hasKey && hasVision && (
+        <section className="setting-reveal">
+          <h3 className="text-sm font-medium text-figma-text mb-1 flex items-center gap-1.5">
+            <Image size={14} className="text-accent" />
+            Image analysis
+          </h3>
+          <p className="text-xs text-figma-text-tertiary mb-3">
+            Include attached images when generating summaries.
+          </p>
+          <label className="flex items-center justify-between gap-3 p-3 bg-figma-bg-secondary border border-figma-border rounded-lg cursor-pointer transition-colors hover:border-figma-border-strong">
+            <div>
+              <p className="text-sm font-medium text-figma-text">
+                Analyze attached images
+              </p>
+              <p className="text-xs text-figma-text-tertiary mt-0.5 flex items-center gap-1">
+                {imageAnalysisEnabled ? (
+                  <span className="text-warning flex items-center gap-0.5">
+                    <AlertCircle size={10} />
+                    Uses more tokens per summary
+                  </span>
+                ) : (
+                  "Sends image content to the AI provider."
+                )}
+              </p>
+            </div>
+            <input
+              type="checkbox"
+              checked={imageAnalysisEnabled}
+              onChange={(e) => setImageAnalysisEnabled(e.target.checked)}
+              className="accent-accent w-4 h-4 cursor-pointer shrink-0"
+            />
+          </label>
+        </section>
+      )}
+
+      {hasKey && (
+        <section className="setting-reveal">
+          <h3 className="text-sm font-medium text-figma-text mb-1 flex items-center gap-1.5">
+            <MessageSquare size={14} className="text-accent" />
+            Summary length
+          </h3>
+          <p className="text-xs text-figma-text-tertiary mb-3">
+            Cap summary length in words.
+          </p>
+          <div className="p-3 rounded-lg border border-figma-border bg-figma-bg space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs text-figma-text">Word limit</span>
             <span className="text-xs font-medium text-figma-text">
@@ -465,7 +500,8 @@ function AITab() {
             ))}
           </div>
         </div>
-      </section>
+        </section>
+      )}
 
       <ClearCacheSection />
     </div>

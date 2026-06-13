@@ -19,6 +19,7 @@ interface CommentsState {
   cacheTTLMinutes: CacheTTLMinutes;
   currentPageId: string | null;
   currentPageThreadIds: Set<string> | null;
+  lastResolvedPageId: string | null;
   isResolvingPages: boolean;
 
   fetchComments: () => Promise<void>;
@@ -42,6 +43,7 @@ export const useCommentsStore = create<CommentsState>((set, get) => ({
   cacheTTLMinutes: DEFAULT_CACHE_TTL_MINUTES,
   currentPageId: null,
   currentPageThreadIds: null,
+  lastResolvedPageId: null,
   isResolvingPages: false,
 
   fetchComments: async () => {
@@ -86,7 +88,12 @@ export const useCommentsStore = create<CommentsState>((set, get) => ({
       try {
         const rawComments = await getComments(fk, authNow.token, authNow.mode);
         const threads = normalizeComments(rawComments);
-        set({ threads, lastFetched: Date.now(), isLoading: false });
+        set({
+          threads,
+          lastFetched: Date.now(),
+          isLoading: false,
+          lastResolvedPageId: null,
+        });
         get().resolveCurrentPageThreads();
 
         const wfStore = useWorkflowStore.getState();
@@ -139,23 +146,57 @@ export const useCommentsStore = create<CommentsState>((set, get) => ({
   },
 
   clearComments: () => {
-    set({ threads: [], lastFetched: null, error: null, currentPageThreadIds: null });
+    set({
+      threads: [],
+      lastFetched: null,
+      error: null,
+      currentPageThreadIds: null,
+      lastResolvedPageId: null,
+    });
   },
 
   setCurrentPageId: (pageId: string) => {
-    set({ currentPageId: pageId, currentPageThreadIds: null });
+    const { currentPageId, lastResolvedPageId } = get();
+    if (currentPageId === pageId && lastResolvedPageId === pageId) return;
+
+    set({
+      currentPageId: pageId,
+      currentPageThreadIds: null,
+      lastResolvedPageId: null,
+    });
     get().resolveCurrentPageThreads();
   },
 
   setCurrentPageThreadIds: (requestId: string, threadIds: string[]) => {
     if (requestId !== pendingPageResolveRequestId) return;
     pendingPageResolveRequestId = null;
-    set({ currentPageThreadIds: new Set(threadIds), isResolvingPages: false });
+    const { currentPageId } = get();
+    set({
+      currentPageThreadIds: new Set(threadIds),
+      lastResolvedPageId: currentPageId,
+      isResolvingPages: false,
+    });
   },
 
   resolveCurrentPageThreads: () => {
-    const { threads, currentPageId } = get();
+    const {
+      threads,
+      currentPageId,
+      lastResolvedPageId,
+      currentPageThreadIds,
+      isResolvingPages,
+    } = get();
     if (!currentPageId || threads.length === 0) return;
+
+    if (
+      lastResolvedPageId === currentPageId &&
+      currentPageThreadIds !== null &&
+      !isResolvingPages
+    ) {
+      return;
+    }
+
+    if (isResolvingPages && pendingPageResolveRequestId) return;
 
     const entries: { threadId: string; nodeId: string }[] = [];
     for (const t of threads) {
@@ -165,11 +206,19 @@ export const useCommentsStore = create<CommentsState>((set, get) => ({
     }
 
     if (entries.length === 0) {
-      set({ currentPageThreadIds: new Set(), isResolvingPages: false });
+      set({
+        currentPageThreadIds: new Set(),
+        lastResolvedPageId: currentPageId,
+        isResolvingPages: false,
+      });
       return;
     }
 
-    set({ isResolvingPages: true, currentPageThreadIds: null });
+    const clearIds = lastResolvedPageId !== currentPageId;
+    set({
+      isResolvingPages: true,
+      ...(clearIds ? { currentPageThreadIds: null } : {}),
+    });
     const requestId = `page_resolve_${++resolveCounter}`;
     pendingPageResolveRequestId = requestId;
     const msg: ResolvePageThreadsMessage = {

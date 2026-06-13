@@ -333,3 +333,18 @@ body,
 @media (prefers-reduced-motion: reduce) {
   .onboarding-step-enter { animation: none; }
 }
+
+/* ─── Progressive setting disclosure ─── */
+
+@keyframes setting-reveal {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.setting-reveal {
+  animation: setting-reveal 0.2s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .setting-reveal { animation: none; }
+}

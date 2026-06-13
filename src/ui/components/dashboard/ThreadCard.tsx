@@ -1,4 +1,10 @@
-import { MessageCircle, Crosshair, Loader2, Image as ImageIcon } from "lucide-react";
+import {
+  MessageCircle,
+  Crosshair,
+  Loader2,
+  Image as ImageIcon,
+  Sparkles,
+} from "lucide-react";
 import type { CommentThread, WorkflowState } from "@shared/types";
 import { StatusBadge } from "@ui/components/common/StatusBadge";
 import { AvatarGroup } from "@ui/components/common/AvatarGroup";
@@ -6,6 +12,7 @@ import { timeAgo } from "@ui/lib/timeAgo";
 import { renderMentions } from "@ui/lib/renderMentions";
 import { useNavigateToComment } from "@ui/lib/useNavigateToComment";
 import { threadHasImages } from "@ui/ai/imageProcessor";
+import { useAIStore } from "@ui/store/aiStore";
 
 interface ThreadCardProps {
   thread: CommentThread;
@@ -29,6 +36,9 @@ export function ThreadCard({
   const { navigating, navigate: handleNavigate } = useNavigateToComment(
     thread.clientMeta,
     thread.id,
+  );
+  const hasSummary = useAIStore((s) =>
+    Boolean(s.threadSummaries.get(thread.id)?.result),
   );
 
   const handleClick = () => {
@@ -100,6 +110,15 @@ export function ThreadCard({
             <div className="flex items-center gap-2">
               {threadHasImages(thread) && (
                 <ImageIcon size={11} className="text-figma-text-tertiary" />
+              )}
+              {hasSummary && (
+                <span
+                  className="flex items-center text-accent"
+                  data-tooltip="Summary available"
+                  data-tooltip-align="right"
+                >
+                  <Sparkles size={11} />
+                </span>
               )}
               <span className="flex items-center gap-1 text-[11px] text-figma-text-tertiary">
                 <MessageCircle size={10} />
