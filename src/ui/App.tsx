@@ -4,7 +4,6 @@ import {
   useRef,
   type PointerEvent as ReactPointerEvent,
 } from "react";
-import { FileText } from "lucide-react";
 import type { InitDataMessage, UIMessage } from "@shared/messages";
 import {
   MIN_UI_WIDTH,
@@ -21,6 +20,7 @@ import { SettingsScreen } from "@ui/components/settings/SettingsScreen";
 import { ToastContainer } from "@ui/components/common/Toast";
 import { ConsentDialog } from "@ui/components/common/ConsentDialog";
 import { LoadingSpinner } from "@ui/components/common/LoadingSpinner";
+import { FileNameBar } from "@ui/components/common/FileNameBar";
 import { useAIStore } from "@ui/store/aiStore";
 import { useFilterStore } from "@ui/store/filterStore";
 
@@ -28,8 +28,8 @@ const THEME_COLORS_LIGHT: Record<string, string> = {
   "--figma-color-bg": "#ffffff",
   "--figma-color-bg-secondary": "#f6f5f8",
   "--figma-color-bg-tertiary": "#ebe9ef",
-  "--figma-color-bg-hover": "#f0eef3",
-  "--figma-color-bg-selected": "#e8e4f0",
+  "--figma-color-bg-hover": "#f0f0f7",
+  "--figma-color-bg-selected": "#ebebf6",
   "--figma-color-text": "#333333",
   "--figma-color-text-secondary": "#6f6b78",
   "--figma-color-text-tertiary": "#9a96a3",
@@ -42,20 +42,20 @@ const THEME_COLORS_LIGHT: Record<string, string> = {
 };
 
 const THEME_COLORS_DARK: Record<string, string> = {
-  "--figma-color-bg": "#26252b",
-  "--figma-color-bg-secondary": "#313038",
-  "--figma-color-bg-tertiary": "#3d3b45",
-  "--figma-color-bg-hover": "#36343d",
-  "--figma-color-bg-selected": "#3f3a52",
+  "--figma-color-bg": "#222226",
+  "--figma-color-bg-secondary": "#2c2c30",
+  "--figma-color-bg-tertiary": "#38383e",
+  "--figma-color-bg-hover": "#333338",
+  "--figma-color-bg-selected": "#393952",
   "--figma-color-text": "#f2f0f5",
-  "--figma-color-text-secondary": "#b3afb9",
-  "--figma-color-text-tertiary": "#8e8a96",
-  "--figma-color-text-disabled": "#5c5866",
-  "--figma-color-border": "#3d3b45",
-  "--figma-color-border-strong": "#504e58",
+  "--figma-color-text-secondary": "#c4c0ca",
+  "--figma-color-text-tertiary": "#98949f",
+  "--figma-color-text-disabled": "#6e6a75",
+  "--figma-color-border": "#45454c",
+  "--figma-color-border-strong": "#5c5866",
   "--figma-color-icon": "#f2f0f5",
-  "--figma-color-icon-secondary": "#b3afb9",
-  "--figma-color-icon-tertiary": "#7a7684",
+  "--figma-color-icon-secondary": "#c4c0ca",
+  "--figma-color-icon-tertiary": "#85818c",
 };
 
 const ALL_THEME_VARS = Object.keys(THEME_COLORS_LIGHT);
@@ -243,17 +243,7 @@ export function App() {
 
   return (
     <div className="relative h-full w-full flex flex-col">
-      {showFileBar && (
-        <div
-          className="shrink-0 px-4 py-2 border-b border-figma-border bg-figma-bg-secondary flex items-center gap-1.5 min-h-2"
-          title={fileName!}
-        >
-          <FileText size={14} className="shrink-0 text-figma-icon-secondary" />
-          <span className="text-[11px] text-figma-text-primary truncate min-w-0">
-            {fileName}
-          </span>
-        </div>
-      )}
+      {showFileBar && <FileNameBar fileName={fileName!} />}
       <div className="flex-1 min-h-0 flex flex-col relative">
         {screen === "loading" && <LoadingSpinner message="Initializing..." />}
         {screen === "setup" && <SetupScreen />}

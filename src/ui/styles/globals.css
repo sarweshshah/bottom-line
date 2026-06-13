@@ -1,118 +1,8 @@
+@import "./tokens.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-:root {
-  --bl-accent: #7B52E8;
-  --bl-accent-bg: #7B52E8;
-  --bl-accent-hover: #6D42D8;
-
-  --bl-status-open: #3B82F6;
-  --bl-status-open-bg: #EFF6FF;
-  --bl-status-open-text: #2563EB;
-  --bl-status-open-glow: rgba(59, 130, 246, 0.5);
-
-  --bl-status-done: #10B981;
-  --bl-status-done-bg: #D1FAE5;
-  --bl-status-done-text: #065F46;
-  --bl-status-done-glow: rgba(16, 185, 129, 0.5);
-
-  --bl-tag-revision-bg: rgba(236, 167, 44, 0.1);
-  --bl-tag-revision-text: #ECA72C;
-  --bl-tag-approval-bg: #F3E8FF;
-  --bl-tag-approval-text: #6B21A8;
-  --bl-tag-blocker-bg: rgba(238, 86, 34, 0.1);
-  --bl-tag-blocker-text: #EE5622;
-  --bl-tag-question-bg: #DBEAFE;
-  --bl-tag-question-text: #1E40AF;
-
-  --bl-red: #EE5622;
-  --bl-red-soft-bg: rgba(238, 86, 34, 0.1);
-  --bl-red-soft-border: rgba(238, 86, 34, 0.3);
-  --bl-yellow: #ECA72C;
-  --bl-yellow-soft-bg: rgba(236, 167, 44, 0.1);
-  --bl-yellow-soft-border: rgba(236, 167, 44, 0.3);
-
-  --bl-addressed: rgba(123, 82, 232, 0.08);
-  --bl-addressed-border: rgba(123, 82, 232, 0.35);
-
-  --bl-accent-ring: rgba(123, 82, 232, 0.28);
-  --bl-accent-subtle: rgba(123, 82, 232, 0.12);
-  --bl-ai-bg: rgba(245, 240, 255, 0.6);
-  --bl-ai-bg-a: rgba(245, 240, 255, 0.5);
-  --bl-ai-bg-b: rgba(237, 228, 255, 0.4);
-  /* AI strip shimmer — soft multi-hue wash (purple → violet → sky → cyan) */
-  --bl-ai-shimmer-c0: #f5f0ff;
-  --bl-ai-shimmer-c1: #f0ebff;
-  --bl-ai-shimmer-c2: #ede5ff;
-  --bl-ai-shimmer-c3: #e8efff;
-  --bl-ai-shimmer-c4: #e4f7fd;
-  --bl-ai-shimmer-c5: #e6faf6;
-  /* Summarize CTA — richer fill for static button (WCAG-friendly with dark text) */
-  --bl-ai-cta-bg: #e4d8ff;
-  --bl-ai-cta-c0: #ddd0fe;
-  --bl-ai-cta-c1: #d6c8fd;
-  --bl-ai-cta-c2: #e0d0f5;
-  --bl-ai-cta-c3: #c9d6f8;
-  --bl-ai-cta-c4: #c5e4f0;
-  --bl-ai-cta-c5: #caece5;
-  --bl-elbow: #d4d0da;
-}
-
-.figma-dark {
-  --bl-accent: #9B8FD4;
-  --bl-accent-bg: #6E5DB8;
-  --bl-accent-hover: #5F4FA8;
-
-  --bl-status-open: #A78BFA;
-  --bl-status-open-bg: rgba(167, 139, 250, 0.12);
-  --bl-status-open-text: #C4B5FD;
-  --bl-status-open-glow: rgba(167, 139, 250, 0.4);
-
-  --bl-status-done: #34D399;
-  --bl-status-done-bg: #064E3B;
-  --bl-status-done-text: #34D399;
-  --bl-status-done-glow: rgba(52, 211, 153, 0.4);
-
-  --bl-tag-revision-bg: rgba(251, 191, 36, 0.12);
-  --bl-tag-revision-text: #FBBF24;
-  --bl-tag-approval-bg: #3B0764;
-  --bl-tag-approval-text: #C084FC;
-  --bl-tag-blocker-bg: rgba(248, 113, 113, 0.12);
-  --bl-tag-blocker-text: #F87171;
-  --bl-tag-question-bg: rgba(99, 102, 241, 0.15);
-  --bl-tag-question-text: #A5B4FC;
-
-  --bl-red: #F87171;
-  --bl-red-soft-bg: rgba(248, 113, 113, 0.12);
-  --bl-red-soft-border: rgba(248, 113, 113, 0.3);
-  --bl-yellow: #FBBF24;
-  --bl-yellow-soft-bg: rgba(251, 191, 36, 0.12);
-  --bl-yellow-soft-border: rgba(251, 191, 36, 0.3);
-
-  --bl-addressed: rgba(155, 143, 212, 0.06);
-  --bl-addressed-border: rgba(155, 143, 212, 0.32);
-
-  --bl-accent-ring: rgba(155, 143, 212, 0.22);
-  --bl-accent-subtle: rgba(155, 143, 212, 0.12);
-  --bl-ai-bg: rgba(124, 58, 237, 0.08);
-  --bl-ai-bg-a: rgba(124, 58, 237, 0.07);
-  --bl-ai-bg-b: rgba(109, 40, 217, 0.05);
-  --bl-ai-shimmer-c0: rgba(91, 33, 182, 0.2);
-  --bl-ai-shimmer-c1: rgba(109, 40, 217, 0.16);
-  --bl-ai-shimmer-c2: rgba(124, 58, 237, 0.14);
-  --bl-ai-shimmer-c3: rgba(99, 102, 241, 0.12);
-  --bl-ai-shimmer-c4: rgba(56, 189, 248, 0.1);
-  --bl-ai-shimmer-c5: rgba(45, 212, 191, 0.09);
-  --bl-ai-cta-bg: rgba(109, 40, 217, 0.35);
-  --bl-ai-cta-c0: rgba(91, 33, 182, 0.42);
-  --bl-ai-cta-c1: rgba(109, 40, 217, 0.38);
-  --bl-ai-cta-c2: rgba(124, 58, 237, 0.34);
-  --bl-ai-cta-c3: rgba(99, 102, 241, 0.32);
-  --bl-ai-cta-c4: rgba(56, 189, 248, 0.26);
-  --bl-ai-cta-c5: rgba(45, 212, 191, 0.24);
-  --bl-elbow: #504e58;
-}
 
 html,
 body,
@@ -155,8 +45,8 @@ body,
   line-height: 1.3;
   font-weight: 500;
   white-space: nowrap;
-  color: #F0EDF5;
-  background: #1A1726;
+  color: var(--bl-comp-tooltip-text);
+  background: var(--bl-comp-tooltip-bg);
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.15s;
@@ -307,26 +197,30 @@ body,
 }
 
 .onboarding-logo-glow {
-  box-shadow: 0 0 40px rgba(124, 58, 237, 0.25), 0 0 80px rgba(99, 102, 241, 0.1);
+  box-shadow: 0 0 40px color-mix(in oklch, var(--bl-violet-500) 25%, transparent),
+    0 0 80px color-mix(in oklch, var(--bl-violet-400) 10%, transparent);
 }
 
 .figma-dark .onboarding-logo-glow {
-  box-shadow: 0 0 40px rgba(167, 139, 250, 0.2), 0 0 80px rgba(124, 58, 237, 0.08);
+  box-shadow: 0 0 40px color-mix(in oklch, var(--bl-violet-400) 20%, transparent),
+    0 0 80px color-mix(in oklch, var(--bl-violet-600) 8%, transparent);
 }
 
 .onboarding-hero-gradient {
-  background: linear-gradient(135deg,
-    rgba(124, 58, 237, 0.06) 0%,
-    rgba(99, 102, 241, 0.04) 40%,
-    rgba(56, 189, 248, 0.03) 100%
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklch, var(--bl-violet-500) 6%, transparent) 0%,
+    color-mix(in oklch, var(--bl-violet-400) 4%, transparent) 40%,
+    color-mix(in oklch, oklch(0.75 0.06 220) 3%, transparent) 100%
   );
 }
 
 .figma-dark .onboarding-hero-gradient {
-  background: linear-gradient(135deg,
-    rgba(124, 58, 237, 0.12) 0%,
-    rgba(99, 102, 241, 0.08) 40%,
-    rgba(56, 189, 248, 0.04) 100%
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklch, var(--bl-violet-600) 12%, transparent) 0%,
+    color-mix(in oklch, var(--bl-violet-500) 8%, transparent) 40%,
+    color-mix(in oklch, oklch(0.55 0.06 220) 4%, transparent) 100%
   );
 }
 
@@ -347,4 +241,62 @@ body,
 
 @media (prefers-reduced-motion: reduce) {
   .setting-reveal { animation: none; }
+}
+
+/* ─── Thread list: gentle staggered row entrance ─── */
+
+@keyframes thread-row-enter {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.thread-list > * {
+  animation: thread-row-enter 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Cascade the first handful of rows; everything below appears instantly. */
+.thread-list > *:nth-child(1) { animation-delay: 0ms; }
+.thread-list > *:nth-child(2) { animation-delay: 30ms; }
+.thread-list > *:nth-child(3) { animation-delay: 60ms; }
+.thread-list > *:nth-child(4) { animation-delay: 90ms; }
+.thread-list > *:nth-child(5) { animation-delay: 120ms; }
+.thread-list > *:nth-child(6) { animation-delay: 150ms; }
+.thread-list > *:nth-child(7) { animation-delay: 180ms; }
+.thread-list > *:nth-child(8) { animation-delay: 210ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .thread-list > * { animation: none; }
+}
+
+/* ─── Empty state: soft entrance + halo ─── */
+
+@keyframes empty-state-enter {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.empty-state-enter {
+  animation: empty-state-enter 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.empty-state-halo {
+  box-shadow:
+    0 0 0 1px color-mix(in oklch, var(--bl-violet-500) 14%, transparent),
+    0 8px 24px -8px color-mix(in oklch, var(--bl-violet-500) 30%, transparent);
+}
+
+.figma-dark .empty-state-halo {
+  box-shadow:
+    0 0 0 1px color-mix(in oklch, var(--bl-violet-400) 18%, transparent),
+    0 8px 28px -8px color-mix(in oklch, var(--bl-violet-400) 24%, transparent);
+}
+
+.empty-state-halo-error {
+  box-shadow:
+    0 0 0 1px color-mix(in oklch, var(--bl-danger-500) 16%, transparent),
+    0 8px 24px -8px color-mix(in oklch, var(--bl-danger-500) 28%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .empty-state-enter { animation: none; }
 }

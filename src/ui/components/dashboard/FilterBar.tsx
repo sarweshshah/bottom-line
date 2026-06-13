@@ -54,7 +54,9 @@ export function FilterBar() {
       }
     }
 
-    document.addEventListener("mousedown", handleClickOutside, { passive: true });
+    document.addEventListener("mousedown", handleClickOutside, {
+      passive: true,
+    });
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [openMenu]);
 
@@ -73,7 +75,7 @@ export function FilterBar() {
     "All";
 
   return (
-    <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-figma-border bg-figma-bg">
+    <div className="flex items-center gap-1.5 px-2.5 py-3 border-b border-figma-border bg-figma-bg">
       <div className="relative" ref={statusRef}>
         <button
           type="button"

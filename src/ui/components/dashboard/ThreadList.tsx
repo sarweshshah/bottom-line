@@ -160,7 +160,7 @@ export function ThreadList({
   }
 
   return (
-    <div className="flex-1 overflow-y-auto">
+    <div className="thread-list flex-1 overflow-y-auto">
       {filtered.map((thread) => (
         <ThreadCard
           key={thread.id}

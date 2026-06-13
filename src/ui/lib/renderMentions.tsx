@@ -1,15 +1,17 @@
 import type { ReactNode } from "react";
 
 const MD_MENTION_REGEX = /\[@([^\]]+)\]\(mention:[^)]+\)/g;
+const MD_LINK_REGEX = /\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g;
 const PLAIN_MENTION_REGEX = /@([\w.-]+)/g;
 const URL_REGEX = /https?:\/\/[^\s<>)"'\]]+/g;
 
-type TokenType = "mention" | "url";
+type TokenType = "mention" | "md_link" | "url";
 interface Token {
   type: TokenType;
   start: number;
   end: number;
   value: string; // display name for mentions, full URL for links
+  label?: string; // markdown link text
 }
 
 function MentionLink({ name }: { name: string }) {
@@ -33,14 +35,18 @@ function MentionLink({ name }: { name: string }) {
   );
 }
 
-function ExternalLink({ url }: { url: string }) {
-  let display = url;
-  try {
-    const parsed = new URL(url);
-    display = parsed.hostname + (parsed.pathname !== "/" ? parsed.pathname : "");
-    if (display.length > 40) display = display.slice(0, 37) + "…";
-  } catch {
-    // keep original
+function ExternalLink({ url, label }: { url: string; label?: string }) {
+  let display = label;
+  if (!display) {
+    display = url;
+    try {
+      const parsed = new URL(url);
+      display =
+        parsed.hostname + (parsed.pathname !== "/" ? parsed.pathname : "");
+      if (display.length > 40) display = display.slice(0, 37) + "…";
+    } catch {
+      // keep original
+    }
   }
 
   return (
@@ -49,7 +55,7 @@ function ExternalLink({ url }: { url: string }) {
       target="_blank"
       rel="noopener noreferrer"
       onClick={(e) => e.stopPropagation()}
-      className="text-accent underline underline-offset-2 hover:text-accent-hover break-all"
+      className="text-accent underline underline-offset-2 hover:text-accent-hover"
     >
       {display}
     </a>
@@ -62,13 +68,7 @@ function overlaps(a: Token, b: Token): boolean {
 
 function collectTokens(message: string): Token[] {
   const raw: Token[] = [];
-
-  URL_REGEX.lastIndex = 0;
   let m: RegExpExecArray | null;
-  while ((m = URL_REGEX.exec(message)) !== null) {
-    const url = m[0].replace(/[.,;:!?)]+$/, "");
-    raw.push({ type: "url", start: m.index, end: m.index + url.length, value: url });
-  }
 
   const mentionRegex = message.includes("](mention:")
     ? MD_MENTION_REGEX
@@ -76,11 +76,36 @@ function collectTokens(message: string): Token[] {
 
   mentionRegex.lastIndex = 0;
   while ((m = mentionRegex.exec(message)) !== null) {
-    const tok: Token = {
+    raw.push({
       type: "mention",
       start: m.index,
       end: m.index + m[0].length,
       value: m[1],
+    });
+  }
+
+  MD_LINK_REGEX.lastIndex = 0;
+  while ((m = MD_LINK_REGEX.exec(message)) !== null) {
+    const tok: Token = {
+      type: "md_link",
+      start: m.index,
+      end: m.index + m[0].length,
+      value: m[2],
+      label: m[1],
+    };
+    if (!raw.some((existing) => overlaps(existing, tok))) {
+      raw.push(tok);
+    }
+  }
+
+  URL_REGEX.lastIndex = 0;
+  while ((m = URL_REGEX.exec(message)) !== null) {
+    const url = m[0].replace(/[.,;:!?)]+$/, "");
+    const tok: Token = {
+      type: "url",
+      start: m.index,
+      end: m.index + url.length,
+      value: url,
     };
     if (!raw.some((existing) => overlaps(existing, tok))) {
       raw.push(tok);
@@ -105,7 +130,13 @@ export function renderMentions(message: string): ReactNode[] {
     if (token.type === "mention") {
       parts.push(<MentionLink key={token.start} name={token.value} />);
     } else {
-      parts.push(<ExternalLink key={token.start} url={token.value} />);
+      parts.push(
+        <ExternalLink
+          key={token.start}
+          url={token.value}
+          label={token.label}
+        />,
+      );
     }
     cursor = token.end;
   }

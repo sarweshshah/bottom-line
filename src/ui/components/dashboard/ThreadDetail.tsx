@@ -46,20 +46,13 @@ const WORKFLOW_STATE_CONFIG: Record<
   resolved: { label: "Resolved", Icon: CheckCircle2 },
 };
 
-const STATE_ORDER: WorkflowState[] = [
-  "open",
-  "resolved",
-];
+const STATE_ORDER: WorkflowState[] = ["open", "resolved"];
 
 const SUMMARY_SECTION_CLASS =
   "pl-4 pr-3.5 pt-3 pb-4 border-b border-figma-border";
 
 function ExpandChevron({ expanded }: { expanded: boolean }) {
-  return expanded ? (
-    <ChevronDown size={12} />
-  ) : (
-    <ChevronRight size={12} />
-  );
+  return expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />;
 }
 
 interface ThreadDetailProps {
@@ -291,7 +284,7 @@ function SummarySection({ thread }: { thread: CommentThread }) {
         <button
           type="button"
           onClick={() => setExpanded(!expanded)}
-          className="flex items-center gap-1.5 text-xs font-medium text-figma-text-secondary hover:text-figma-text"
+          className="flex items-center gap-1.5 text-xs font-medium text-figma-text"
         >
           <ExpandChevron expanded={expanded} />
           <Sparkles size={12} />
@@ -442,7 +435,7 @@ function TasksSection({ thread }: { thread: CommentThread }) {
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
-        className="flex items-center gap-1.5 text-xs font-medium text-figma-text hover:text-figma-text"
+        className="flex items-center gap-1.5 text-xs font-medium text-figma-text"
       >
         <ExpandChevron expanded={expanded} />
         Tasks ({doneCount}/{tasks.length})
@@ -567,7 +560,7 @@ export function ThreadDetail({ thread, onBack }: ThreadDetailProps) {
           <button
             type="button"
             onClick={() => setThreadExpanded(!threadExpanded)}
-            className="flex items-center gap-1.5 text-xs font-medium text-figma-text mb-3 hover:text-figma-text"
+            className="flex items-center gap-1.5 text-xs font-medium text-figma-text mb-3"
           >
             <ExpandChevron expanded={threadExpanded} />
             Comments ({thread.replyCount + 1})
@@ -577,7 +570,9 @@ export function ThreadDetail({ thread, onBack }: ThreadDetailProps) {
             <div>
               {/* Root comment — pb-3 keeps the gap INSIDE the element so the trunk
                   reaches bottom-0 without negative offsets */}
-              <div className={`relative ${thread.replies.length > 0 ? "pb-3" : ""}`}>
+              <div
+                className={`relative ${thread.replies.length > 0 ? "pb-3" : ""}`}
+              >
                 {showThreadElbows && thread.replies.length > 0 && (
                   <span
                     aria-hidden

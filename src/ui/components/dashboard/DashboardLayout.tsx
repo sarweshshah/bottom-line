@@ -11,7 +11,6 @@ import {
   ChevronDown,
   Circle,
   CheckCircle2,
-  FileText,
   Sparkles,
   AlertCircle,
 } from "lucide-react";
@@ -26,8 +25,54 @@ import { FilterBar } from "./FilterBar";
 import { ThreadList } from "./ThreadList";
 import { ThreadDetail } from "./ThreadDetail";
 import { TasksView } from "@ui/components/tasks/TasksView";
+import { FileNameBar } from "@ui/components/common/FileNameBar";
 
 type DashboardTab = "threads" | "tasks";
+
+interface DashboardTabButtonProps {
+  active: boolean;
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
+  count?: number;
+}
+
+function DashboardTabButton({
+  active,
+  onClick,
+  icon,
+  label,
+  count,
+}: DashboardTabButtonProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`relative flex items-center gap-1.5 px-4 h-full text-xs transition-colors ${
+        active
+          ? "text-accent font-semibold"
+          : "text-figma-text-tertiary font-medium hover:text-figma-text-secondary"
+      }`}
+    >
+      <span className="shrink-0">{icon}</span>
+      <span className="leading-none">{label}</span>
+      {count !== undefined && (
+        <span
+          className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full leading-none ${
+            active
+              ? "bg-accent text-white"
+              : "bg-figma-bg-tertiary text-figma-text-tertiary"
+          }`}
+        >
+          {count}
+        </span>
+      )}
+      {active && (
+        <span className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-accent" />
+      )}
+    </button>
+  );
+}
 
 const BULK_STATE_OPTIONS: {
   value: WorkflowState;
@@ -340,54 +385,24 @@ export function DashboardLayout() {
   return (
     <div className="flex flex-col h-full bg-figma-bg">
       {/* Toolbar */}
-      <div className="flex items-stretch justify-between border-b border-figma-border">
+      <div className="flex items-stretch justify-between h-11 border-b border-figma-border bg-figma-bg">
         <div className="flex items-stretch">
-          <button
-            type="button"
+          <DashboardTabButton
+            active={activeTab === "threads"}
             onClick={() => setActiveTab("threads")}
-            className={`flex items-center gap-1.5 px-4 text-xs border-t-2 transition-colors ${
-              activeTab === "threads"
-                ? "border-accent bg-accent-subtle text-accent font-semibold"
-                : "border-transparent text-figma-text-tertiary font-medium hover:text-figma-text-secondary hover:bg-figma-bg-secondary"
-            }`}
-          >
-            <MessageSquare size={13} />
-            Threads
-            <span
-              className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
-                activeTab === "threads"
-                  ? "bg-accent-bg text-white"
-                  : "bg-figma-bg-tertiary"
-              }`}
-            >
-              {filteredCount}
-            </span>
-          </button>
-          <button
-            type="button"
+            icon={<MessageSquare size={13} />}
+            label="Threads"
+            count={filteredCount}
+          />
+          <DashboardTabButton
+            active={activeTab === "tasks"}
             onClick={() => setActiveTab("tasks")}
-            className={`flex items-center gap-1.5 px-4 text-xs border-t-2 transition-colors ${
-              activeTab === "tasks"
-                ? "border-accent bg-accent-subtle text-accent font-semibold"
-                : "border-transparent text-figma-text-tertiary font-medium hover:text-figma-text-secondary hover:bg-figma-bg-secondary"
-            }`}
-          >
-            <CheckSquare size={13} />
-            Tasks
-            {taskCount > 0 && (
-              <span
-                className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
-                  activeTab === "tasks"
-                    ? "bg-accent-bg text-white"
-                    : "bg-figma-bg-tertiary"
-                }`}
-              >
-                {taskCount}
-              </span>
-            )}
-          </button>
+            icon={<CheckSquare size={13} />}
+            label="Tasks"
+            count={taskCount > 0 ? taskCount : undefined}
+          />
         </div>
-        <div className="flex items-center gap-1 px-4 py-2.5">
+        <div className="flex items-center gap-1 px-2.5">
           {activeTab === "threads" && (
             <>
               <button
@@ -440,17 +455,7 @@ export function DashboardLayout() {
         </div>
       </div>
 
-      {fileName && (
-        <div
-          className="shrink-0 px-4 py-2 border-b border-figma-border bg-figma-bg-secondary flex items-center gap-1.5 min-h-2"
-          title={fileName}
-        >
-          <FileText size={14} className="shrink-0 text-figma-icon-secondary" />
-          <span className="text-[11px] text-figma-text-primary truncate min-w-0">
-            {fileName}
-          </span>
-        </div>
-      )}
+      {fileName && <FileNameBar fileName={fileName} />}
 
       {activeTab === "threads" && (
         <>

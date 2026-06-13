@@ -41,7 +41,10 @@ function mergeDuplicateTasks(tasks: Task[]): DisplayTask[] {
 
   for (const task of tasks) {
     const normalizedAssignee = normalizeAssignee(task.assignee);
-    const desc = typeof task.description === "string" ? task.description : String(task.description ?? "");
+    const desc =
+      typeof task.description === "string"
+        ? task.description
+        : String(task.description ?? "");
     const mergeKey = `${task.threadId}::${task.type}::${desc.trim().toLowerCase()}`;
     const existing = merged.get(mergeKey);
     if (!existing) {
@@ -61,7 +64,10 @@ function mergeDuplicateTasks(tasks: Task[]): DisplayTask[] {
     if (task.status === "pending") {
       existing.status = "pending";
     }
-    if (normalizedAssignee && !existing.assignees.includes(normalizedAssignee)) {
+    if (
+      normalizedAssignee &&
+      !existing.assignees.includes(normalizedAssignee)
+    ) {
       existing.assignees.push(normalizedAssignee);
       existing.assignees.sort((a, b) => a.localeCompare(b));
     }
@@ -160,9 +166,7 @@ export function TasksView({ onSelectThread }: TasksViewProps) {
         <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center mb-3">
           <Sparkles size={20} className="text-accent" />
         </div>
-        <p className="text-sm font-medium text-figma-text mb-1">
-          No tasks yet
-        </p>
+        <p className="text-sm font-medium text-figma-text mb-1">No tasks yet</p>
         <p className="text-xs text-figma-text-tertiary leading-relaxed">
           Summarize threads to extract tasks. <br /> Open a thread and click
           &ldquo;Summarize&rdquo; to get started.
@@ -173,7 +177,7 @@ export function TasksView({ onSelectThread }: TasksViewProps) {
 
   return (
     <div className="flex-1 overflow-y-auto">
-      <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-figma-border bg-figma-bg">
+      <div className="flex items-center gap-1.5 px-2.5 py-3 border-b border-figma-border bg-figma-bg">
         <button
           type="button"
           onClick={() => toggleFilter("pending")}

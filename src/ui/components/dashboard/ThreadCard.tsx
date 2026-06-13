@@ -53,10 +53,16 @@ export function ThreadCard({
     <button
       type="button"
       onClick={handleClick}
-      className={`w-full text-left px-4 py-3 border-b border-figma-border hover:bg-figma-bg-hover transition-colors cursor-pointer ${
+      className={`group relative w-full text-left px-4 py-3 border-b border-figma-border transition-colors duration-150 cursor-pointer outline-none hover:bg-figma-bg-hover focus-visible:bg-figma-bg-hover focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent-ring ${
         isSelected ? "bg-accent-subtle" : ""
       }`}
     >
+      <span
+        aria-hidden="true"
+        className={`pointer-events-none absolute inset-y-0 left-0 w-[3px] origin-center rounded-r-full bg-accent transition-transform duration-200 ease-out ${
+          isSelected ? "scale-y-100" : "scale-y-0 group-hover:scale-y-100"
+        }`}
+      />
       <div className="flex gap-2.5">
         {bulkMode && (
           <div className="shrink-0 flex items-start pt-0.5">
@@ -113,7 +119,7 @@ export function ThreadCard({
               )}
               {hasSummary && (
                 <span
-                  className="flex items-center text-accent"
+                  className="flex items-center text-figma-icon-tertiary"
                   data-tooltip="Summary available"
                   data-tooltip-align="right"
                 >
