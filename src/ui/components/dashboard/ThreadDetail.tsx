@@ -1,7 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import {
   ArrowLeft,
-  User,
   Crosshair,
   Copy,
   Check,
@@ -16,10 +15,12 @@ import {
   X,
   Circle,
   CheckCircle2,
+  Eye,
 } from "lucide-react";
 import type { CommentThread, WorkflowState } from "@shared/types";
 import { StatusBadge } from "@ui/components/common/StatusBadge";
 import { AvatarGroup } from "@ui/components/common/AvatarGroup";
+import { UserAvatar } from "@ui/components/common/UserAvatar";
 import {
   TASK_TYPE_LABELS,
   TASK_TYPE_COLORS,
@@ -43,10 +44,11 @@ const WORKFLOW_STATE_CONFIG: Record<
   { label: string; Icon: typeof Circle }
 > = {
   open: { label: "Open", Icon: Circle },
+  read: { label: "Read", Icon: Eye },
   resolved: { label: "Resolved", Icon: CheckCircle2 },
 };
 
-const STATE_ORDER: WorkflowState[] = ["open", "resolved"];
+const STATE_ORDER: WorkflowState[] = ["open", "read", "resolved"];
 
 const SUMMARY_SECTION_CLASS =
   "pl-4 pr-3.5 pt-3 pb-4 border-b border-figma-border";
@@ -145,23 +147,14 @@ function CommentBubble({
   message: string;
   createdAt: string;
 }) {
-  const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
-  const showImage = Boolean(author.img_url) && !avatarLoadFailed;
-
   return (
     <div className="flex gap-2">
-      <div className="shrink-0 w-6 h-6 rounded-full bg-figma-bg-tertiary overflow-hidden flex items-center justify-center ring-1 ring-figma-border">
-        {showImage ? (
-          <img
-            src={author.img_url}
-            alt={author.handle}
-            className="w-full h-full object-cover"
-            onError={() => setAvatarLoadFailed(true)}
-          />
-        ) : (
-          <User size={12} className="text-figma-icon-tertiary" />
-        )}
-      </div>
+      <UserAvatar
+        handle={author.handle}
+        imgUrl={author.img_url}
+        size={24}
+        className="ring-1 ring-figma-border"
+      />
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline gap-2 mb-0.5">
           <span className="text-sm font-medium text-figma-text">

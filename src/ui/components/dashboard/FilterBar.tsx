@@ -6,6 +6,7 @@ import { useFilterStore } from "@ui/store/filterStore";
 const STATE_FILTER_OPTIONS: { value: WorkflowState | null; label: string }[] = [
   { value: null, label: "All" },
   { value: "open", label: "Open" },
+  { value: "read", label: "Read" },
   { value: "resolved", label: "Done" },
 ];
 

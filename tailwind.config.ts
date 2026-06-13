@@ -77,6 +77,9 @@ export default {
           open: "var(--bl-status-open)",
           "open-bg": "var(--bl-status-open-bg)",
           "open-text": "var(--bl-status-open-text)",
+          read: "var(--bl-status-read)",
+          "read-bg": "var(--bl-status-read-bg)",
+          "read-text": "var(--bl-status-read-text)",
           resolved: "var(--bl-status-done)",
           "resolved-bg": "var(--bl-status-done-bg)",
           "resolved-text": "var(--bl-status-done-text)",
@@ -119,6 +122,7 @@ export default {
       },
       boxShadow: {
         "status-open": "0 0 6px var(--bl-status-open-glow)",
+        "status-read": "0 0 6px var(--bl-status-read-glow)",
         "status-done": "0 0 6px var(--bl-status-done-glow)",
       },
       fontSize: {},

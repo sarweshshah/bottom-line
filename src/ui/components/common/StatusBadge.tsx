@@ -9,6 +9,11 @@ const config: Record<
     dotClass: "bg-status-open shadow-status-open",
     bgClass: "bg-status-open-bg text-status-open-text",
   },
+  read: {
+    label: "READ",
+    dotClass: "bg-status-read shadow-status-read",
+    bgClass: "bg-status-read-bg text-status-read-text",
+  },
   resolved: {
     label: "DONE",
     dotClass: "bg-status-resolved shadow-status-done",

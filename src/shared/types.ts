@@ -60,7 +60,7 @@ export interface RawReaction {
 }
 
 export type ThreadStatus = "open" | "resolved";
-export type WorkflowState = "open" | "resolved";
+export type WorkflowState = "open" | "read" | "resolved";
 
 export interface CommentReply {
   id: string;

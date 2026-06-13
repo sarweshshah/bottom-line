@@ -1,7 +1,6 @@
-import { useState, useCallback, useEffect, type MouseEvent } from "react";
+import { useState, useCallback, type MouseEvent } from "react";
 import {
   ArrowLeft,
-  User as UserIcon,
   Eye,
   EyeOff,
   ExternalLink,
@@ -37,6 +36,7 @@ import {
 } from "@shared/figmaPat";
 import { showToast } from "@ui/components/common/Toast";
 import { FieldError } from "@ui/components/common/FieldError";
+import { UserAvatar } from "@ui/components/common/UserAvatar";
 import {
   supportsVision,
   PROVIDER_MODEL_LABELS,
@@ -638,12 +638,7 @@ function AuthTab() {
   const [editing, setEditing] = useState(false);
   const [newPat, setNewPat] = useState("");
   const [showToken, setShowToken] = useState(false);
-  const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
   const [showPatAdvanced, setShowPatAdvanced] = useState(authMethod !== "oauth");
-
-  useEffect(() => {
-    setAvatarLoadFailed(false);
-  }, [user?.id, user?.img_url]);
 
   const maskedCredential =
     authMethod === "oauth" && figmaAccessToken
@@ -706,18 +701,13 @@ function AuthTab() {
           </h3>
           <div className="bg-figma-bg-secondary border border-figma-border rounded-lg p-3 space-y-3">
             <div className="flex items-center gap-3">
-              {user.img_url && !avatarLoadFailed ? (
-                <img
-                  src={user.img_url}
-                  alt={user.handle}
-                  className="w-10 h-10 rounded-full object-cover border border-figma-border"
-                  onError={() => setAvatarLoadFailed(true)}
-                />
-              ) : (
-                <div className="w-10 h-10 rounded-full bg-figma-bg-tertiary flex items-center justify-center border border-figma-border">
-                  <UserIcon size={16} className="text-figma-icon-tertiary" />
-                </div>
-              )}
+              <UserAvatar
+                handle={user.handle}
+                imgUrl={user.img_url}
+                colorKey={user.id}
+                size={40}
+                className="border border-figma-border"
+              />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-figma-text truncate">
                   {user.handle}
@@ -987,7 +977,7 @@ export function SettingsScreen({ onBack }: SettingsScreenProps) {
             key={tab.id}
             type="button"
             onClick={() => setActiveTab(tab.id)}
-            className={`px-3 py-2 text-xs font-medium border-b-2 transition-colors ${
+            className={`px-3 py-2 font-mono text-[9px] font-medium uppercase tracking-widest leading-none border-b-2 transition-colors ${
               activeTab === tab.id
                 ? "border-accent text-accent"
                 : "border-transparent text-figma-text-tertiary hover:text-figma-text-secondary"

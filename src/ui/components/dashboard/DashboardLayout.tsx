@@ -5,6 +5,7 @@ import {
   ChevronDown,
   Circle,
   CheckCircle2,
+  Eye,
   Sparkles,
   AlertCircle,
 } from "lucide-react";
@@ -20,10 +21,7 @@ import { ThreadList } from "./ThreadList";
 import { ThreadDetail } from "./ThreadDetail";
 import { TasksView } from "@ui/components/tasks/TasksView";
 import { FileNameBar } from "@ui/components/common/FileNameBar";
-import {
-  ViewSwitcherBar,
-  type DashboardTab,
-} from "./ViewSwitcherBar";
+import { ViewSwitcherBar, type DashboardTab } from "./ViewSwitcherBar";
 
 const BULK_STATE_OPTIONS: {
   value: WorkflowState;
@@ -31,6 +29,7 @@ const BULK_STATE_OPTIONS: {
   Icon: typeof Circle;
 }[] = [
   { value: "open", label: "Open", Icon: Circle },
+  { value: "read", label: "Read", Icon: Eye },
   { value: "resolved", label: "Resolved", Icon: CheckCircle2 },
 ];
 

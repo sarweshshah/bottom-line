@@ -29,8 +29,8 @@ function figmaStatus(thread: CommentThread): "open" | "resolved" {
   return thread.resolvedAt ? "resolved" : "open";
 }
 
-function isIntermediate(_s: WorkflowState): boolean {
-  return false;
+function isIntermediate(s: WorkflowState): boolean {
+  return s === "read";
 }
 
 async function persistStates(states: Map<string, WorkflowState>) {

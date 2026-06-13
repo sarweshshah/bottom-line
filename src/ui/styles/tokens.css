@@ -75,6 +75,18 @@
   /* ─── Primitives: Ink (warm near-black, oklch H≈19°) ─── */
   --bl-ink: #1A0F0F;
 
+  /* ─── Brand palette image (canonical swatches) ─── */
+  --bl-palette-image-neutral: #F1F2F6;
+  --bl-palette-image-slate: #3B3B68;
+  --bl-palette-image-ink: #1A0F0F;
+  --bl-palette-image-lavender: #746EC4;
+  --bl-palette-image-navy: #1A1A2E;
+
+  --bl-comp-avatar-slate: var(--bl-palette-image-slate);
+  --bl-comp-avatar-ink: var(--bl-palette-image-ink);
+  --bl-comp-avatar-lavender: var(--bl-palette-image-lavender);
+  --bl-comp-avatar-navy: var(--bl-palette-image-navy);
+
   /* ─── Semantic: Surfaces & text (light) ─── */
   --bl-sem-bg-canvas: var(--bl-neutral-50);
   --bl-sem-bg-surface: #FFFFFF;
@@ -116,6 +128,11 @@
   --bl-comp-status-open-bg: color-mix(in oklch, var(--bl-violet-500) 12%, transparent);
   --bl-comp-status-open-text: var(--bl-violet-700);
   --bl-comp-status-open-glow: color-mix(in oklch, var(--bl-violet-400) 50%, transparent);
+
+  --bl-comp-status-read: var(--bl-warning-500);
+  --bl-comp-status-read-bg: var(--bl-warning-50);
+  --bl-comp-status-read-text: var(--bl-warning-700);
+  --bl-comp-status-read-glow: color-mix(in oklch, var(--bl-warning-400) 50%, transparent);
 
   --bl-comp-status-done: var(--bl-success-500);
   --bl-comp-status-done-bg: var(--bl-success-50);
@@ -174,6 +191,11 @@
   --bl-status-open-bg: var(--bl-comp-status-open-bg);
   --bl-status-open-text: var(--bl-comp-status-open-text);
   --bl-status-open-glow: var(--bl-comp-status-open-glow);
+
+  --bl-status-read: var(--bl-comp-status-read);
+  --bl-status-read-bg: var(--bl-comp-status-read-bg);
+  --bl-status-read-text: var(--bl-comp-status-read-text);
+  --bl-status-read-glow: var(--bl-comp-status-read-glow);
 
   --bl-status-done: var(--bl-comp-status-done);
   --bl-status-done-bg: var(--bl-comp-status-done-bg);
@@ -276,6 +298,11 @@
   --bl-comp-status-open-bg: color-mix(in oklch, var(--bl-violet-500) 18%, transparent);
   --bl-comp-status-open-text: var(--bl-violet-300);
   --bl-comp-status-open-glow: color-mix(in oklch, var(--bl-violet-500) 40%, transparent);
+
+  --bl-comp-status-read: var(--bl-warning-300);
+  --bl-comp-status-read-bg: color-mix(in oklch, var(--bl-warning-500) 18%, transparent);
+  --bl-comp-status-read-text: var(--bl-warning-300);
+  --bl-comp-status-read-glow: color-mix(in oklch, var(--bl-warning-400) 40%, transparent);
 
   --bl-comp-status-done: var(--bl-success-300);
   --bl-comp-status-done-bg: color-mix(in oklch, var(--bl-success-500) 18%, transparent);

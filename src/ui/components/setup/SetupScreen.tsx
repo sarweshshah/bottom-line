@@ -10,7 +10,6 @@ import {
   Info,
   Check,
   X,
-  User as UserIcon,
   LogOut,
   ChevronDown,
   ChevronRight,
@@ -21,6 +20,7 @@ import {
   BarChart3,
 } from "lucide-react";
 import { FieldError } from "@ui/components/common/FieldError";
+import { UserAvatar } from "@ui/components/common/UserAvatar";
 import { useAuthStore } from "@ui/store/authStore";
 import { parseFileKey, isValidFigmaUrl } from "@ui/lib/parseFileUrl";
 import {
@@ -164,7 +164,6 @@ function ConnectStep({
   const [showToken, setShowToken] = useState(false);
   const [showPatAdvanced, setShowPatAdvanced] = useState(!oauthAvailable);
   const [oauthBusy, setOauthBusy] = useState(false);
-  const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
 
   const handleTokenChange = useCallback(
     async (value: string) => {
@@ -369,21 +368,13 @@ function ConnectStep({
         {user && (
           <div className="mt-3 bg-figma-bg-secondary border border-figma-border rounded-lg p-3">
             <div className="flex items-center gap-3">
-              {user.img_url && !avatarLoadFailed ? (
-                <img
-                  src={user.img_url}
-                  alt={user.handle}
-                  className="w-10 h-10 rounded-full object-cover border border-figma-border"
-                  onError={() => setAvatarLoadFailed(true)}
-                />
-              ) : (
-                <div className="w-10 h-10 rounded-full bg-figma-bg-tertiary flex items-center justify-center border border-figma-border">
-                  <UserIcon
-                    size={16}
-                    className="text-figma-icon-tertiary"
-                  />
-                </div>
-              )}
+              <UserAvatar
+                handle={user.handle}
+                imgUrl={user.img_url}
+                colorKey={user.id}
+                size={40}
+                className="border border-figma-border"
+              />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-figma-text truncate">
                   {user.handle}

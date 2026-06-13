@@ -30,7 +30,7 @@ function ViewSwitcherSegment({
     <button
       type="button"
       onClick={onClick}
-      className={`relative flex items-center gap-1.5 px-4 h-full text-xs transition-colors ${
+      className={`relative flex items-center gap-1.5 px-4 h-full font-mono text-[9px] uppercase tracking-widest leading-none transition-colors ${
         active
           ? connectsBelow
             ? "border border-b-0 border-figma-border bg-accent-subtle text-accent font-semibold"
