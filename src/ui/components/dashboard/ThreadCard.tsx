@@ -1,4 +1,4 @@
-import { MessageCircle, Crosshair, Loader2, Image } from "lucide-react";
+import { MessageCircle, Crosshair, Loader2, Image as ImageIcon } from "lucide-react";
 import type { CommentThread, WorkflowState } from "@shared/types";
 import { StatusBadge } from "@ui/components/common/StatusBadge";
 import { AvatarGroup } from "@ui/components/common/AvatarGroup";
@@ -73,15 +73,12 @@ export function ThreadCard({
         )}
 
         <div className="flex flex-col gap-2 flex-1 min-w-0">
-          {/* Row 1: Timestamp + badges */}
           <div className="flex items-center justify-between gap-1.5">
             <div className="flex items-center gap-1.5">
               <span className="text-[11px] text-figma-text-tertiary font-medium">
                 #{thread.orderNumber ?? thread.id.slice(0, 8)}
               </span>
-              <span className="text-[10px] text-figma-text-disabled">
-                &middot;
-              </span>
+              <span className="text-[10px] text-figma-text-disabled">&middot;</span>
               <span className="text-[11px] text-figma-text-tertiary">
                 {timeAgo(thread.lastUpdatedAt)}
               </span>
@@ -94,31 +91,37 @@ export function ThreadCard({
             <StatusBadge status={workflowState} />
           </div>
 
-          {/* Row 2: Message preview */}
           <p className="text-[11px] text-figma-text leading-snug line-clamp-3">
             {renderMentions(thread.message)}
           </p>
 
-          {/* Row 3: Avatars + Reply count + Navigate */}
           <div className="flex items-center justify-between">
             <AvatarGroup users={thread.participants} max={10} size={18} />
             <div className="flex items-center gap-2">
               {threadHasImages(thread) && (
-                <Image size={11} className="text-figma-text-tertiary" />
+                <ImageIcon size={11} className="text-figma-text-tertiary" />
               )}
               <span className="flex items-center gap-1 text-[11px] text-figma-text-tertiary">
                 <MessageCircle size={10} />
                 {thread.replyCount + 1}
               </span>
               {thread.clientMeta && !bulkMode && (
-                <button
-                  type="button"
+                <span
+                  role="button"
+                  tabIndex={0}
                   onClick={(e) => {
                     e.stopPropagation();
                     handleNavigate();
                   }}
-                  disabled={navigating}
-                  className="p-1 rounded-lg text-figma-icon-tertiary hover:text-accent hover:bg-accent-subtle disabled:opacity-40 transition-colors"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleNavigate();
+                    }
+                  }}
+                  aria-disabled={navigating}
+                  className="p-1 rounded-lg text-figma-icon-tertiary hover:text-accent hover:bg-accent-subtle aria-disabled:opacity-40 transition-colors cursor-pointer"
                   data-tooltip="Navigate to comment"
                   data-tooltip-align="right"
                 >
@@ -127,7 +130,7 @@ export function ThreadCard({
                   ) : (
                     <Crosshair size={12} />
                   )}
-                </button>
+                </span>
               )}
             </div>
           </div>
