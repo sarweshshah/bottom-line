@@ -4,7 +4,20 @@ All notable changes to Bottom Line will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [0.1.0] - 2026-05-29
+## [2.0.0] - 2026-06-14
+
+### Added
+
+- Bulk summarization for multiple threads with progress feedback
+- "Read" workflow state with bulk status updates
+- Threads / Tasks tab switcher in the dashboard
+
+### Changed
+
+- Refreshed UI with updated design tokens, thread cards, loading states, and accessibility improvements
+- Streamlined API key setup across Anthropic, OpenAI, Gemini, and custom providers
+
+## [1.0.0] - 2026-05-29
 
 ### Added
 
