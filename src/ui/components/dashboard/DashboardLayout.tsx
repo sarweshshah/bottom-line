@@ -1,12 +1,6 @@
 import { useEffect, useMemo, useState, useRef } from "react";
 import { useShallow } from "zustand/react/shallow";
 import {
-  RefreshCw,
-  MessageSquare,
-  CheckSquare,
-  Loader2,
-  Settings,
-  ListChecks,
   X,
   ChevronDown,
   Circle,
@@ -26,53 +20,10 @@ import { ThreadList } from "./ThreadList";
 import { ThreadDetail } from "./ThreadDetail";
 import { TasksView } from "@ui/components/tasks/TasksView";
 import { FileNameBar } from "@ui/components/common/FileNameBar";
-
-type DashboardTab = "threads" | "tasks";
-
-interface DashboardTabButtonProps {
-  active: boolean;
-  onClick: () => void;
-  icon: React.ReactNode;
-  label: string;
-  count?: number;
-}
-
-function DashboardTabButton({
-  active,
-  onClick,
-  icon,
-  label,
-  count,
-}: DashboardTabButtonProps) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`relative flex items-center gap-1.5 px-4 h-full text-xs transition-colors ${
-        active
-          ? "text-accent font-semibold"
-          : "text-figma-text-tertiary font-medium hover:text-figma-text-secondary"
-      }`}
-    >
-      <span className="shrink-0">{icon}</span>
-      <span className="leading-none">{label}</span>
-      {count !== undefined && (
-        <span
-          className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full leading-none ${
-            active
-              ? "bg-accent text-white"
-              : "bg-figma-bg-tertiary text-figma-text-tertiary"
-          }`}
-        >
-          {count}
-        </span>
-      )}
-      {active && (
-        <span className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-accent" />
-      )}
-    </button>
-  );
-}
+import {
+  ViewSwitcherBar,
+  type DashboardTab,
+} from "./ViewSwitcherBar";
 
 const BULK_STATE_OPTIONS: {
   value: WorkflowState;
@@ -384,76 +335,24 @@ export function DashboardLayout() {
 
   return (
     <div className="flex flex-col h-full bg-figma-bg">
-      {/* Toolbar */}
-      <div className="flex items-stretch justify-between h-11 border-b border-figma-border bg-figma-bg">
-        <div className="flex items-stretch">
-          <DashboardTabButton
-            active={activeTab === "threads"}
-            onClick={() => setActiveTab("threads")}
-            icon={<MessageSquare size={13} />}
-            label="Threads"
-            count={filteredCount}
-          />
-          <DashboardTabButton
-            active={activeTab === "tasks"}
-            onClick={() => setActiveTab("tasks")}
-            icon={<CheckSquare size={13} />}
-            label="Tasks"
-            count={taskCount > 0 ? taskCount : undefined}
-          />
-        </div>
-        <div className="flex items-center gap-1 px-2.5">
-          {activeTab === "threads" && (
-            <>
-              <button
-                type="button"
-                onClick={() => {
-                  if (bulkMode) {
-                    exitBulkMode();
-                  } else {
-                    setBulkMode(true);
-                  }
-                }}
-                className={`p-1.5 rounded-lg transition-colors ${
-                  bulkMode
-                    ? "bg-accent-subtle text-accent"
-                    : "text-figma-icon-secondary hover:bg-figma-bg-secondary hover:text-figma-icon"
-                }`}
-                data-tooltip={bulkMode ? "Exit select mode" : "Select threads"}
-                data-tooltip-align="right"
-                data-tooltip-pos="bottom"
-              >
-                <ListChecks size={14} />
-              </button>
-              <button
-                type="button"
-                onClick={refreshComments}
-                disabled={isLoading}
-                className="p-1.5 rounded-lg text-figma-icon-secondary hover:bg-figma-bg-secondary hover:text-figma-icon disabled:opacity-40 transition-colors"
-                data-tooltip="Refresh comments"
-                data-tooltip-align="right"
-                data-tooltip-pos="bottom"
-              >
-                {isLoading ? (
-                  <Loader2 size={14} className="animate-spin" />
-                ) : (
-                  <RefreshCw size={14} />
-                )}
-              </button>
-            </>
-          )}
-          <button
-            type="button"
-            onClick={showSettings}
-            className="p-1.5 rounded-lg text-figma-icon-secondary hover:bg-figma-bg-secondary hover:text-figma-icon transition-colors"
-            data-tooltip="Settings"
-            data-tooltip-align="right"
-            data-tooltip-pos="bottom"
-          >
-            <Settings size={14} />
-          </button>
-        </div>
-      </div>
+      <ViewSwitcherBar
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        threadCount={filteredCount}
+        taskCount={taskCount}
+        bulkMode={bulkMode}
+        onToggleBulk={() => {
+          if (bulkMode) {
+            exitBulkMode();
+          } else {
+            setBulkMode(true);
+          }
+        }}
+        onRefresh={refreshComments}
+        isLoading={isLoading}
+        onShowSettings={showSettings}
+        hasFileName={!!fileName}
+      />
 
       {fileName && <FileNameBar fileName={fileName} />}
 
