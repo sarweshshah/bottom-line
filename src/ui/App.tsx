@@ -20,7 +20,6 @@ import { SettingsScreen } from "@ui/components/settings/SettingsScreen";
 import { ToastContainer } from "@ui/components/common/Toast";
 import { ConsentDialog } from "@ui/components/common/ConsentDialog";
 import { LoadingSpinner } from "@ui/components/common/LoadingSpinner";
-import { FileNameBar } from "@ui/components/common/FileNameBar";
 import { useAIStore } from "@ui/store/aiStore";
 import { useFilterStore } from "@ui/store/filterStore";
 
@@ -115,10 +114,9 @@ interface ResizeDragState {
 }
 
 export function App() {
-  const { screen, initFromSandbox, showDashboard, themePreference, fileName } =
+  const { screen, initFromSandbox, showDashboard, themePreference } =
     useAuthStore();
   const resizeDragStateRef = useRef<ResizeDragState | null>(null);
-  const showFileBar = screen === "settings" && !!fileName;
 
   useEffect(() => {
     applyTheme(themePreference);
@@ -243,7 +241,6 @@ export function App() {
 
   return (
     <div className="relative h-full w-full flex flex-col">
-      {showFileBar && <FileNameBar fileName={fileName!} />}
       <div className="flex-1 min-h-0 flex flex-col relative">
         {screen === "loading" && <LoadingSpinner message="Initializing..." />}
         {screen === "setup" && <SetupScreen />}

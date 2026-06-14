@@ -196,16 +196,6 @@ body,
   animation: onboarding-fade-in 0.3s ease-out both;
 }
 
-.onboarding-logo-glow {
-  box-shadow: 0 0 40px color-mix(in oklch, var(--bl-violet-500) 25%, transparent),
-    0 0 80px color-mix(in oklch, var(--bl-violet-400) 10%, transparent);
-}
-
-.figma-dark .onboarding-logo-glow {
-  box-shadow: 0 0 40px color-mix(in oklch, var(--bl-violet-400) 20%, transparent),
-    0 0 80px color-mix(in oklch, var(--bl-violet-600) 8%, transparent);
-}
-
 .onboarding-hero-gradient {
   background: linear-gradient(
     135deg,
@@ -281,20 +271,20 @@ body,
 
 .empty-state-halo {
   box-shadow:
-    0 0 0 1px color-mix(in oklch, var(--bl-violet-500) 14%, transparent),
-    0 8px 24px -8px color-mix(in oklch, var(--bl-violet-500) 30%, transparent);
+    0 0 0 1px color-mix(in oklch, var(--bl-violet-500) 10%, transparent),
+    0 4px 12px -8px color-mix(in oklch, var(--bl-violet-500) 12%, transparent);
 }
 
 .figma-dark .empty-state-halo {
   box-shadow:
-    0 0 0 1px color-mix(in oklch, var(--bl-violet-400) 18%, transparent),
-    0 8px 28px -8px color-mix(in oklch, var(--bl-violet-400) 24%, transparent);
+    0 0 0 1px color-mix(in oklch, var(--bl-violet-400) 12%, transparent),
+    0 4px 12px -8px color-mix(in oklch, var(--bl-violet-400) 14%, transparent);
 }
 
 .empty-state-halo-error {
   box-shadow:
-    0 0 0 1px color-mix(in oklch, var(--bl-danger-500) 16%, transparent),
-    0 8px 24px -8px color-mix(in oklch, var(--bl-danger-500) 28%, transparent);
+    0 0 0 1px color-mix(in oklch, var(--bl-danger-500) 12%, transparent),
+    0 4px 12px -8px color-mix(in oklch, var(--bl-danger-500) 14%, transparent);
 }
 
 @media (prefers-reduced-motion: reduce) {

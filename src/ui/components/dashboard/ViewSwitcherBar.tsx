@@ -33,9 +33,9 @@ function ViewSwitcherSegment({
       className={`relative flex items-center gap-1.5 px-4 h-full font-mono text-[9px] uppercase tracking-widest leading-none transition-colors ${
         active
           ? connectsBelow
-            ? "border border-b-0 border-figma-border bg-accent-subtle text-accent font-semibold"
-            : "border border-b-figma-bg bg-figma-bg text-accent font-semibold -mb-px"
-          : "text-figma-text-secondary font-medium hover:text-figma-text border-b border-transparent"
+            ? "border border-b-0 border-figma-border bg-accent-subtle text-accent font-semibold hover:border-figma-border-strong"
+            : "border border-b-figma-bg bg-figma-bg text-accent font-semibold -mb-px hover:border-figma-border-strong"
+          : "text-figma-text-secondary font-medium hover:bg-figma-bg-hover hover:text-figma-text border-b border-transparent"
       }`}
     >
       <span className="shrink-0">{icon}</span>

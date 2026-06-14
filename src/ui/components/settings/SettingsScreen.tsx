@@ -1,20 +1,13 @@
-import { useState, useCallback, type MouseEvent } from "react";
+import { useState, useCallback, type MouseEvent, type ReactNode } from "react";
 import {
   ArrowLeft,
   Eye,
   EyeOff,
   ExternalLink,
   CheckCircle2,
-  AlertCircle,
   Loader2,
   LogOut,
-  Link,
-  ShieldCheck,
   Monitor,
-  Settings,
-  Sparkles,
-  Image,
-  MessageSquare,
   ChevronDown,
   ChevronRight,
   Sun,
@@ -50,12 +43,7 @@ import type {
   ThemePreference,
 } from "@shared/types";
 import { AboutTab } from "@ui/components/settings/AboutTab";
-import {
-  SUMMARY_WORD_LIMIT_MAX,
-  SUMMARY_WORD_LIMIT_MIN,
-  SUMMARY_WORD_LIMIT_SLIDER_TICKS,
-  SUMMARY_WORD_LIMIT_STEP,
-} from "@shared/types";
+import { SUMMARY_WORD_LIMIT_OPTIONS } from "@shared/types";
 
 type SettingsTab = "general" | "ai" | "behavior" | "auth" | "display" | "about";
 
@@ -69,6 +57,150 @@ const TABS: { id: SettingsTab; label: string }[] = [
 ];
 
 const TTL_OPTIONS: CacheTTLMinutes[] = [5, 10, 15, 30];
+
+const BTN_PRIMARY =
+  "px-2.5 py-2 rounded-lg text-xs font-medium bg-accent-bg text-white shadow-sm hover:bg-accent-hover disabled:opacity-40 transition-all duration-150";
+
+const BTN_SECONDARY =
+  "px-2.5 py-2 rounded-lg text-xs font-medium bg-figma-bg-secondary text-figma-text-secondary hover:text-figma-text disabled:opacity-40 transition-all duration-150";
+
+const BTN_DANGER =
+  "px-2.5 py-2 rounded-lg text-xs font-medium text-danger bg-danger-bg hover:opacity-90 disabled:opacity-40 transition-all duration-150";
+
+const INPUT_CLASS =
+  "w-full bg-figma-bg text-figma-text border border-figma-border rounded-md px-2.5 py-1.5 text-xs placeholder:text-figma-text-tertiary focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent-ring";
+
+const PILL_ACTIVE = "bg-accent-bg text-white shadow-sm";
+
+const PILL_INACTIVE =
+  "bg-figma-bg-secondary text-figma-text-secondary hover:text-figma-text";
+
+const CARD_CLASS =
+  "rounded-lg border border-figma-border bg-figma-bg-secondary p-3";
+
+function SettingsSection({
+  children,
+  className = "",
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <section className={`border-b border-figma-border ${className}`}>
+      {children}
+    </section>
+  );
+}
+
+function SettingsSectionHeader({
+  title,
+  description,
+}: {
+  title: string;
+  description?: string;
+}) {
+  return (
+    <div className="px-4 pt-5 pb-3">
+      <h3 className="font-mono text-[9.5px] font-semibold uppercase tracking-widest text-figma-text leading-none">
+        {title}
+      </h3>
+      {description && (
+        <p className="text-[10px] text-figma-text-tertiary mt-1 leading-snug tracking-wide">
+          {description}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function SettingsSectionBody({
+  children,
+  className = "",
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return <div className={`px-4 pb-5 space-y-3 ${className}`}>{children}</div>;
+}
+
+function SettingsRowGroup({ children }: { children: ReactNode }) {
+  return <div>{children}</div>;
+}
+
+function SettingsToggleRow({
+  label,
+  description,
+  checked,
+  onChange,
+  trailing,
+}: {
+  label: string;
+  description?: string;
+  checked?: boolean;
+  onChange?: (checked: boolean) => void;
+  trailing?: ReactNode;
+}) {
+  const inner = (
+    <>
+      <div className="flex-1 min-w-0">
+        <p className="text-[11px] font-medium text-figma-text">{label}</p>
+        {description && (
+          <p className="text-[10px] text-figma-text-tertiary mt-0.5 leading-snug">
+            {description}
+          </p>
+        )}
+      </div>
+      {trailing ?? (
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={(e) => onChange?.(e.target.checked)}
+          className="accent-accent w-3.5 h-3.5 cursor-pointer shrink-0"
+        />
+      )}
+    </>
+  );
+
+  if (trailing) {
+    return (
+      <div className="flex items-center justify-between gap-3 px-4 py-4 hover:bg-figma-bg-hover transition-colors">
+        {inner}
+      </div>
+    );
+  }
+
+  return (
+    <label className="flex items-center justify-between gap-3 px-4 py-4 cursor-pointer hover:bg-figma-bg-hover transition-colors">
+      {inner}
+    </label>
+  );
+}
+
+interface SettingsTabSegmentProps {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+}
+
+function SettingsTabSegment({
+  active,
+  onClick,
+  label,
+}: SettingsTabSegmentProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`relative flex items-center px-3 h-full font-mono text-[9px] uppercase tracking-widest leading-none shrink-0 transition-colors ${
+        active
+          ? "border border-b-0 border-figma-border bg-accent-subtle text-accent font-semibold hover:border-figma-border-strong"
+          : "text-figma-text-secondary font-medium hover:bg-figma-bg-hover hover:text-figma-text"
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
 
 const PROVIDER_OPTIONS: {
   value: AIProvider;
@@ -133,61 +265,63 @@ function GeneralTab() {
   }, [url, setFileInfo, refreshComments]);
 
   return (
-    <div className="space-y-5">
+    <SettingsSection>
+      <SettingsSectionHeader
+        title={fileKey ? "Connected file" : "Figma file"}
+        description={
+          fileKey
+            ? "The Figma file currently linked to this plugin."
+            : "The Figma file to analyze comments for."
+        }
+      />
       {fileKey && (
-        <section>
-          <h3 className="text-sm font-medium text-figma-text mb-2 flex items-center gap-1.5">
-            <CheckCircle2 size={14} className="text-status-resolved" />
-            Connected File
-          </h3>
-          <div className="bg-figma-bg-secondary border border-figma-border rounded-lg p-3 space-y-2">
+        <SettingsSectionBody className="!pb-0">
+          <div className={`${CARD_CLASS} space-y-2`}>
             <div className="flex items-center justify-between gap-3">
-              <span className="text-xs text-figma-text-tertiary">File key</span>
-              <code className="text-xs text-figma-text font-medium bg-figma-bg px-1.5 py-0.5 rounded truncate max-w-[60%]">
+              <span className="text-[11px] text-figma-text-tertiary">
+                File key
+              </span>
+              <code className="text-[11px] text-figma-text font-medium bg-figma-bg px-1.5 py-0.5 rounded border border-figma-border truncate max-w-[60%]">
                 {fileKey}
               </code>
             </div>
             {fileUrl && (
               <div className="flex items-center justify-between gap-3">
-                <span className="text-xs text-figma-text-tertiary">URL</span>
-                <span className="text-xs text-figma-text-secondary truncate max-w-[60%]">
+                <span className="text-[11px] text-figma-text-tertiary">
+                  URL
+                </span>
+                <span className="text-[11px] text-figma-text-secondary truncate max-w-[60%]">
                   {fileUrl}
                 </span>
               </div>
             )}
           </div>
-        </section>
+        </SettingsSectionBody>
       )}
-
-      <section>
-        <h3 className="text-sm font-medium text-figma-text mb-1 flex items-center gap-1.5">
-          <Link size={14} className="text-accent" />
-          {fileKey ? "Update File" : "Figma File"}
-        </h3>
-        <p className="text-xs text-figma-text-tertiary mb-3">
-          {fileKey
-            ? "Paste a new URL to switch the connected Figma file."
-            : "The Figma file to analyze comments for."}
-        </p>
-        <div className="p-3 bg-figma-bg-secondary border border-figma-border rounded-lg space-y-2">
-          <input
-            type="text"
-            value={url}
-            onChange={(e) => handleUrlChange(e.target.value)}
-            placeholder="https://www.figma.com/design/abc123/..."
-            className="w-full bg-figma-bg text-figma-text border border-figma-border rounded-lg px-3 py-2 text-sm placeholder:text-figma-text-tertiary focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent-ring"
-          />
-          {urlError && <FieldError>{urlError}</FieldError>}
-          <button
-            type="button"
-            onClick={handleSaveUrl}
-            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-figma-bg-secondary border border-figma-border text-figma-text hover:bg-figma-bg-tertiary hover:border-figma-border-strong transition-colors"
-          >
-            {fileKey ? "Update File" : "Connect File"}
-          </button>
-        </div>
-      </section>
-    </div>
+      <div className={`px-4 pb-5 space-y-3 ${fileKey ? "pt-4" : ""}`}>
+        {fileKey && (
+          <div>
+            <p className="text-[11px] font-medium text-figma-text">
+              Update file
+            </p>
+            <p className="text-[10px] text-figma-text-tertiary mt-0.5 leading-snug">
+              Paste a new URL to switch the connected Figma file.
+            </p>
+          </div>
+        )}
+        <input
+          type="text"
+          value={url}
+          onChange={(e) => handleUrlChange(e.target.value)}
+          placeholder="https://www.figma.com/design/abc123/..."
+          className={INPUT_CLASS}
+        />
+        {urlError && <FieldError>{urlError}</FieldError>}
+        <button type="button" onClick={handleSaveUrl} className={BTN_PRIMARY}>
+          {fileKey ? "Update file" : "Connect file"}
+        </button>
+      </div>
+    </SettingsSection>
   );
 }
 
@@ -259,252 +393,226 @@ function AITab() {
 
   const hasVision = supportsVision(provider);
 
-  // Progressive disclosure: settings that depend on a configured provider only
-  // surface once the provider actually has credentials.
   const hasKey =
     provider === "custom"
-      ? Boolean(customConfig.baseUrl.trim())
+      ? Boolean(customConfig.baseUrl.trim() && customConfig.modelName.trim())
       : Boolean(currentKey.trim());
 
   return (
-    <div className="space-y-5">
-      <section>
-        <h3 className="text-sm font-medium text-figma-text mb-1 flex items-center gap-1.5">
-          <Sparkles size={14} className="text-accent" />
-          AI Provider
-        </h3>
-        <p className="text-xs text-figma-text-tertiary mb-3">
-          Choose how thread summaries and tasks are generated.
-        </p>
-
-        <div className="border border-figma-border rounded-lg overflow-hidden">
-          {PROVIDER_OPTIONS.map((opt) => {
-            const isSelected = provider === opt.value;
-            return (
-              <div key={opt.value}>
-                <label
-                  className={`flex items-center gap-2.5 px-3 py-2 cursor-pointer transition-colors ${
-                    isSelected
-                      ? "bg-accent-subtle"
-                      : "bg-figma-bg hover:bg-figma-bg-secondary"
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="ai-provider"
-                    value={opt.value}
-                    checked={isSelected}
-                    onChange={() => {
+    <>
+      <SettingsSection>
+        <SettingsSectionHeader
+          title="AI provider"
+          description="Choose how thread summaries and tasks are generated."
+        />
+        <SettingsSectionBody>
+          <div className="rounded-lg border border-figma-border overflow-hidden bg-figma-bg-secondary divide-y divide-figma-border">
+            {PROVIDER_OPTIONS.map((opt) => {
+              const isSelected = provider === opt.value;
+              return (
+                <div key={opt.value}>
+                  <button
+                    type="button"
+                    onClick={() => {
                       setProvider(opt.value);
                       setShowKey(false);
                     }}
-                    className="accent-accent w-3.5 h-3.5 shrink-0"
-                  />
-                  <span className="text-xs font-medium text-figma-text">
-                    {opt.label}
-                  </span>
-                  <span className="text-[11px] text-figma-text-tertiary ml-auto flex items-center gap-1.5">
-                    {opt.description}
+                    className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-left transition-colors ${
+                      isSelected
+                        ? "bg-accent-subtle"
+                        : "hover:bg-figma-bg-hover"
+                    }`}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[11px] font-medium text-figma-text">
+                        {opt.label}
+                      </p>
+                      <p className="text-[10px] text-figma-text-tertiary mt-0.5 leading-snug">
+                        {opt.description}
+                      </p>
+                    </div>
                     <ChevronDown
                       size={12}
-                      className={`transition-transform duration-200 ${isSelected ? "rotate-180" : ""}`}
+                      className={`shrink-0 text-figma-icon-secondary transition-transform duration-200 ${
+                        isSelected ? "rotate-180" : ""
+                      }`}
                     />
-                  </span>
-                </label>
+                  </button>
 
-                <div
-                  className={`grid transition-[grid-template-rows] duration-200 ease-out ${
-                    isSelected ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
-                  }`}
-                >
-                  <div className="overflow-hidden">
-                    <div className="px-3 pb-2.5 pt-1.5 bg-accent-subtle space-y-2">
-                      {opt.value !== "custom" ? (
-                        <>
-                          <div className="flex items-center gap-2 bg-figma-bg border border-figma-border rounded px-2.5 py-1.5">
+                  <div
+                    className={`grid transition-[grid-template-rows] duration-200 ease-out ${
+                      isSelected ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+                    }`}
+                  >
+                    <div className="overflow-hidden">
+                      <div className="px-3 pt-3 pb-4 border-t border-figma-border bg-figma-bg space-y-3">
+                        {opt.value !== "custom" ? (
+                          <>
+                            <div className="space-y-1.5">
+                              <div className="flex items-center justify-between gap-3">
+                                <p className="text-[10px] font-medium text-figma-text-secondary">
+                                  API key
+                                </p>
+                                {opt.apiKeyUrl && (
+                                  <a
+                                    href={opt.apiKeyUrl}
+                                    onClick={(
+                                      e: MouseEvent<HTMLAnchorElement>,
+                                    ) => {
+                                      e.preventDefault();
+                                      openExternalUrl(opt.apiKeyUrl!);
+                                    }}
+                                    className="inline-flex items-center gap-1 text-[10px] text-accent hover:underline shrink-0"
+                                  >
+                                    Get your {opt.label} API key
+                                    <ExternalLink size={9} />
+                                  </a>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2 bg-figma-bg-secondary border border-figma-border rounded-md px-2.5 py-1.5">
+                                <input
+                                  type={showKey ? "text" : "password"}
+                                  value={
+                                    showKey
+                                      ? currentKey
+                                      : currentKey
+                                        ? maskedKey
+                                        : ""
+                                  }
+                                  onChange={(e) =>
+                                    setCurrentKey(e.target.value)
+                                  }
+                                  placeholder="Paste your API key"
+                                  className="flex-1 bg-transparent text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none min-w-0"
+                                />
+                                {hasKey && (
+                                  <CheckCircle2
+                                    size={11}
+                                    className="text-status-resolved shrink-0"
+                                  />
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => setShowKey(!showKey)}
+                                  className="p-1 rounded-lg text-figma-icon-secondary hover:bg-figma-bg hover:text-figma-icon shrink-0 transition-colors"
+                                  data-tooltip={
+                                    showKey ? "Hide key" : "Show key"
+                                  }
+                                  data-tooltip-align="right"
+                                  data-tooltip-pos="bottom"
+                                >
+                                  {showKey ? (
+                                    <EyeOff size={12} />
+                                  ) : (
+                                    <Eye size={12} />
+                                  )}
+                                </button>
+                              </div>
+                            </div>
+                          </>
+                        ) : (
+                          <>
                             <input
-                              type={showKey ? "text" : "password"}
-                              value={
-                                showKey
-                                  ? currentKey
-                                  : currentKey
-                                    ? maskedKey
-                                    : ""
+                              type="text"
+                              value={customConfig.baseUrl}
+                              onChange={(e) =>
+                                setCustomConfig({
+                                  ...customConfig,
+                                  baseUrl: e.target.value,
+                                })
                               }
-                              onChange={(e) => setCurrentKey(e.target.value)}
-                              placeholder="Paste your API key"
-                              className="flex-1 bg-transparent text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none min-w-0"
+                              placeholder="Base URL (https://api.example.com/v1)"
+                              className={INPUT_CLASS}
                             />
-                            {currentKey && (
-                              <CheckCircle2
-                                size={11}
-                                className="text-status-resolved shrink-0"
-                              />
-                            )}
-                            <button
-                              type="button"
-                              onClick={() => setShowKey(!showKey)}
-                              className="text-figma-icon-tertiary hover:text-figma-icon-secondary shrink-0 p-0.5 rounded transition-colors"
-                              title={showKey ? "Hide key" : "Show key"}
+                            <input
+                              type="password"
+                              value={customConfig.apiKey}
+                              onChange={(e) =>
+                                setCustomConfig({
+                                  ...customConfig,
+                                  apiKey: e.target.value,
+                                })
+                              }
+                              placeholder="API key (optional)"
+                              className={INPUT_CLASS}
+                            />
+                            <input
+                              type="text"
+                              value={customConfig.modelName}
+                              onChange={(e) =>
+                                setCustomConfig({
+                                  ...customConfig,
+                                  modelName: e.target.value,
+                                })
+                              }
+                              placeholder="Model name (e.g., llama-3.1-8b-instant)"
+                              className={INPUT_CLASS}
+                            />
+                          </>
+                        )}
+
+                        {isSelected && hasKey && hasVision && (
+                          <label className="setting-reveal flex items-center justify-between gap-3 cursor-pointer">
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[10px] font-medium text-figma-text-secondary">
+                                Image analysis
+                              </p>
+                              <p className="text-[10px] text-figma-text-tertiary mt-0.5 leading-snug">
+                                {imageAnalysisEnabled
+                                  ? "Uses more tokens per summary"
+                                  : "Include attached images when generating summaries."}
+                              </p>
+                            </div>
+                            <input
+                              type="checkbox"
+                              checked={imageAnalysisEnabled}
+                              onChange={(e) =>
+                                setImageAnalysisEnabled(e.target.checked)
+                              }
+                              className="accent-accent w-3.5 h-3.5 cursor-pointer shrink-0"
+                            />
+                          </label>
+                        )}
+
+                        {isSelected && hasKey && (
+                          <div className="setting-reveal flex items-start justify-between gap-3">
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[10px] font-medium text-figma-text-secondary">
+                                Summary length
+                              </p>
+                              <p className="text-[10px] text-figma-text-tertiary mt-0.5 leading-snug">
+                                Cap summary length in words.
+                              </p>
+                            </div>
+                            <select
+                              value={summaryWordLimit}
+                              onChange={(e) =>
+                                setSummaryWordLimit(
+                                  Number(e.target.value) as SummaryWordLimit,
+                                )
+                              }
+                              className={`${INPUT_CLASS} w-auto min-w-[6.5rem] py-1 shrink-0`}
                             >
-                              {showKey ? (
-                                <EyeOff size={12} />
-                              ) : (
-                                <Eye size={12} />
-                              )}
-                            </button>
+                              {SUMMARY_WORD_LIMIT_OPTIONS.map((limit) => (
+                                <option key={limit} value={limit}>
+                                  {limit} words
+                                </option>
+                              ))}
+                            </select>
                           </div>
-                          {opt.apiKeyUrl && (
-                            <a
-                              href={opt.apiKeyUrl}
-                              onClick={(e: MouseEvent<HTMLAnchorElement>) => {
-                                e.preventDefault();
-                                openExternalUrl(opt.apiKeyUrl!);
-                              }}
-                              className="inline-flex items-center gap-1 text-[11px] text-accent hover:underline"
-                            >
-                              Get your {opt.label} API key
-                              <ExternalLink size={9} />
-                            </a>
-                          )}
-                        </>
-                      ) : (
-                        <div className="space-y-2">
-                          <input
-                            type="text"
-                            value={customConfig.baseUrl}
-                            onChange={(e) =>
-                              setCustomConfig({
-                                ...customConfig,
-                                baseUrl: e.target.value,
-                              })
-                            }
-                            placeholder="Base URL (https://api.example.com/v1)"
-                            className="w-full bg-figma-bg border border-figma-border rounded px-2.5 py-1.5 text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-accent"
-                          />
-                          <input
-                            type="password"
-                            value={customConfig.apiKey}
-                            onChange={(e) =>
-                              setCustomConfig({
-                                ...customConfig,
-                                apiKey: e.target.value,
-                              })
-                            }
-                            placeholder="API key (optional)"
-                            className="w-full bg-figma-bg border border-figma-border rounded px-2.5 py-1.5 text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-accent"
-                          />
-                          <input
-                            type="text"
-                            value={customConfig.modelName}
-                            onChange={(e) =>
-                              setCustomConfig({
-                                ...customConfig,
-                                modelName: e.target.value,
-                              })
-                            }
-                            placeholder="Model name (e.g., llama-3.1-8b-instant)"
-                            className="w-full bg-figma-bg border border-figma-border rounded px-2.5 py-1.5 text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-accent"
-                          />
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {hasKey && hasVision && (
-        <section className="setting-reveal">
-          <h3 className="text-sm font-medium text-figma-text mb-1 flex items-center gap-1.5">
-            <Image size={14} className="text-accent" />
-            Image analysis
-          </h3>
-          <p className="text-xs text-figma-text-tertiary mb-3">
-            Include attached images when generating summaries.
-          </p>
-          <label className="flex items-center justify-between gap-3 p-3 bg-figma-bg-secondary border border-figma-border rounded-lg cursor-pointer transition-colors hover:border-figma-border-strong">
-            <div>
-              <p className="text-sm font-medium text-figma-text">
-                Analyze attached images
-              </p>
-              <p className="text-xs text-figma-text-tertiary mt-0.5 flex items-center gap-1">
-                {imageAnalysisEnabled ? (
-                  <span className="text-warning flex items-center gap-0.5">
-                    <AlertCircle size={10} />
-                    Uses more tokens per summary
-                  </span>
-                ) : (
-                  "Sends image content to the AI provider."
-                )}
-              </p>
-            </div>
-            <input
-              type="checkbox"
-              checked={imageAnalysisEnabled}
-              onChange={(e) => setImageAnalysisEnabled(e.target.checked)}
-              className="accent-accent w-4 h-4 cursor-pointer shrink-0"
-            />
-          </label>
-        </section>
-      )}
-
-      {hasKey && (
-        <section className="setting-reveal">
-          <h3 className="text-sm font-medium text-figma-text mb-1 flex items-center gap-1.5">
-            <MessageSquare size={14} className="text-accent" />
-            Summary length
-          </h3>
-          <p className="text-xs text-figma-text-tertiary mb-3">
-            Cap summary length in words.
-          </p>
-          <div className="p-3 rounded-lg border border-figma-border bg-figma-bg space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-figma-text">Word limit</span>
-            <span className="text-xs font-medium text-figma-text">
-              {summaryWordLimit} words
-            </span>
+              );
+            })}
           </div>
-          <input
-            type="range"
-            min={SUMMARY_WORD_LIMIT_MIN}
-            max={SUMMARY_WORD_LIMIT_MAX}
-            step={SUMMARY_WORD_LIMIT_STEP}
-            value={summaryWordLimit}
-            onChange={(e) =>
-              setSummaryWordLimit(Number(e.target.value) as SummaryWordLimit)
-            }
-            className="w-full h-0.5 appearance-none rounded-full bg-figma-bg-tertiary cursor-pointer
-              [&::-webkit-slider-thumb]:appearance-none
-              [&::-webkit-slider-thumb]:h-2.5
-              [&::-webkit-slider-thumb]:w-2.5
-              [&::-webkit-slider-thumb]:rounded-full
-              [&::-webkit-slider-thumb]:bg-accent
-              [&::-webkit-slider-thumb]:border
-              [&::-webkit-slider-thumb]:border-figma-bg
-              [&::-webkit-slider-thumb]:shadow-sm
-              [&::-moz-range-thumb]:h-2.5
-              [&::-moz-range-thumb]:w-2.5
-              [&::-moz-range-thumb]:rounded-full
-              [&::-moz-range-thumb]:bg-accent
-              [&::-moz-range-thumb]:border
-              [&::-moz-range-thumb]:border-figma-bg
-              [&::-moz-range-thumb]:shadow-sm"
-          />
-          <div className="flex items-center justify-between text-[11px] text-figma-text-secondary">
-            {SUMMARY_WORD_LIMIT_SLIDER_TICKS.map((limit) => (
-              <span key={limit}>{limit}</span>
-            ))}
-          </div>
-        </div>
-        </section>
-      )}
+        </SettingsSectionBody>
+      </SettingsSection>
 
       <ClearCacheSection />
-    </div>
+    </>
   );
 }
 
@@ -527,21 +635,17 @@ function ClearCacheSection() {
   }, [threads]);
 
   return (
-    <section>
-      <h3 className="text-sm font-medium text-figma-text mb-1 flex items-center gap-1.5">
-        <Loader2 size={14} className="text-accent" />
-        Cache
-      </h3>
-      <p className="text-xs text-figma-text-tertiary mb-3">
-        Clear all cached summaries and tasks. They will be regenerated on next
-        request.
-      </p>
-      <div className="flex items-center gap-3">
+    <SettingsSection>
+      <SettingsSectionHeader
+        title="Cache"
+        description="Clear all cached summaries and tasks. They will be regenerated on next request."
+      />
+      <SettingsSectionBody>
         <button
           type="button"
           onClick={handleClear}
           disabled={clearing || cleared}
-          className="px-3 py-1.5 rounded-lg text-xs font-medium text-danger bg-danger-bg border border-danger-border hover:border-danger disabled:opacity-40 transition-colors"
+          className={BTN_DANGER}
         >
           {clearing
             ? "Clearing..."
@@ -549,8 +653,8 @@ function ClearCacheSection() {
               ? "Cleared"
               : "Clear all summaries"}
         </button>
-      </div>
-    </section>
+      </SettingsSectionBody>
+    </SettingsSection>
   );
 }
 
@@ -559,64 +663,45 @@ function BehaviorTab() {
   const { cacheTTLMinutes, setCacheTTLMinutes } = useCommentsStore();
 
   return (
-    <div className="space-y-5">
-      <section>
-        <h3 className="text-sm font-medium text-figma-text mb-1 flex items-center gap-1.5">
-          <Settings size={14} className="text-accent" />
-          Behavior
-        </h3>
-        <p className="text-xs text-figma-text-tertiary mb-3">
-          Customize how the plugin interacts with Figma.
-        </p>
+    <SettingsSection>
+      <SettingsSectionHeader
+        title="Behavior"
+        description="Customize how the plugin interacts with Figma."
+      />
 
-        <div className="space-y-3">
-          <label className="flex items-center justify-between gap-3 p-3 bg-figma-bg-secondary border border-figma-border rounded-lg cursor-pointer transition-colors hover:border-figma-border-strong">
-            <div>
-              <p className="text-sm font-medium text-figma-text">
-                Show comment reminder
-              </p>
-              <p className="text-xs text-figma-text-tertiary mt-0.5">
-                Show a notification to click the comment pin after navigating.
-              </p>
-            </div>
-            <input
-              type="checkbox"
-              checked={autoOpenComment}
-              onChange={(e) => setAutoOpenComment(e.target.checked)}
-              className="accent-accent w-4 h-4 cursor-pointer shrink-0"
-            />
-          </label>
+      <SettingsRowGroup>
+        <SettingsToggleRow
+          label="Show comment reminder"
+          description="Show a notification to click the comment pin after navigating."
+          checked={autoOpenComment}
+          onChange={setAutoOpenComment}
+        />
 
-          <label className="flex items-center justify-between gap-3 p-3 bg-figma-bg-secondary border border-figma-border rounded-lg cursor-pointer transition-colors hover:border-figma-border-strong">
-            <div>
-              <p className="text-sm font-medium text-figma-text">
-                Auto-refresh interval
-              </p>
-              <p className="text-xs text-figma-text-tertiary mt-0.5">
-                Refresh thread list automatically.
-              </p>
+        <SettingsToggleRow
+          label="Auto-refresh interval"
+          description="Refresh thread list automatically."
+          trailing={
+            <div className="flex items-center gap-1 shrink-0">
+              {TTL_OPTIONS.map((minutes) => {
+                const isActive = cacheTTLMinutes === minutes;
+                return (
+                  <button
+                    key={minutes}
+                    type="button"
+                    onClick={() => setCacheTTLMinutes(minutes)}
+                    className={`text-xs font-medium px-2.5 py-1.5 rounded-lg transition-all duration-150 ${
+                      isActive ? PILL_ACTIVE : PILL_INACTIVE
+                    }`}
+                  >
+                    {minutes}m
+                  </button>
+                );
+              })}
             </div>
-            <select
-              value={cacheTTLMinutes}
-              onChange={(e) =>
-                setCacheTTLMinutes(Number(e.target.value) as CacheTTLMinutes)
-              }
-              className="bg-figma-bg border border-figma-border rounded-lg pl-2 pr-6 py-1.5 text-xs font-medium text-figma-text focus:outline-none focus:border-accent cursor-pointer appearance-none bg-[length:12px] bg-[right_6px_center] bg-no-repeat"
-              style={{
-                backgroundImage:
-                  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")",
-              }}
-            >
-              {TTL_OPTIONS.map((minutes) => (
-                <option key={minutes} value={minutes}>
-                  {minutes} min
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-      </section>
-    </div>
+          }
+        />
+      </SettingsRowGroup>
+    </SettingsSection>
   );
 }
 
@@ -638,7 +723,9 @@ function AuthTab() {
   const [editing, setEditing] = useState(false);
   const [newPat, setNewPat] = useState("");
   const [showToken, setShowToken] = useState(false);
-  const [showPatAdvanced, setShowPatAdvanced] = useState(authMethod !== "oauth");
+  const [showPatAdvanced, setShowPatAdvanced] = useState(
+    authMethod !== "oauth",
+  );
 
   const maskedCredential =
     authMethod === "oauth" && figmaAccessToken
@@ -692,38 +779,42 @@ function AuthTab() {
       : "Using personal access token";
 
   return (
-    <div className="space-y-5">
+    <>
       {user && (
-        <section>
-          <h3 className="text-sm font-medium text-figma-text mb-2 flex items-center gap-1.5">
-            <CheckCircle2 size={14} className="text-status-resolved" />
-            Account
-          </h3>
-          <div className="bg-figma-bg-secondary border border-figma-border rounded-lg p-3 space-y-3">
-            <div className="flex items-center gap-3">
-              <UserAvatar
-                handle={user.handle}
-                imgUrl={user.img_url}
-                colorKey={user.id}
-                size={40}
-                className="border border-figma-border"
-              />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-figma-text truncate">
-                  {user.handle}
-                </p>
-                <p className="text-xs text-figma-text-tertiary mt-0.5 truncate">
-                  {connectionSubtitle}
-                </p>
+        <SettingsSection>
+          <SettingsSectionHeader
+            title="Account"
+            description={connectionSubtitle}
+          />
+          <SettingsSectionBody>
+            <div className={CARD_CLASS}>
+              <div className="flex items-center gap-3">
+                <UserAvatar
+                  handle={user.handle}
+                  imgUrl={user.img_url}
+                  colorKey={user.id}
+                  size={36}
+                  className="border border-figma-border"
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[11px] font-medium text-figma-text truncate">
+                    {user.handle}
+                  </p>
+                  <p className="text-[10px] text-figma-text-tertiary mt-0.5 truncate">
+                    {authMethod === "oauth" ? "OAuth" : "Personal access token"}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => void logout()}
+                  className="p-1.5 rounded-lg text-figma-icon-secondary hover:bg-danger-bg hover:text-danger transition-colors shrink-0"
+                  data-tooltip="Log out"
+                  data-tooltip-align="right"
+                  data-tooltip-pos="bottom"
+                >
+                  <LogOut size={14} />
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => void logout()}
-                className="p-2 rounded-lg text-figma-icon-tertiary hover:bg-danger-bg hover:text-danger transition-colors shrink-0"
-                title="Logout"
-              >
-                <LogOut size={16} />
-              </button>
             </div>
 
             {authMethod === "oauth" && oauthAvailable && (
@@ -731,7 +822,7 @@ function AuthTab() {
                 type="button"
                 disabled={oauthBusy || isValidating}
                 onClick={() => void handleSignInWithFigma()}
-                className="w-full py-2 rounded-lg text-xs font-medium bg-figma-bg border border-figma-border text-figma-text hover:bg-figma-bg-tertiary disabled:opacity-40"
+                className={`w-full ${BTN_SECONDARY}`}
               >
                 {oauthBusy ? (
                   <span className="inline-flex items-center justify-center gap-2">
@@ -743,45 +834,53 @@ function AuthTab() {
                 )}
               </button>
             )}
-          </div>
-        </section>
+          </SettingsSectionBody>
+        </SettingsSection>
       )}
 
-      <section>
-        <h3 className="text-sm font-medium text-figma-text mb-1 flex items-center gap-1.5">
-          <ShieldCheck size={14} className="text-accent" />
-          Access token
-        </h3>
-        <p className="text-xs text-figma-text-tertiary mb-3">
-          {authMethod === "oauth"
-            ? "OAuth tokens are stored only in this plugin. You can re-authenticate above or switch to a personal access token."
-            : "Your token is stored locally in the plugin and never shared."}
-        </p>
+      <SettingsSection>
+        <SettingsSectionHeader
+          title="Access token"
+          description={
+            authMethod === "oauth"
+              ? "OAuth tokens are stored only in this plugin. You can re-authenticate above or switch to a personal access token."
+              : "Your token is stored locally in the plugin and never shared."
+          }
+        />
 
         {authMethod === "oauth" && (
-          <button
-            type="button"
-            onClick={() => setShowPatAdvanced((v) => !v)}
-            className="flex items-center gap-1 text-xs text-accent hover:underline mb-3"
-          >
-            {showPatAdvanced ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-            Use a personal access token instead
-          </button>
+          <div className="px-4">
+            <button
+              type="button"
+              onClick={() => setShowPatAdvanced((v) => !v)}
+              className="flex items-center gap-1 text-[11px] text-accent hover:underline"
+            >
+              {showPatAdvanced ? (
+                <ChevronDown size={12} />
+              ) : (
+                <ChevronRight size={12} />
+              )}
+              Use a personal access token instead
+            </button>
+          </div>
         )}
 
-        {(authMethod === "pat" || (authMethod === "oauth" && showPatAdvanced)) && (
+        {(authMethod === "pat" ||
+          (authMethod === "oauth" && showPatAdvanced)) && (
           <>
-            <div className="mb-3 text-xs text-figma-text-secondary space-y-2">
-              <p className="text-figma-text-tertiary">
-                When generating a token, enable these permissions:
-              </p>
-              <ul className="list-disc list-inside space-y-0.5 text-figma-text-tertiary">
-                {FIGMA_PAT_REQUIRED_SCOPES.map((scope) => (
-                  <li key={scope}>
-                    <code className="font-mono text-xs">{scope}</code>
-                  </li>
-                ))}
-              </ul>
+            <div className="px-4 pb-2 text-[11px] text-figma-text-secondary space-y-2">
+              <div className="space-y-1">
+                <p className="text-figma-text-tertiary">
+                  When generating a token, enable these permissions:
+                </p>
+                <ul className="list-disc list-inside space-y-0.5 text-figma-text-tertiary">
+                  {FIGMA_PAT_REQUIRED_SCOPES.map((scope) => (
+                    <li key={scope}>
+                      <code className="font-mono text-[10px]">{scope}</code>
+                    </li>
+                  ))}
+                </ul>
+              </div>
               <a
                 href={FIGMA_PAT_HELP_URL}
                 className="inline-flex items-center gap-1 text-accent hover:underline"
@@ -795,76 +894,84 @@ function AuthTab() {
               </a>
             </div>
 
-            {!editing ? (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 bg-figma-bg-secondary border border-figma-border rounded-lg px-3 py-2">
-                  <code className="text-xs font-medium text-figma-text-secondary flex-1 truncate">
-                    {showToken ? displaySecret : maskedCredential || "—"}
-                  </code>
-                  <button
-                    type="button"
-                    onClick={() => setShowToken(!showToken)}
-                    className="text-figma-icon-tertiary hover:text-figma-icon-secondary shrink-0 p-0.5 rounded transition-colors"
-                    title={showToken ? "Hide" : "Show"}
-                    disabled={!displaySecret}
-                  >
-                    {showToken ? <EyeOff size={14} /> : <Eye size={14} />}
-                  </button>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEditing(true);
-                    setNewPat("");
-                  }}
-                  className="px-3 py-1.5 rounded-lg text-xs font-medium bg-figma-bg-secondary border border-figma-border text-figma-text hover:bg-figma-bg-tertiary hover:border-figma-border-strong transition-colors"
-                >
-                  {authMethod === "oauth" ? "Paste personal access token" : "Change Token"}
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <input
-                  type="password"
-                  value={newPat}
-                  onChange={(e) => setNewPat(e.target.value)}
-                  placeholder="figd_xxxxxxxxxxxxxxxx"
-                  className="w-full bg-figma-bg-secondary border border-figma-border rounded-lg px-3 py-2 text-sm text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent-ring"
-                  autoFocus
-                />
-                {isValidating && (
-                  <div className="flex items-center gap-1.5 text-xs text-figma-text-tertiary">
-                    <Loader2 size={12} className="animate-spin" />
-                    Validating token...
+            <SettingsSectionBody>
+              {!editing ? (
+                <>
+                  <div className="flex items-center gap-2 bg-figma-bg border border-figma-border rounded-md px-2.5 py-1.5">
+                    <code className="text-[11px] font-medium text-figma-text-secondary flex-1 truncate">
+                      {showToken ? displaySecret : maskedCredential || "—"}
+                    </code>
+                    <button
+                      type="button"
+                      onClick={() => setShowToken(!showToken)}
+                      className="p-1.5 rounded-lg text-figma-icon-secondary hover:bg-figma-bg-secondary hover:text-figma-icon shrink-0 transition-colors"
+                      data-tooltip={showToken ? "Hide token" : "Show token"}
+                      data-tooltip-align="right"
+                      data-tooltip-pos="bottom"
+                      disabled={!displaySecret}
+                    >
+                      {showToken ? <EyeOff size={14} /> : <Eye size={14} />}
+                    </button>
                   </div>
-                )}
-                {validationError && <FieldError>{validationError}</FieldError>}
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => void handleSaveToken()}
-                    disabled={!newPat.trim() || isValidating}
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium bg-accent-bg text-white hover:bg-accent-hover disabled:opacity-40 transition-colors"
-                  >
-                    Save
-                  </button>
                   <button
                     type="button"
                     onClick={() => {
-                      setEditing(false);
+                      setEditing(true);
                       setNewPat("");
                     }}
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium bg-figma-bg-secondary border border-figma-border text-figma-text hover:bg-figma-bg-tertiary hover:border-figma-border-strong transition-colors"
+                    className={BTN_SECONDARY}
                   >
-                    Cancel
+                    {authMethod === "oauth"
+                      ? "Paste personal access token"
+                      : "Change token"}
                   </button>
-                </div>
-              </div>
-            )}
+                </>
+              ) : (
+                <>
+                  <input
+                    type="password"
+                    value={newPat}
+                    onChange={(e) => setNewPat(e.target.value)}
+                    placeholder="figd_xxxxxxxxxxxxxxxx"
+                    className={INPUT_CLASS}
+                    autoFocus
+                  />
+                  {isValidating && (
+                    <div className="flex items-center gap-1.5 text-[11px] text-figma-text-tertiary">
+                      <Loader2 size={12} className="animate-spin" />
+                      Validating token...
+                    </div>
+                  )}
+                  {validationError && (
+                    <FieldError>{validationError}</FieldError>
+                  )}
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => void handleSaveToken()}
+                      disabled={!newPat.trim() || isValidating}
+                      className={BTN_PRIMARY}
+                    >
+                      Save
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditing(false);
+                        setNewPat("");
+                      }}
+                      className={BTN_SECONDARY}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </>
+              )}
+            </SettingsSectionBody>
           </>
         )}
-      </section>
-    </div>
+      </SettingsSection>
+    </>
   );
 }
 
@@ -887,64 +994,50 @@ function DisplayTab() {
   } = useAuthStore();
 
   return (
-    <div className="space-y-5">
-      <section>
-        <h3 className="text-sm font-medium text-figma-text mb-1 flex items-center gap-1.5">
-          <Monitor size={14} className="text-accent" />
-          Theme
-        </h3>
-        <p className="text-xs text-figma-text-tertiary mb-3">
-          Override the appearance or follow Figma's theme.
-        </p>
-        <div className="flex gap-2">
-          {THEME_OPTIONS.map((opt) => {
-            const Icon = opt.icon;
-            const isActive = themePreference === opt.value;
-            return (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => setThemePreference(opt.value)}
-                className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border transition-all duration-150 ${
-                  isActive
-                    ? "bg-accent-bg border-accent text-white shadow-sm"
-                    : "bg-figma-bg-secondary border-figma-border text-figma-text-secondary hover:border-figma-border-strong"
-                }`}
-              >
-                <Icon size={13} />
-                {opt.label}
-              </button>
-            );
-          })}
-        </div>
-      </section>
-
-      <section>
-        <h3 className="text-sm font-medium text-figma-text mb-1 flex items-center gap-1.5">
-          <MessageSquare size={14} className="text-accent" />
-          Thread View
-        </h3>
-        <p className="text-xs text-figma-text-tertiary mb-3">
-          Customize how comment threads are displayed.
-        </p>
-        <label className="flex items-center justify-between gap-3 p-3 bg-figma-bg-secondary border border-figma-border rounded-lg cursor-pointer transition-colors hover:border-figma-border-strong">
-          <div>
-            <p className="text-sm font-medium text-figma-text">
-              Show reply elbows
-            </p>
-            <p className="text-xs text-figma-text-tertiary mt-0.5">
-              Show connector lines between parent and reply comments.
-            </p>
+    <>
+      <SettingsSection>
+        <SettingsSectionHeader
+          title="Theme"
+          description="Override the appearance or follow Figma's theme."
+        />
+        <SettingsSectionBody>
+          <div className="flex items-center gap-1.5">
+            {THEME_OPTIONS.map((opt) => {
+              const Icon = opt.icon;
+              const isActive = themePreference === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setThemePreference(opt.value)}
+                  className={`flex-1 flex items-center justify-center gap-1.5 px-2.5 py-2.5 rounded-lg text-xs font-medium transition-all duration-150 ${
+                    isActive ? PILL_ACTIVE : PILL_INACTIVE
+                  }`}
+                >
+                  <Icon size={12} />
+                  {opt.label}
+                </button>
+              );
+            })}
           </div>
-          <input
-            type="checkbox"
+        </SettingsSectionBody>
+      </SettingsSection>
+
+      <SettingsSection>
+        <SettingsSectionHeader
+          title="Thread view"
+          description="Customize how comment threads are displayed."
+        />
+        <SettingsRowGroup>
+          <SettingsToggleRow
+            label="Show reply elbows"
+            description="Show connector lines between parent and reply comments."
             checked={showThreadElbows}
-            onChange={(e) => setShowThreadElbows(e.target.checked)}
-            className="accent-accent w-4 h-4 cursor-pointer shrink-0"
+            onChange={setShowThreadElbows}
           />
-        </label>
-      </section>
-    </div>
+        </SettingsRowGroup>
+      </SettingsSection>
+    </>
   );
 }
 
@@ -957,39 +1050,38 @@ export function SettingsScreen({ onBack }: SettingsScreenProps) {
 
   return (
     <div className="flex flex-col h-full bg-figma-bg">
-      {/* Header */}
-      <div className="flex items-center gap-2 px-4 py-2.5 border-b border-figma-border">
+      <div className="flex items-stretch border-b border-figma-border">
         <button
           type="button"
           onClick={onBack}
-          className="p-1.5 rounded-lg text-figma-icon-secondary hover:bg-figma-bg-secondary hover:text-figma-icon transition-colors"
+          className="flex items-center justify-center w-9 shrink-0 text-figma-icon-secondary hover:bg-figma-bg-hover transition-colors"
+          data-tooltip="Back to dashboard"
+          data-tooltip-align="left"
+          data-tooltip-pos="bottom"
         >
           <ArrowLeft size={15} />
         </button>
-        <Settings size={15} className="text-accent" />
-        <span className="text-sm font-medium text-figma-text">Settings</span>
+        <div className="flex items-center flex-1 min-w-0 py-3 pl-2 pr-2.5">
+          <span className="font-mono text-[9.5px] font-semibold uppercase tracking-widest text-figma-text leading-none">
+            Settings
+          </span>
+        </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex border-b border-figma-border px-2">
-        {TABS.map((tab) => (
-          <button
-            key={tab.id}
-            type="button"
-            onClick={() => setActiveTab(tab.id)}
-            className={`px-3 py-2 font-mono text-[9px] font-medium uppercase tracking-widest leading-none border-b-2 transition-colors ${
-              activeTab === tab.id
-                ? "border-accent text-accent"
-                : "border-transparent text-figma-text-tertiary hover:text-figma-text-secondary"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+      <div className="flex items-stretch h-9 overflow-x-auto bg-figma-bg border-b border-figma-border">
+        <div className="flex items-stretch self-stretch -mb-px min-w-0">
+          {TABS.map((tab) => (
+            <SettingsTabSegment
+              key={tab.id}
+              active={activeTab === tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              label={tab.label}
+            />
+          ))}
+        </div>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto px-4 py-4">
+      <div className="flex-1 overflow-y-auto bg-figma-bg">
         {activeTab === "general" && <GeneralTab />}
         {activeTab === "ai" && <AITab />}
         {activeTab === "behavior" && <BehaviorTab />}

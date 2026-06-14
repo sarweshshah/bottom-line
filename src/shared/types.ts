@@ -101,11 +101,9 @@ export type SummaryWordLimit = number;
 
 export const SUMMARY_WORD_LIMIT_MIN = 50;
 export const SUMMARY_WORD_LIMIT_MAX = 200;
-/** Slider snap / normalization step (words). */
+/** Word-limit snap / normalization step (words). */
 export const SUMMARY_WORD_LIMIT_STEP = 10;
 export const SUMMARY_WORD_LIMIT_DEFAULT = 150;
-
-const SUMMARY_WORD_LIMIT_LABEL_INTERVAL = 50;
 
 export function normalizeSummaryWordLimit(limit: number): SummaryWordLimit {
   const clamped = Math.min(
@@ -115,15 +113,15 @@ export function normalizeSummaryWordLimit(limit: number): SummaryWordLimit {
   return Math.round(clamped / SUMMARY_WORD_LIMIT_STEP) * SUMMARY_WORD_LIMIT_STEP;
 }
 
-/** Labels under the summary word-limit slider (every 50 words). */
-export const SUMMARY_WORD_LIMIT_SLIDER_TICKS: SummaryWordLimit[] = (() => {
+/** Selectable summary word-limit values (min–max in step increments). */
+export const SUMMARY_WORD_LIMIT_OPTIONS: SummaryWordLimit[] = (() => {
   const out: SummaryWordLimit[] = [];
   for (
     let v = SUMMARY_WORD_LIMIT_MIN;
     v <= SUMMARY_WORD_LIMIT_MAX;
-    v += SUMMARY_WORD_LIMIT_LABEL_INTERVAL
+    v += SUMMARY_WORD_LIMIT_STEP
   ) {
-    out.push(normalizeSummaryWordLimit(v));
+    out.push(v);
   }
   return out;
 })();

@@ -93,7 +93,7 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
   return (
     <div className="onboarding-step-enter flex flex-col items-center text-center h-full">
       <div className="flex-1 flex flex-col items-center justify-center px-5">
-        <div className="onboarding-logo-glow mb-6 rounded-2xl">
+        <div className="empty-state-halo mb-6 rounded-2xl overflow-hidden">
           <img
             src={pluginLogo}
             alt="Bottom Line"

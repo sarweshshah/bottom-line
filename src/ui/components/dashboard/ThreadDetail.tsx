@@ -539,7 +539,7 @@ export function ThreadDetail({ thread, onBack }: ThreadDetailProps) {
               Started by {thread.author.handle}
             </span>
           </div>
-          <AvatarGroup users={thread.participants} max={8} size={30} />
+          <AvatarGroup users={thread.participants} max={8} size={24} />
         </div>
 
         {/* AI Summary */}

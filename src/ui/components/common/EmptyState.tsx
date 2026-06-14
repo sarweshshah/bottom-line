@@ -44,10 +44,7 @@ export function EmptyState({ variant, action }: EmptyStateProps) {
   const isError = variant === "api-error";
 
   return (
-    <div
-      className="empty-state-enter flex flex-col items-center px-6 text-center"
-      style={{ paddingTop: "33%" }}
-    >
+    <div className="empty-state-enter flex flex-1 flex-col items-center justify-center px-6 py-8 text-center">
       <div
         className={`relative w-12 h-12 rounded-2xl flex items-center justify-center mb-3.5 ${
           isError
