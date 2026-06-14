@@ -38,6 +38,11 @@ import {
   isTooShort,
 } from "@ui/ai/summarize";
 import { PROVIDER_MODEL_LABELS, formatModelName } from "@ui/ai/cloudProvider";
+import {
+  ThreadCentralTrunk,
+  ReplyThreadBranch,
+  LastReplyTrunkCap,
+} from "./ThreadElbow";
 
 const WORKFLOW_STATE_CONFIG: Record<
   WorkflowState,
@@ -133,9 +138,7 @@ function StateSelector({ thread }: { thread: CommentThread }) {
   );
 }
 
-/** Comment thread layout: w-6 avatar; trunk/corner align to avatar center (12px). */
-const ELBOW_TRUNK_LEFT = "left-3";
-const ELBOW_CORNER_TOP = "top-0";
+/** Reply indent — must match ThreadElbow branch width (pl-7 = w-7). */
 const REPLY_THREAD_INDENT = "pl-7";
 
 function CommentBubble({
@@ -148,12 +151,12 @@ function CommentBubble({
   createdAt: string;
 }) {
   return (
-    <div className="flex gap-2">
+    <div className="relative z-10 flex gap-2">
       <UserAvatar
         handle={author.handle}
         imgUrl={author.img_url}
         size={24}
-        className="ring-1 ring-figma-border"
+        className="relative z-10 ring-1 ring-figma-border bg-figma-bg"
       />
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline gap-2 mb-0.5">
@@ -510,20 +513,23 @@ export function ThreadDetail({ thread, onBack }: ThreadDetailProps) {
   return (
     <div className="flex flex-col h-full bg-figma-bg">
       {/* Header */}
-      <div className="flex items-center gap-2 px-4 py-2.5 border-b border-figma-border">
+      <div className="flex items-stretch border-b border-figma-border">
         <button
           type="button"
           onClick={onBack}
-          className="p-1.5 rounded-md text-figma-icon-secondary hover:bg-figma-bg-secondary hover:text-figma-icon transition-colors"
+          className="flex items-center justify-center w-9 shrink-0 text-figma-icon-secondary hover:bg-figma-bg-hover transition-colors"
+          data-tooltip="Back to dashboard"
+          data-tooltip-align="left"
+          data-tooltip-pos="bottom"
         >
           <ArrowLeft size={15} />
         </button>
-        <div className="flex-1 min-w-0">
-          <span className="text-xs font-medium text-figma-text-secondary truncate block">
+        <div className="flex items-center justify-between gap-2 flex-1 min-w-0 py-3 pl-2 pr-2.5">
+          <span className="font-mono text-[9.5px] font-semibold uppercase tracking-widest text-figma-text leading-none truncate">
             Thread #{thread.orderNumber ?? thread.id.slice(0, 8)}
           </span>
+          <StateSelector thread={thread} />
         </div>
-        <StateSelector thread={thread} />
       </div>
 
       {/* Content */}
@@ -560,18 +566,12 @@ export function ThreadDetail({ thread, onBack }: ThreadDetailProps) {
           </button>
 
           {threadExpanded && (
-            <div>
-              {/* Root comment — pb-3 keeps the gap INSIDE the element so the trunk
-                  reaches bottom-0 without negative offsets */}
-              <div
-                className={`relative ${thread.replies.length > 0 ? "pb-3" : ""}`}
-              >
-                {showThreadElbows && thread.replies.length > 0 && (
-                  <span
-                    aria-hidden
-                    className={`pointer-events-none absolute ${ELBOW_TRUNK_LEFT} top-6 bottom-0 border-l-[1.5px] border-elbow`}
-                  />
-                )}
+            <div className="relative">
+              {showThreadElbows && thread.replies.length > 0 && (
+                <ThreadCentralTrunk />
+              )}
+              {/* pb-3 keeps reply gap inside the root row so the stem stays continuous */}
+              <div className={thread.replies.length > 0 ? "pb-3" : ""}>
                 <CommentBubble
                   author={thread.author}
                   message={thread.message}
@@ -589,16 +589,8 @@ export function ThreadDetail({ thread, onBack }: ThreadDetailProps) {
                       >
                         {showThreadElbows && (
                           <>
-                            <span
-                              aria-hidden
-                              className={`pointer-events-none absolute ${ELBOW_TRUNK_LEFT} ${ELBOW_CORNER_TOP} h-3 w-4 rounded-bl-xl border-l-[1.5px] border-b-[1.5px] border-elbow`}
-                            />
-                            {!isLast && (
-                              <span
-                                aria-hidden
-                                className={`pointer-events-none absolute ${ELBOW_TRUNK_LEFT} top-3 bottom-0 border-l-[1.5px] border-elbow`}
-                              />
-                            )}
+                            <ReplyThreadBranch />
+                            {isLast && <LastReplyTrunkCap />}
                           </>
                         )}
                         <CommentBubble

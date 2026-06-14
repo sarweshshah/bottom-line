@@ -158,7 +158,7 @@
   --bl-comp-warning-bg: color-mix(in oklch, var(--bl-warning-500) 10%, transparent);
   --bl-comp-warning-border: color-mix(in oklch, var(--bl-warning-500) 30%, transparent);
 
-  --bl-comp-elbow: var(--bl-neutral-300);
+  --bl-comp-elbow: color-mix(in oklch, var(--bl-neutral-400) 55%, transparent);
   --bl-comp-tooltip-bg: var(--bl-ink);
   --bl-comp-tooltip-text: var(--bl-neutral-50);
 
@@ -330,7 +330,7 @@
   --bl-comp-warning-bg: color-mix(in oklch, var(--bl-warning-500) 12%, transparent);
   --bl-comp-warning-border: color-mix(in oklch, var(--bl-warning-500) 30%, transparent);
 
-  --bl-comp-elbow: #5c5866;
+  --bl-comp-elbow: color-mix(in oklch, var(--bl-neutral-500) 45%, transparent);
 
   --bl-comp-ai-bg: color-mix(in oklch, var(--bl-violet-600) 8%, transparent);
   --bl-comp-ai-bg-a: color-mix(in oklch, var(--bl-violet-600) 7%, transparent);
