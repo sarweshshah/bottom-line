@@ -52,7 +52,7 @@ export function ConsentDialog() {
           <button
             type="button"
             onClick={handleCancel}
-            className="p-1.5 rounded-lg text-figma-icon-tertiary hover:bg-figma-bg-tertiary hover:text-figma-icon transition-colors"
+            className="p-1.5 rounded-md text-figma-icon-tertiary hover:bg-figma-bg-tertiary hover:text-figma-icon transition-colors"
           >
             <X size={13} />
           </button>
@@ -71,7 +71,7 @@ export function ConsentDialog() {
             </p>
           )}
 
-          <div className="p-3 bg-figma-bg-secondary rounded-lg border border-figma-border">
+          <div className="p-3 bg-figma-bg-secondary rounded-md border border-figma-border">
             <p className="text-[11px] text-figma-text-tertiary leading-relaxed">
               Your Figma token and personal data are <strong className="text-figma-text-secondary">never</strong> sent
               to AI providers. Only the comment text
@@ -85,14 +85,14 @@ export function ConsentDialog() {
           <button
             type="button"
             onClick={handleCancel}
-            className="px-3.5 py-2 rounded-lg text-xs font-medium bg-figma-bg-secondary text-figma-text-secondary hover:bg-figma-bg-tertiary transition-colors"
+            className="px-3.5 py-2 rounded-md text-xs font-medium bg-figma-bg-secondary text-figma-text-secondary hover:bg-figma-bg-tertiary transition-colors"
           >
             Cancel
           </button>
           <button
             type="button"
             onClick={handleAccept}
-            className="px-3.5 py-2 rounded-lg text-xs font-medium bg-accent-bg text-white hover:bg-accent-hover active:scale-[0.98] transition-all duration-150"
+            className="px-3.5 py-2 rounded-md text-xs font-medium bg-accent-bg text-white hover:bg-accent-hover active:scale-[0.98] transition-all duration-150"
           >
             I understand, continue
           </button>

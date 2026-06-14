@@ -55,7 +55,7 @@ function ExternalLink({ url, label }: { url: string; label?: string }) {
       target="_blank"
       rel="noopener noreferrer"
       onClick={(e) => e.stopPropagation()}
-      className="text-accent underline underline-offset-2 hover:text-accent-hover"
+      className="text-accent underline underline-offset-2 hover:text-accent-text-hover"
     >
       {display}
     </a>

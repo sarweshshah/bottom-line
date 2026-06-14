@@ -113,7 +113,7 @@ export function ReconnectScreen() {
               type="button"
               disabled={oauthBusy || isValidating}
               onClick={() => void handleSignInWithFigma()}
-              className="w-full py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed bg-figma-bg-secondary border border-figma-border text-figma-text hover:bg-figma-bg-tertiary"
+              className="w-full py-2.5 rounded-md text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed bg-figma-bg-secondary border border-figma-border text-figma-text hover:bg-figma-bg-tertiary"
             >
               {oauthBusy ? (
                 <span className="inline-flex items-center justify-center gap-2">
@@ -131,7 +131,7 @@ export function ReconnectScreen() {
           <button
             type="button"
             onClick={() => setShowPatAdvanced((v) => !v)}
-            className="flex items-center gap-1 text-xs text-accent hover:underline mb-3 w-full justify-center"
+            className="flex items-center gap-1 text-xs text-accent hover:text-accent-text-hover hover:underline mb-3 w-full justify-center"
           >
             {showPatAdvanced ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
             Use a personal access token instead
@@ -153,7 +153,7 @@ export function ReconnectScreen() {
               </ul>
               <a
                 href={FIGMA_PAT_HELP_URL}
-                className="inline-flex items-center gap-1 text-accent hover:underline"
+                className="inline-flex items-center gap-1 text-accent hover:text-accent-text-hover hover:underline"
                 onClick={(e: MouseEvent<HTMLAnchorElement>) => {
                   e.preventDefault();
                   openExternalUrl(FIGMA_PAT_HELP_URL);
@@ -171,7 +171,7 @@ export function ReconnectScreen() {
                   value={pat}
                   onChange={(e) => void handleTokenChange(e.target.value)}
                   placeholder="Paste your new token here"
-                  className="w-full bg-figma-bg-secondary border border-figma-border rounded-lg px-3 py-2 pr-9 text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent-ring"
+                  className="w-full bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2 pr-9 text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent-ring"
                 />
                 <button
                   type="button"
@@ -216,7 +216,7 @@ export function ReconnectScreen() {
           type="button"
           disabled={!authReady || isValidating || oauthBusy}
           onClick={handleReconnect}
-          className="w-full py-2.5 rounded-lg text-sm font-medium transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed bg-accent-bg text-white hover:bg-accent-hover active:scale-[0.98]"
+          className="w-full py-2.5 rounded-md text-sm font-medium transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed bg-accent-bg text-white hover:bg-accent-hover active:scale-[0.98]"
         >
           Reconnect
         </button>

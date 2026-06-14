@@ -81,7 +81,7 @@ export function FilterBar() {
         <button
           type="button"
           onClick={() => toggleMenu("status")}
-          className={`flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-lg transition-all duration-150 ${
+          className={`flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-md transition-all duration-150 ${
             workflowStateFilter
               ? "bg-accent-bg text-white shadow-sm"
               : "bg-figma-bg-secondary text-figma-text-secondary hover:text-figma-text"
@@ -92,7 +92,7 @@ export function FilterBar() {
         </button>
 
         {openMenu === "status" && (
-          <div className="absolute left-0 top-full mt-1 bg-figma-bg border border-figma-border rounded-lg shadow-lg z-20 min-w-[140px]">
+          <div className="absolute left-0 top-full mt-1 bg-figma-bg border border-figma-border rounded-md shadow-lg z-20 min-w-[140px]">
             {STATE_FILTER_OPTIONS.map((opt) => (
               <button
                 key={opt.label}
@@ -117,7 +117,7 @@ export function FilterBar() {
       <button
         type="button"
         onClick={() => setAddressedToMe(!addressedToMe)}
-        className={`flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-lg transition-all duration-150 ${
+        className={`flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-md transition-all duration-150 ${
           addressedToMe
             ? "bg-accent-bg text-white shadow-sm"
             : "bg-figma-bg-secondary text-figma-text-secondary hover:text-figma-text"
@@ -133,14 +133,14 @@ export function FilterBar() {
         <button
           type="button"
           onClick={() => toggleMenu("scope")}
-          className="flex items-center gap-1 text-xs text-figma-text-secondary hover:text-figma-text px-2.5 py-1 rounded-lg bg-figma-bg-secondary transition-colors"
+          className="flex items-center gap-1 text-xs text-figma-text-secondary hover:text-figma-text px-2.5 py-1 rounded-md bg-figma-bg-secondary transition-colors"
         >
           {SCOPE_OPTIONS.find((o) => o.value === commentScope)?.label}
           <ChevronDown size={10} />
         </button>
 
         {openMenu === "scope" && (
-          <div className="absolute right-0 top-full mt-1 bg-figma-bg border border-figma-border rounded-lg shadow-lg z-20 min-w-[130px]">
+          <div className="absolute right-0 top-full mt-1 bg-figma-bg border border-figma-border rounded-md shadow-lg z-20 min-w-[130px]">
             {SCOPE_OPTIONS.map((opt) => (
               <button
                 key={opt.value}
@@ -166,14 +166,14 @@ export function FilterBar() {
         <button
           type="button"
           onClick={() => toggleMenu("sort")}
-          className="flex items-center gap-1 text-xs text-figma-text-secondary hover:text-figma-text px-2.5 py-1 rounded-lg bg-figma-bg-secondary transition-colors"
+          className="flex items-center gap-1 text-xs text-figma-text-secondary hover:text-figma-text px-2.5 py-1 rounded-md bg-figma-bg-secondary transition-colors"
         >
           {activeSort?.label}
           <DirIcon size={10} />
         </button>
 
         {openMenu === "sort" && (
-          <div className="absolute right-0 top-full mt-1 bg-figma-bg border border-figma-border rounded-lg shadow-lg z-20 min-w-[140px]">
+          <div className="absolute right-0 top-full mt-1 bg-figma-bg border border-figma-border rounded-md shadow-lg z-20 min-w-[140px]">
             {SORT_OPTIONS.map((opt) => {
               const isActive = sortField === opt.value;
               return (

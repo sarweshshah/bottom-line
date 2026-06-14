@@ -89,9 +89,10 @@ export default {
           border: "var(--bl-addressed-border)",
         },
         accent: {
-          DEFAULT: "var(--bl-accent)",
+          DEFAULT: "var(--bl-accent-text)",
           bg: "var(--bl-accent-bg)",
           hover: "var(--bl-accent-hover)",
+          "text-hover": "var(--bl-accent-text-hover)",
           ring: "var(--bl-accent-ring)",
           subtle: "var(--bl-accent-subtle)",
         },

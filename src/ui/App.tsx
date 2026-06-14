@@ -42,19 +42,19 @@ const THEME_COLORS_LIGHT: Record<string, string> = {
 
 const THEME_COLORS_DARK: Record<string, string> = {
   "--figma-color-bg": "#222226",
-  "--figma-color-bg-secondary": "#2c2c30",
-  "--figma-color-bg-tertiary": "#38383e",
-  "--figma-color-bg-hover": "#333338",
-  "--figma-color-bg-selected": "#393952",
+  "--figma-color-bg-secondary": "#323238",
+  "--figma-color-bg-tertiary": "#404048",
+  "--figma-color-bg-hover": "#3a3a42",
+  "--figma-color-bg-selected": "#454562",
   "--figma-color-text": "#f2f0f5",
-  "--figma-color-text-secondary": "#c4c0ca",
-  "--figma-color-text-tertiary": "#98949f",
-  "--figma-color-text-disabled": "#6e6a75",
+  "--figma-color-text-secondary": "#d1d3e5",
+  "--figma-color-text-tertiary": "#b7b8d1",
+  "--figma-color-text-disabled": "#9495b4",
   "--figma-color-border": "#45454c",
   "--figma-color-border-strong": "#5c5866",
   "--figma-color-icon": "#f2f0f5",
-  "--figma-color-icon-secondary": "#c4c0ca",
-  "--figma-color-icon-tertiary": "#85818c",
+  "--figma-color-icon-secondary": "#d1d3e5",
+  "--figma-color-icon-tertiary": "#b7b8d1",
 };
 
 const ALL_THEME_VARS = Object.keys(THEME_COLORS_LIGHT);

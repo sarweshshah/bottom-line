@@ -197,7 +197,7 @@ export async function bulkSummarizeThreads(
       );
     } else {
       showToast(
-        `Summarized ${completed}, ${failed} failed`,
+        `Summarized ${completed} threads, ${failed} failed`,
         completed > 0 ? "info" : "error",
       );
     }

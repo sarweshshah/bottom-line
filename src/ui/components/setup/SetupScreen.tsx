@@ -47,7 +47,7 @@ const PAT_TRANSPARENCY_ITEMS = [
 const PAT_INFO_TOOLTIP_CLASSNAME = [
   "pointer-events-none absolute left-1/2 top-full z-50 mt-1 w-max max-w-[min(260px,calc(100vw-2.5rem))] -translate-x-1/2",
   "scale-95 opacity-0 transition duration-150",
-  "rounded-lg border border-white/[0.18] bg-figma-text py-2 pl-2.5 pr-3.5 text-left font-normal text-figma-bg shadow-[0_4px_20px_rgba(0,0,0,0.22)] [html.figma-dark_&]:border-black/[0.14]",
+  "rounded-md border border-white/[0.18] bg-figma-text py-2 pl-2.5 pr-3.5 text-left font-normal text-figma-bg shadow-[0_4px_20px_rgba(0,0,0,0.22)] [html.figma-dark_&]:border-black/[0.14]",
   "group-hover:pointer-events-auto group-hover:scale-100 group-hover:opacity-100",
   "group-focus-within:pointer-events-auto group-focus-within:scale-100 group-focus-within:opacity-100",
 ].join(" ");
@@ -78,9 +78,9 @@ function StepIndicator({ current, total }: { current: number; total: number }) {
           key={i}
           className={`h-1.5 rounded-full transition-all duration-300 ${
             i === current
-              ? "w-6 bg-accent"
+              ? "w-6 bg-accent-bg"
               : i < current
-                ? "w-1.5 bg-accent/50"
+                ? "w-1.5 bg-accent-bg/50"
                 : "w-1.5 bg-figma-border"
           }`}
         />
@@ -112,9 +112,9 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
           {FEATURES.map(({ icon: Icon, title, desc }) => (
             <div
               key={title}
-              className="flex items-start gap-3 text-left p-2.5 rounded-lg bg-figma-bg-secondary/60 border border-figma-border/50"
+              className="flex items-start gap-3 text-left p-2.5 rounded-md bg-figma-bg-secondary/60 border border-figma-border/50"
             >
-              <div className="mt-0.5 p-1.5 rounded-lg bg-accent/10">
+              <div className="mt-0.5 p-1.5 rounded-md bg-accent/10">
                 <Icon size={14} className="text-accent" />
               </div>
               <div className="min-w-0">
@@ -133,7 +133,7 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
         <button
           type="button"
           onClick={onNext}
-          className="w-full mt-3 py-2.5 rounded-lg text-sm font-medium transition-colors bg-accent-bg text-white hover:bg-accent-hover active:bg-accent-hover flex items-center justify-center gap-2"
+          className="w-full mt-3 py-2.5 rounded-md text-sm font-medium transition-colors bg-accent-bg text-white hover:bg-accent-hover active:bg-accent-hover flex items-center justify-center gap-2"
         >
           Get Started
           <ArrowRight size={14} />
@@ -205,7 +205,7 @@ function ConnectStep({
     <div className="onboarding-step-enter flex flex-col h-full">
       <div className="flex-1 overflow-y-auto px-5 py-5">
         <div className="flex items-center gap-3 mb-5">
-          <div className="p-2 rounded-lg bg-accent/10">
+          <div className="p-2 rounded-md bg-accent/10">
             <ShieldCheck size={18} className="text-accent" />
           </div>
           <div>
@@ -224,7 +224,7 @@ function ConnectStep({
               type="button"
               disabled={oauthBusy || isValidating}
               onClick={() => void handleSignInWithFigma()}
-              className="w-full py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed bg-figma-bg-secondary border border-figma-border text-figma-text hover:bg-figma-bg-tertiary hover:border-figma-border-strong"
+              className="w-full py-2.5 rounded-md text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed bg-figma-bg-secondary border border-figma-border text-figma-text hover:bg-figma-bg-tertiary hover:border-figma-border-strong"
             >
               {oauthBusy ? (
                 <span className="inline-flex items-center justify-center gap-2">
@@ -246,7 +246,7 @@ function ConnectStep({
           <button
             type="button"
             onClick={() => setShowPatAdvanced((v) => !v)}
-            className="flex items-center gap-1 text-xs text-accent hover:underline mb-2"
+            className="flex items-center gap-1 text-xs text-accent hover:text-accent-text-hover hover:underline mb-2"
           >
             {showPatAdvanced ? (
               <ChevronDown size={14} />
@@ -321,7 +321,7 @@ function ConnectStep({
               </p>
               <a
                 href={FIGMA_PAT_HELP_URL}
-                className="inline-flex items-center gap-1 text-accent hover:underline text-xs mt-1"
+                className="inline-flex items-center gap-1 text-accent hover:text-accent-text-hover hover:underline text-xs mt-1"
                 onClick={(e: MouseEvent<HTMLAnchorElement>) => {
                   e.preventDefault();
                   openExternalUrl(FIGMA_PAT_HELP_URL);
@@ -339,7 +339,7 @@ function ConnectStep({
                   value={pat}
                   onChange={(e) => void handleTokenChange(e.target.value)}
                   placeholder="figd_xxxxxxxxxxxxxxxx"
-                  className="w-full bg-figma-bg-secondary border border-figma-border rounded-lg px-3 py-2 pr-9 text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent-ring"
+                  className="w-full bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2 pr-9 text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent-ring"
                 />
                 <button
                   type="button"
@@ -366,7 +366,7 @@ function ConnectStep({
         )}
 
         {user && (
-          <div className="mt-3 bg-figma-bg-secondary border border-figma-border rounded-lg p-3">
+          <div className="mt-3 bg-figma-bg-secondary border border-figma-border rounded-md p-3">
             <div className="flex items-center gap-3">
               <UserAvatar
                 handle={user.handle}
@@ -388,7 +388,7 @@ function ConnectStep({
               <button
                 type="button"
                 onClick={() => void useAuthStore.getState().logout()}
-                className="p-2 rounded-lg text-figma-icon-tertiary hover:bg-danger-bg hover:text-danger transition-colors shrink-0"
+                className="p-2 rounded-md text-figma-icon-tertiary hover:bg-danger-bg hover:text-danger transition-colors shrink-0"
                 title="Logout"
               >
                 <LogOut size={16} />
@@ -400,7 +400,7 @@ function ConnectStep({
                 type="button"
                 disabled={oauthBusy || isValidating}
                 onClick={() => void handleSignInWithFigma()}
-                className="w-full mt-3 py-2 rounded-lg text-xs font-medium bg-figma-bg border border-figma-border text-figma-text hover:bg-figma-bg-tertiary disabled:opacity-40"
+                className="w-full mt-3 py-2 rounded-md text-xs font-medium bg-figma-bg border border-figma-border text-figma-text hover:bg-figma-bg-tertiary disabled:opacity-40"
               >
                 {oauthBusy ? (
                   <span className="inline-flex items-center justify-center gap-2">
@@ -428,7 +428,7 @@ function ConnectStep({
           <button
             type="button"
             onClick={onBack}
-            className="p-2.5 rounded-lg text-sm font-medium transition-colors bg-figma-bg-secondary border border-figma-border text-figma-text hover:bg-figma-bg-tertiary"
+            className="p-2.5 rounded-md text-sm font-medium transition-colors bg-figma-bg-secondary border border-figma-border text-figma-text hover:bg-figma-bg-tertiary"
           >
             <ArrowLeft size={14} />
           </button>
@@ -436,7 +436,7 @@ function ConnectStep({
             type="button"
             disabled={!user}
             onClick={onNext}
-            className="flex-1 py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed bg-accent-bg text-white hover:bg-accent-hover active:bg-accent-hover flex items-center justify-center gap-2"
+            className="flex-1 py-2.5 rounded-md text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed bg-accent-bg text-white hover:bg-accent-hover active:bg-accent-hover flex items-center justify-center gap-2"
           >
             Continue
             <ArrowRight size={14} />
@@ -492,7 +492,7 @@ function LinkFileStep({
     <div className="onboarding-step-enter flex flex-col h-full">
       <div className="flex-1 overflow-y-auto px-5 py-5">
         <div className="flex items-center gap-3 mb-5">
-          <div className="p-2 rounded-lg bg-accent/10">
+          <div className="p-2 rounded-md bg-accent/10">
             <Link size={18} className="text-accent" />
           </div>
           <div>
@@ -516,7 +516,7 @@ function LinkFileStep({
             value={fileUrl}
             onChange={(e) => handleUrlChange(e.target.value)}
             placeholder="https://www.figma.com/design/abc123/..."
-            className="w-full bg-figma-bg-secondary border border-figma-border rounded-lg px-3 py-2.5 text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent-ring"
+            className="w-full bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2.5 text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent-ring"
           />
           {urlError && <FieldError>{urlError}</FieldError>}
           {fileKey && !urlError && (
@@ -528,7 +528,7 @@ function LinkFileStep({
         </div>
 
         {fileKey && !urlError && (
-          <div className="mt-6 p-4 rounded-lg onboarding-hero-gradient border border-figma-border/50 text-center">
+          <div className="mt-6 p-4 rounded-md onboarding-hero-gradient border border-figma-border/50 text-center">
             <CheckCircle2
               size={28}
               className="text-accent mx-auto mb-2"
@@ -549,7 +549,7 @@ function LinkFileStep({
           <button
             type="button"
             onClick={onBack}
-            className="p-2.5 rounded-lg text-sm font-medium transition-colors bg-figma-bg-secondary border border-figma-border text-figma-text hover:bg-figma-bg-tertiary"
+            className="p-2.5 rounded-md text-sm font-medium transition-colors bg-figma-bg-secondary border border-figma-border text-figma-text hover:bg-figma-bg-tertiary"
           >
             <ArrowLeft size={14} />
           </button>
@@ -557,7 +557,7 @@ function LinkFileStep({
             type="button"
             disabled={!canSubmit}
             onClick={() => void handleSubmit()}
-            className="flex-1 py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed bg-accent-bg text-white hover:bg-accent-hover active:bg-accent-hover flex items-center justify-center gap-2"
+            className="flex-1 py-2.5 rounded-md text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed bg-accent-bg text-white hover:bg-accent-hover active:bg-accent-hover flex items-center justify-center gap-2"
           >
             Launch Bottom Line
             <Sparkles size={14} />

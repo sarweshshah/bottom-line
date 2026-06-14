@@ -59,7 +59,7 @@ export function ThreadCard({
     >
       <span
         aria-hidden="true"
-        className={`pointer-events-none absolute inset-y-0 left-0 w-[3px] origin-center rounded-r-full bg-accent transition-transform duration-200 ease-out ${
+        className={`pointer-events-none absolute inset-y-0 left-0 w-[3px] origin-center rounded-r-full bg-accent-bg transition-transform duration-200 ease-out ${
           isSelected ? "scale-y-100" : "scale-y-0 group-hover:scale-y-100"
         }`}
       />
@@ -69,7 +69,7 @@ export function ThreadCard({
             <span
               className={`w-3.5 h-3.5 rounded border flex items-center justify-center transition-colors ${
                 isSelected
-                  ? "bg-accent border-accent"
+                  ? "bg-accent-bg border-accent-bg"
                   : "border-figma-border-strong"
               }`}
             >
@@ -146,7 +146,7 @@ export function ThreadCard({
                     }
                   }}
                   aria-disabled={navigating}
-                  className="p-1 rounded-lg text-figma-icon-tertiary hover:text-accent hover:bg-accent-subtle aria-disabled:opacity-40 transition-colors cursor-pointer"
+                  className="p-1 rounded-md text-figma-icon-tertiary hover:text-accent hover:bg-accent-subtle aria-disabled:opacity-40 transition-colors cursor-pointer"
                   data-tooltip="Navigate to comment"
                   data-tooltip-align="right"
                 >

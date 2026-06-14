@@ -106,7 +106,7 @@ function StateSelector({ thread }: { thread: CommentThread }) {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-1 bg-figma-bg border border-figma-border rounded-lg shadow-lg z-30 min-w-[160px]">
+        <div className="absolute right-0 top-full mt-1 bg-figma-bg border border-figma-border rounded-md shadow-lg z-30 min-w-[160px]">
           {STATE_ORDER.map((state) => {
             const cfg = WORKFLOW_STATE_CONFIG[state];
             const Icon = cfg.Icon;
@@ -288,7 +288,7 @@ function SummarySection({ thread }: { thread: CommentThread }) {
             <button
               type="button"
               onClick={handleCopySummary}
-              className="p-1 rounded-lg text-figma-icon-tertiary hover:bg-figma-bg-secondary hover:text-figma-icon transition-colors"
+              className="p-1 rounded-md text-figma-icon-tertiary hover:bg-figma-bg-secondary hover:text-figma-icon transition-colors"
               data-tooltip={copiedSummary ? "Copied" : "Copy summary"}
               data-tooltip-align="right"
               data-tooltip-pos="bottom"
@@ -299,7 +299,7 @@ function SummarySection({ thread }: { thread: CommentThread }) {
               type="button"
               onClick={() => handleSummarize(true)}
               disabled={isLoading}
-              className="p-1 rounded-lg text-figma-icon-tertiary hover:bg-figma-bg-secondary hover:text-figma-icon transition-colors"
+              className="p-1 rounded-md text-figma-icon-tertiary hover:bg-figma-bg-secondary hover:text-figma-icon transition-colors"
               data-tooltip="Regenerate summary"
               data-tooltip-align="right"
               data-tooltip-pos="bottom"
@@ -315,7 +315,7 @@ function SummarySection({ thread }: { thread: CommentThread }) {
                 clearCachedSummary(thread.id, thread.lastUpdatedAt);
                 clearThreadSummary(thread.id);
               }}
-              className="p-1 rounded-lg text-figma-icon-tertiary hover:bg-danger-bg hover:text-danger transition-colors"
+              className="p-1 rounded-md text-figma-icon-tertiary hover:bg-danger-bg hover:text-danger transition-colors"
               data-tooltip="Clear summary"
               data-tooltip-align="right"
             >
@@ -332,7 +332,7 @@ function SummarySection({ thread }: { thread: CommentThread }) {
               type="button"
               onClick={() => handleSummarize()}
               disabled={isLoading}
-              className="summarize-cta-button flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium bg-ai-shimmer-cta bg-ai-shimmer-static text-figma-text border border-figma-border-strong/80 overflow-hidden hover:brightness-[0.96] active:brightness-[0.92] transition-[filter] duration-150"
+              className="summarize-cta-button flex items-center gap-2 px-3 py-2 rounded-md text-xs font-medium bg-ai-shimmer-cta bg-ai-shimmer-static text-figma-text border border-figma-border-strong/80 overflow-hidden hover:brightness-[0.96] active:brightness-[0.92] transition-[filter] duration-150"
             >
               <span className="inline-flex min-w-0 flex-wrap items-baseline gap-x-1 gap-y-0.5">
                 <span>Summarize ({thread.replyCount + 1} comments)</span>
@@ -355,7 +355,7 @@ function SummarySection({ thread }: { thread: CommentThread }) {
           )}
 
           {error && (
-            <div className="flex items-start gap-2 p-2.5 rounded-lg bg-danger-bg border border-danger-border">
+            <div className="flex items-start gap-2 p-2.5 rounded-md bg-danger-bg border border-danger-border">
               <AlertCircle size={14} className="text-danger shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0 flex flex-col">
                 <p className="text-xs text-danger leading-relaxed">{error}</p>
@@ -514,7 +514,7 @@ export function ThreadDetail({ thread, onBack }: ThreadDetailProps) {
         <button
           type="button"
           onClick={onBack}
-          className="p-1.5 rounded-lg text-figma-icon-secondary hover:bg-figma-bg-secondary hover:text-figma-icon transition-colors"
+          className="p-1.5 rounded-md text-figma-icon-secondary hover:bg-figma-bg-secondary hover:text-figma-icon transition-colors"
         >
           <ArrowLeft size={15} />
         </button>
@@ -623,7 +623,7 @@ export function ThreadDetail({ thread, onBack }: ThreadDetailProps) {
             type="button"
             onClick={handleNavigate}
             disabled={navigating}
-            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-medium bg-accent-bg text-white hover:bg-accent-hover active:scale-[0.98] disabled:opacity-40 transition-all duration-150"
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-md text-xs font-medium bg-accent-bg text-white hover:bg-accent-hover active:scale-[0.98] disabled:opacity-40 transition-all duration-150"
           >
             {navigating ? (
               <Loader2 size={13} className="animate-spin" />

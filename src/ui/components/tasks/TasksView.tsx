@@ -181,7 +181,7 @@ export function TasksView({ onSelectThread }: TasksViewProps) {
         <button
           type="button"
           onClick={() => toggleFilter("pending")}
-          className={`flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-lg transition-all duration-150 ${
+          className={`flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-md transition-all duration-150 ${
             statusFilter.has("pending")
               ? "bg-accent-bg text-white shadow-sm"
               : "bg-figma-bg-secondary text-figma-text-secondary hover:text-figma-text"
@@ -192,7 +192,7 @@ export function TasksView({ onSelectThread }: TasksViewProps) {
         <button
           type="button"
           onClick={() => toggleFilter("done")}
-          className={`flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-lg transition-all duration-150 ${
+          className={`flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-md transition-all duration-150 ${
             statusFilter.has("done")
               ? "bg-accent-bg text-white shadow-sm"
               : "bg-figma-bg-secondary text-figma-text-secondary hover:text-figma-text"

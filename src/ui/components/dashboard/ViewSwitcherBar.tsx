@@ -15,7 +15,6 @@ interface ViewSwitcherSegmentProps {
   icon: React.ReactNode;
   label: string;
   count?: number;
-  connectsBelow: boolean;
 }
 
 function ViewSwitcherSegment({
@@ -24,7 +23,6 @@ function ViewSwitcherSegment({
   icon,
   label,
   count,
-  connectsBelow,
 }: ViewSwitcherSegmentProps) {
   return (
     <button
@@ -32,10 +30,8 @@ function ViewSwitcherSegment({
       onClick={onClick}
       className={`relative flex items-center gap-1.5 px-4 h-full font-mono text-[9px] uppercase tracking-widest leading-none transition-colors ${
         active
-          ? connectsBelow
-            ? "border border-b-0 border-figma-border bg-accent-subtle text-accent font-semibold hover:border-figma-border-strong"
-            : "border border-b-figma-bg bg-figma-bg text-accent font-semibold -mb-px hover:border-figma-border-strong"
-          : "text-figma-text-secondary font-medium hover:bg-figma-bg-hover hover:text-figma-text border-b border-transparent"
+          ? "bg-accent-subtle text-accent font-semibold"
+          : "text-figma-text-secondary font-medium hover:bg-figma-bg-hover hover:text-figma-text"
       }`}
     >
       <span className="shrink-0">{icon}</span>
@@ -44,7 +40,7 @@ function ViewSwitcherSegment({
         <span
           className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full leading-none ${
             active
-              ? "bg-accent text-white"
+              ? "bg-accent-bg text-white"
               : "bg-figma-bg-tertiary text-figma-text-tertiary"
           }`}
         >
@@ -88,14 +84,13 @@ export function ViewSwitcherBar({
         hasFileName ? "" : "border-b border-figma-border"
       }`}
     >
-      <div className="flex items-stretch self-stretch -mb-px">
+      <div className="flex items-stretch self-stretch">
         <ViewSwitcherSegment
           active={activeTab === "threads"}
           onClick={() => onTabChange("threads")}
           icon={<MessageSquare size={13} />}
           label="Threads"
           count={threadCount}
-          connectsBelow={hasFileName}
         />
         <ViewSwitcherSegment
           active={activeTab === "tasks"}
@@ -103,7 +98,6 @@ export function ViewSwitcherBar({
           icon={<CheckSquare size={13} />}
           label="Tasks"
           count={taskCount > 0 ? taskCount : undefined}
-          connectsBelow={hasFileName}
         />
       </div>
 
@@ -113,7 +107,7 @@ export function ViewSwitcherBar({
             <button
               type="button"
               onClick={onToggleBulk}
-              className={`p-1.5 rounded-lg transition-colors ${
+              className={`p-1.5 rounded-md transition-colors ${
                 bulkMode
                   ? "bg-accent-subtle text-accent"
                   : "text-figma-icon-secondary hover:bg-figma-bg-secondary hover:text-figma-icon"
@@ -128,7 +122,7 @@ export function ViewSwitcherBar({
               type="button"
               onClick={onRefresh}
               disabled={isLoading}
-              className="p-1.5 rounded-lg text-figma-icon-secondary hover:bg-figma-bg-secondary hover:text-figma-icon disabled:opacity-40 transition-colors"
+              className="p-1.5 rounded-md text-figma-icon-secondary hover:bg-figma-bg-secondary hover:text-figma-icon disabled:opacity-40 transition-colors"
               data-tooltip="Refresh comments"
               data-tooltip-align="right"
               data-tooltip-pos="bottom"
@@ -145,7 +139,7 @@ export function ViewSwitcherBar({
         <button
           type="button"
           onClick={onShowSettings}
-          className="p-1.5 rounded-lg text-figma-icon-secondary hover:bg-figma-bg-secondary hover:text-figma-icon transition-colors"
+          className="p-1.5 rounded-md text-figma-icon-secondary hover:bg-figma-bg-secondary hover:text-figma-icon transition-colors"
           data-tooltip="Settings"
           data-tooltip-align="right"
           data-tooltip-pos="bottom"

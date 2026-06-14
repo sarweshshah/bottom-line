@@ -44,7 +44,7 @@ export function AboutTab() {
       <div className="flex items-center justify-center gap-2">
         <a
           href={HELP_URL}
-          className="text-[11px] text-accent hover:underline"
+          className="text-[11px] text-accent hover:text-accent-text-hover hover:underline"
           onClick={(e) => openLink(HELP_URL, e)}
         >
           Help
@@ -52,7 +52,7 @@ export function AboutTab() {
         <span className="text-figma-border-strong">·</span>
         <a
           href={CHANGELOG_URL}
-          className="text-[11px] text-accent hover:underline"
+          className="text-[11px] text-accent hover:text-accent-text-hover hover:underline"
           onClick={(e) => openLink(CHANGELOG_URL, e)}
         >
           Changelog

@@ -55,13 +55,13 @@ function BulkStateDropdown({
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-accent-bg text-white hover:bg-accent-hover transition-colors"
+        className="flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium bg-accent-bg text-white hover:bg-accent-hover transition-colors"
       >
         Set state
         <ChevronDown size={10} />
       </button>
       {open && (
-        <div className="absolute right-0 bottom-full mb-1 bg-figma-bg border border-figma-border rounded-lg shadow-lg z-30 min-w-[150px]">
+        <div className="absolute right-0 bottom-full mb-1 bg-figma-bg border border-figma-border rounded-md shadow-lg z-30 min-w-[150px]">
           {BULK_STATE_OPTIONS.map((opt) => {
             const Icon = opt.Icon;
             return (
@@ -106,6 +106,7 @@ function BulkSummaryProgressBar() {
   const done = completed + failed;
   const pct = total > 0 ? Math.round((done / total) * 100) : 0;
   const allFailed = !inProgress && completed === 0 && failed > 0;
+  const showErrorOnly = !inProgress && failed > 0;
 
   const title = inProgress
     ? "Summarizing threads"
@@ -113,19 +114,23 @@ function BulkSummaryProgressBar() {
       ? "Couldn't summarize"
       : "Summaries ready";
 
+  const errorMessage = allFailed
+    ? "Summary generation failed for all selected threads"
+    : `${failed} ${failed === 1 ? "thread" : "threads"} failed`;
+
   return (
     <div className="shrink-0 px-4 py-3 border-b border-figma-border bg-figma-bg-secondary">
       <div className="flex items-center gap-2.5">
         <span
-          className={`shrink-0 flex items-center justify-center w-7 h-7 rounded-lg ${
-            inProgress
-              ? "bg-accent-subtle"
-              : allFailed
-                ? "bg-danger-bg"
+          className={`shrink-0 flex items-center justify-center w-7 h-7 rounded-md ${
+            showErrorOnly
+              ? "bg-danger-bg"
+              : inProgress
+                ? "bg-accent-subtle"
                 : "bg-accent-subtle"
           }`}
         >
-          {allFailed ? (
+          {showErrorOnly ? (
             <AlertCircle size={14} className="text-danger" />
           ) : (
             <Sparkles size={14} className="text-accent" />
@@ -133,26 +138,32 @@ function BulkSummaryProgressBar() {
         </span>
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-figma-text truncate min-w-0">
-              {title}
-            </span>
-            <span className="ml-auto shrink-0 text-[10px] font-semibold tabular-nums text-figma-text-tertiary">
-              {done}/{total}
-            </span>
-          </div>
-          <div className="mt-1.5 h-1.5 rounded-full bg-figma-bg-tertiary overflow-hidden">
-            <div
-              className={`h-full rounded-full transition-[width] duration-300 ease-out ${
-                allFailed ? "bg-danger" : "bg-accent-bg"
-              }`}
-              style={{ width: `${pct}%` }}
-            />
-          </div>
-          {failed > 0 && !allFailed && (
-            <span className="mt-1 block text-[10px] font-medium text-danger">
-              {failed} {failed === 1 ? "thread" : "threads"} failed
-            </span>
+          {showErrorOnly ? (
+            <div className="flex flex-col">
+              <span className="text-xs font-semibold text-figma-text truncate min-w-0">
+                {title}
+              </span>
+              <span className="text-[10px] font-medium text-danger">
+                {errorMessage}
+              </span>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-figma-text truncate min-w-0">
+                  {title}
+                </span>
+                <span className="ml-auto shrink-0 text-[10px] font-semibold tabular-nums text-figma-text-tertiary">
+                  {done}/{total}
+                </span>
+              </div>
+              <div className="mt-1.5 h-1.5 rounded-full bg-figma-bg-tertiary overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-accent-bg transition-[width] duration-300 ease-out"
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
+            </>
           )}
         </div>
 
@@ -160,7 +171,9 @@ function BulkSummaryProgressBar() {
           <button
             type="button"
             onClick={dismissBulkSummary}
-            className="shrink-0 self-start p-1 rounded-lg text-figma-icon-tertiary hover:bg-figma-bg-tertiary hover:text-figma-icon transition-colors"
+            className={`shrink-0 p-1 rounded-md text-figma-icon-tertiary hover:bg-figma-bg-tertiary hover:text-figma-icon transition-colors ${
+              showErrorOnly ? "self-center" : "self-start"
+            }`}
             data-tooltip="Dismiss"
             data-tooltip-align="right"
             data-tooltip-pos="bottom"
@@ -382,7 +395,7 @@ export function DashboardLayout() {
             <button
               type="button"
               onClick={handleBulkSummarize}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-figma-bg-secondary text-figma-text-secondary hover:text-figma-text hover:bg-figma-bg-tertiary transition-colors"
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium bg-figma-bg-secondary text-figma-text-secondary hover:text-figma-text hover:bg-figma-bg-tertiary transition-colors"
             >
               <Sparkles size={12} />
               Summarize
@@ -391,7 +404,7 @@ export function DashboardLayout() {
             <button
               type="button"
               onClick={exitBulkMode}
-              className="p-1.5 rounded-lg text-figma-icon-secondary hover:bg-figma-bg-secondary hover:text-figma-icon transition-colors"
+              className="p-1.5 rounded-md text-figma-icon-secondary hover:bg-figma-bg-secondary hover:text-figma-icon transition-colors"
             >
               <X size={14} />
             </button>
