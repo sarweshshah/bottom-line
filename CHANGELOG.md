@@ -4,6 +4,18 @@ All notable changes to Bottom Line will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.1.0] - 2026-06-14
+
+### Added
+
+- Thread elbow connectors in thread detail for clearer reply threading
+
+### Changed
+
+- Summary word limit picker uses 10-word step options from 50–200 words
+- Refreshed settings screen layout and About tab styling
+- Updated design tokens and Tailwind configuration for UI consistency across dashboard, setup, reconnect, and tasks views
+
 ## [2.0.0] - 2026-06-14
 
 ### Added

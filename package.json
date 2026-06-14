@@ -1,6 +1,6 @@
 {
   "name": "bottom-line",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "private": true,
   "description": "AI-powered comment intelligence for design teams — Figma plugin",
   "type": "module",
