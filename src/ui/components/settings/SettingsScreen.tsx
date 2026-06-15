@@ -1,10 +1,9 @@
-import { useState, useCallback, type MouseEvent, type ReactNode } from "react";
+import { useState, useCallback, useRef, type MouseEvent, type ReactNode } from "react";
 import {
   ArrowLeft,
   Eye,
   EyeOff,
   ExternalLink,
-  CheckCircle2,
   Loader2,
   LogOut,
   Monitor,
@@ -46,12 +45,11 @@ import type {
 import { AboutTab } from "@ui/components/settings/AboutTab";
 import { SUMMARY_WORD_LIMIT_OPTIONS } from "@shared/types";
 
-type SettingsTab = "general" | "ai" | "behavior" | "auth" | "display" | "about";
+type SettingsTab = "general" | "summary" | "auth" | "display" | "about";
 
 const TABS: { id: SettingsTab; label: string }[] = [
   { id: "general", label: "General" },
-  { id: "ai", label: "AI" },
-  { id: "behavior", label: "Behavior" },
+  { id: "summary", label: "Summary" },
   { id: "auth", label: "Auth" },
   { id: "display", label: "Display" },
   { id: "about", label: "About" },
@@ -258,7 +256,8 @@ const PROVIDER_OPTIONS: {
 
 function GeneralTab() {
   const { fileUrl, fileKey, fileName, setFileInfo } = useAuthStore();
-  const { refreshComments } = useCommentsStore();
+  const { refreshComments, cacheTTLMinutes, setCacheTTLMinutes } =
+    useCommentsStore();
 
   const [url, setUrl] = useState(fileUrl ?? "");
   const [urlError, setUrlError] = useState<string | null>(null);
@@ -288,79 +287,113 @@ function GeneralTab() {
   }, [url, setFileInfo, refreshComments]);
 
   return (
-    <SettingsSection>
-      <SettingsSectionHeader
-        title={fileKey ? "Connected file" : "Figma file"}
-        description={
-          fileKey
-            ? "The Figma file currently linked to this plugin."
-            : "The Figma file to analyze comments for."
-        }
-      />
-      {fileKey && (
-        <SettingsSectionBody className="!pb-0">
-          <div className={`${CARD_CLASS} space-y-2`}>
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-[11px] text-figma-text-tertiary">
-                File key
-              </span>
-              <code className="text-[11px] text-figma-text font-medium bg-figma-bg px-1.5 py-0.5 rounded border border-figma-border truncate max-w-[60%]">
-                {fileKey}
-              </code>
-            </div>
-            {fileUrl && (
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-[11px] text-figma-text-tertiary">
-                  URL
-                </span>
-                <span className="text-[11px] text-figma-text-secondary truncate max-w-[60%]">
-                  {fileUrl}
-                </span>
-              </div>
-            )}
-            {fileName && (
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-[11px] text-figma-text-tertiary">
-                  File name
-                </span>
-                <span className="text-[11px] text-figma-text-secondary truncate max-w-[60%]">
-                  {fileName}
-                </span>
-              </div>
-            )}
-          </div>
-        </SettingsSectionBody>
-      )}
-      <div className={`px-4 pb-5 space-y-3 ${fileKey ? "pt-4" : ""}`}>
+    <>
+      <SettingsSection>
+        <SettingsSectionHeader
+          title={fileKey ? "Connected file" : "Figma file"}
+          description={
+            fileKey
+              ? "The Figma file currently linked to this plugin."
+              : "The Figma file to analyze comments for."
+          }
+        />
         {fileKey && (
-          <div>
-            <p className="text-[11px] font-medium text-figma-text">
-              Update file
-            </p>
-            <p className="text-[10px] text-figma-text-tertiary mt-0.5 leading-snug">
-              Paste a new URL to switch the connected Figma file.
-            </p>
-          </div>
+          <SettingsSectionBody className="!pb-0">
+            <div className={`${CARD_CLASS} space-y-2`}>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-[11px] text-figma-text-tertiary">
+                  File key
+                </span>
+                <code className="text-[11px] text-figma-text font-medium bg-figma-bg px-1.5 py-0.5 rounded border border-figma-border truncate max-w-[60%]">
+                  {fileKey}
+                </code>
+              </div>
+              {fileUrl && (
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-[11px] text-figma-text-tertiary">
+                    URL
+                  </span>
+                  <span className="text-[11px] text-figma-text-secondary truncate max-w-[60%]">
+                    {fileUrl}
+                  </span>
+                </div>
+              )}
+              {fileName && (
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-[11px] text-figma-text-tertiary">
+                    File name
+                  </span>
+                  <span className="text-[11px] text-figma-text-secondary truncate max-w-[60%]">
+                    {fileName}
+                  </span>
+                </div>
+              )}
+            </div>
+          </SettingsSectionBody>
         )}
-        <SettingsFieldGroup>
-          <input
-            type="text"
-            value={url}
-            onChange={(e) => handleUrlChange(e.target.value)}
-            placeholder="https://www.figma.com/design/abc123/..."
-            className={INPUT_CLASS}
+        <div className={`px-4 pb-5 space-y-3 ${fileKey ? "pt-4" : ""}`}>
+          {fileKey && (
+            <div>
+              <p className="text-[11px] font-medium text-figma-text">
+                Update file
+              </p>
+              <p className="text-[10px] text-figma-text-tertiary mt-0.5 leading-snug">
+                Paste a new URL to switch the connected Figma file.
+              </p>
+            </div>
+          )}
+          <SettingsFieldGroup>
+            <input
+              type="text"
+              value={url}
+              onChange={(e) => handleUrlChange(e.target.value)}
+              placeholder="https://www.figma.com/design/abc123/..."
+              className={INPUT_CLASS}
+            />
+            {urlError && <FieldError>{urlError}</FieldError>}
+            <button type="button" onClick={handleSaveUrl} className={BTN_PRIMARY}>
+              {fileKey ? "Update file" : "Connect file"}
+            </button>
+          </SettingsFieldGroup>
+        </div>
+      </SettingsSection>
+
+      <SettingsSection>
+        <SettingsSectionHeader
+          title="Behavior"
+          description="Customize how the plugin interacts with Figma."
+        />
+        <SettingsRowGroup>
+          <SettingsToggleRow
+            label="Auto-refresh interval"
+            description="Refresh thread list automatically."
+            trailing={
+              <div className="inline-flex shrink-0 overflow-hidden rounded-md border border-figma-border">
+                {TTL_OPTIONS.map((minutes, index) => {
+                  const isActive = cacheTTLMinutes === minutes;
+                  return (
+                    <button
+                      key={minutes}
+                      type="button"
+                      onClick={() => setCacheTTLMinutes(minutes)}
+                      className={`text-xs font-medium tabular-nums px-2.5 py-1.5 transition-all duration-150 ${
+                        index > 0 ? "border-l border-figma-border" : ""
+                      } ${isActive ? PILL_ACTIVE : PILL_INACTIVE}`}
+                    >
+                      {minutes}m
+                    </button>
+                  );
+                })}
+              </div>
+            }
           />
-          {urlError && <FieldError>{urlError}</FieldError>}
-          <button type="button" onClick={handleSaveUrl} className={BTN_PRIMARY}>
-            {fileKey ? "Update file" : "Connect file"}
-          </button>
-        </SettingsFieldGroup>
-      </div>
-    </SettingsSection>
+        </SettingsRowGroup>
+      </SettingsSection>
+    </>
   );
 }
 
-function AITab() {
+function SummaryTab() {
   const {
     provider,
     anthropicApiKey,
@@ -379,6 +412,8 @@ function AITab() {
   } = useAIStore();
 
   const [showKey, setShowKey] = useState(false);
+  const apiKeyOnFocus = useRef("");
+  const customConfigOnFocus = useRef("");
 
   const currentKey = (() => {
     switch (provider) {
@@ -394,6 +429,51 @@ function AITab() {
         return "";
     }
   })();
+
+  const providerLabel =
+    PROVIDER_OPTIONS.find((opt) => opt.value === provider)?.label ?? "API";
+
+  const customConfigSnapshot = useCallback(
+    () =>
+      JSON.stringify({
+        baseUrl: customConfig.baseUrl.trim(),
+        apiKey: customConfig.apiKey.trim(),
+        modelName: customConfig.modelName.trim(),
+      }),
+    [customConfig],
+  );
+
+  const handleApiKeyFocus = useCallback(() => {
+    apiKeyOnFocus.current = currentKey.trim();
+  }, [currentKey]);
+
+  const handleApiKeyBlur = useCallback(() => {
+    const trimmed = currentKey.trim();
+    if (!trimmed || trimmed === apiKeyOnFocus.current) return;
+    showToast(`${providerLabel} API key saved`, "success");
+  }, [currentKey, providerLabel]);
+
+  const handleCustomConfigFocus = useCallback(() => {
+    customConfigOnFocus.current = customConfigSnapshot();
+  }, [customConfigSnapshot]);
+
+  const handleCustomConfigBlur = useCallback(() => {
+    const snapshot = customConfigSnapshot();
+    if (snapshot === customConfigOnFocus.current) return;
+
+    const baseUrl = customConfig.baseUrl.trim();
+    const modelName = customConfig.modelName.trim();
+    const apiKey = customConfig.apiKey.trim();
+
+    if (baseUrl && modelName) {
+      showToast("Custom endpoint configured", "success");
+      return;
+    }
+
+    if (apiKey) {
+      showToast("Custom API key saved", "success");
+    }
+  }, [customConfig, customConfigSnapshot]);
 
   const setCurrentKey = useCallback(
     (key: string) => {
@@ -538,15 +618,11 @@ function AITab() {
                                   onChange={(e) =>
                                     setCurrentKey(e.target.value)
                                   }
+                                  onFocus={handleApiKeyFocus}
+                                  onBlur={handleApiKeyBlur}
                                   placeholder="Paste your API key"
                                   className="flex-1 bg-transparent text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none min-w-0"
                                 />
-                                {hasKey && (
-                                  <CheckCircle2
-                                    size={11}
-                                    className="text-status-resolved shrink-0"
-                                  />
-                                )}
                                 <button
                                   type="button"
                                   onClick={() => setShowKey(!showKey)}
@@ -577,6 +653,8 @@ function AITab() {
                                   baseUrl: e.target.value,
                                 })
                               }
+                              onFocus={handleCustomConfigFocus}
+                              onBlur={handleCustomConfigBlur}
                               placeholder="Base URL (https://api.example.com/v1)"
                               className={INPUT_CLASS}
                             />
@@ -589,6 +667,8 @@ function AITab() {
                                   apiKey: e.target.value,
                                 })
                               }
+                              onFocus={handleCustomConfigFocus}
+                              onBlur={handleCustomConfigBlur}
                               placeholder="API key (optional)"
                               className={INPUT_CLASS}
                             />
@@ -601,6 +681,8 @@ function AITab() {
                                   modelName: e.target.value,
                                 })
                               }
+                              onFocus={handleCustomConfigFocus}
+                              onBlur={handleCustomConfigBlur}
                               placeholder="Model name (e.g., llama-3.1-8b-instant)"
                               className={INPUT_CLASS}
                             />
@@ -724,53 +806,6 @@ function ClearCacheSection() {
               : "Clear all summaries"}
         </button>
       </SettingsSectionBody>
-    </SettingsSection>
-  );
-}
-
-function BehaviorTab() {
-  const { autoOpenComment, setAutoOpenComment } = useAuthStore();
-  const { cacheTTLMinutes, setCacheTTLMinutes } = useCommentsStore();
-
-  return (
-    <SettingsSection>
-      <SettingsSectionHeader
-        title="Behavior"
-        description="Customize how the plugin interacts with Figma."
-      />
-
-      <SettingsRowGroup>
-        <SettingsToggleRow
-          label="Show comment reminder"
-          description="Show a notification to click the comment pin after navigating."
-          checked={autoOpenComment}
-          onChange={setAutoOpenComment}
-        />
-
-        <SettingsToggleRow
-          label="Auto-refresh interval"
-          description="Refresh thread list automatically."
-          trailing={
-            <div className="inline-flex shrink-0 overflow-hidden rounded-md border border-figma-border">
-              {TTL_OPTIONS.map((minutes, index) => {
-                const isActive = cacheTTLMinutes === minutes;
-                return (
-                  <button
-                    key={minutes}
-                    type="button"
-                    onClick={() => setCacheTTLMinutes(minutes)}
-                    className={`text-xs font-medium tabular-nums px-2.5 py-1.5 transition-all duration-150 ${
-                      index > 0 ? "border-l border-figma-border" : ""
-                    } ${isActive ? PILL_ACTIVE : PILL_INACTIVE}`}
-                  >
-                    {minutes}m
-                  </button>
-                );
-              })}
-            </div>
-          }
-        />
-      </SettingsRowGroup>
     </SettingsSection>
   );
 }
@@ -1141,8 +1176,7 @@ export function SettingsScreen({ onBack }: SettingsScreenProps) {
 
       <div className="flex-1 overflow-y-auto bg-figma-bg">
         {activeTab === "general" && <GeneralTab />}
-        {activeTab === "ai" && <AITab />}
-        {activeTab === "behavior" && <BehaviorTab />}
+        {activeTab === "summary" && <SummaryTab />}
         {activeTab === "auth" && <AuthTab />}
         {activeTab === "display" && <DisplayTab />}
         {activeTab === "about" && <AboutTab />}

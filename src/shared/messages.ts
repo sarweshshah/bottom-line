@@ -38,7 +38,6 @@ export interface InitDataMessage {
   userName: string | null;
   userAvatarUrl: string | null;
   userId: string | null;
-  autoOpenComment: boolean;
   showThreadElbows: boolean;
   themePreference: "system" | "light" | "dark";
   cacheTTLMinutes: 5 | 10 | 15 | 30;

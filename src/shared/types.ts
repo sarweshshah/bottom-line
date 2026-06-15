@@ -166,7 +166,6 @@ export interface StoredPreferences {
   sortField: SortField;
   sortDirection: SortDirection;
   cacheTTL: CacheTTLMinutes;
-  autoOpenComment: boolean;
   showThreadElbows: boolean;
   themePreference: ThemePreference;
   aiProvider: AIProvider;

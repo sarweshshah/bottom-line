@@ -6,6 +6,8 @@ import pluginLogo from "@ui/assets/plugin-logo.png";
 const HELP_URL = "https://github.com/sarweshshah/bottom-line#readme";
 const CHANGELOG_URL =
   "https://github.com/sarweshshah/bottom-line/blob/main/CHANGELOG.md";
+const COMMUNITY_URL =
+  "https://www.figma.com/community/plugin/1644586572358642803/bottom-line";
 
 function openLink(url: string, event: MouseEvent<HTMLAnchorElement>) {
   event.preventDefault();
@@ -56,6 +58,14 @@ export function AboutTab() {
           onClick={(e) => openLink(CHANGELOG_URL, e)}
         >
           Changelog
+        </a>
+        <span className="text-figma-border-strong">·</span>
+        <a
+          href={COMMUNITY_URL}
+          className="text-[11px] text-accent hover:text-accent-text-hover hover:underline"
+          onClick={(e) => openLink(COMMUNITY_URL, e)}
+        >
+          Feedback
         </a>
       </div>
     </div>

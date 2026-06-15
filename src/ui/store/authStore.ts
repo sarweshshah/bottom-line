@@ -25,7 +25,6 @@ interface AuthState {
   screen: AuthScreen;
   isValidating: boolean;
   validationError: string | null;
-  autoOpenComment: boolean;
   showThreadElbows: boolean;
   themePreference: ThemePreference;
 
@@ -40,7 +39,6 @@ interface AuthState {
   validateAndSetToken: (pat: string) => Promise<FigmaUser>;
   setFileInfo: (url: string, key: string) => Promise<void>;
   fetchFileName: () => Promise<void>;
-  setAutoOpenComment: (enabled: boolean) => void;
   setShowThreadElbows: (enabled: boolean) => void;
   setThemePreference: (pref: ThemePreference) => void;
   completeSetup: () => void;
@@ -80,7 +78,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   screen: "loading",
   isValidating: false,
   validationError: null,
-  autoOpenComment: true,
   showThreadElbows: false,
   themePreference: "system",
 
@@ -111,7 +108,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           handle: data.userName!,
           img_url: data.userAvatarUrl ?? "",
         },
-        autoOpenComment: data.autoOpenComment,
         showThreadElbows: data.showThreadElbows === true,
         themePreference: data.themePreference ?? "system",
         screen: "dashboard",
@@ -128,7 +124,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
               img_url: data.userAvatarUrl ?? "",
             }
           : null,
-        autoOpenComment: data.autoOpenComment,
         showThreadElbows: data.showThreadElbows === true,
         themePreference: data.themePreference ?? "system",
         screen: "setup",
@@ -253,11 +248,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } catch {
       // non-critical — bar will remain empty or show fallback
     }
-  },
-
-  setAutoOpenComment: (enabled: boolean) => {
-    set({ autoOpenComment: enabled });
-    setStorage("autoOpenComment", enabled);
   },
 
   setShowThreadElbows: (enabled: boolean) => {

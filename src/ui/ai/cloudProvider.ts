@@ -176,7 +176,7 @@ function geminiErrorMessage(status: number, body: string): string {
   switch (status) {
     case 401:
     case 403:
-      return "Invalid Gemini API key. Check your key in Settings > AI & Summarization.";
+      return "Invalid Gemini API key. Check your key in Settings > Summary.";
     case 429:
       return "Gemini rate limit reached. Please wait a moment and try again.";
     case 503:

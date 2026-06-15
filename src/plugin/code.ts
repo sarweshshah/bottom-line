@@ -61,7 +61,6 @@ async function sendInitData() {
     userName,
     userAvatarUrl,
     userId,
-    autoOpenComment,
     showThreadElbows,
     themePreference,
     cacheTTL,
@@ -76,7 +75,6 @@ async function sendInitData() {
     figma.clientStorage.getAsync("userName"),
     figma.clientStorage.getAsync("userAvatarUrl"),
     figma.clientStorage.getAsync("userId"),
-    figma.clientStorage.getAsync("autoOpenComment"),
     figma.clientStorage.getAsync("showThreadElbows"),
     figma.clientStorage.getAsync("themePreference"),
     figma.clientStorage.getAsync("cacheTTL"),
@@ -102,7 +100,6 @@ async function sendInitData() {
     userName: userName ?? null,
     userAvatarUrl: userAvatarUrl ?? null,
     userId: userId ?? null,
-    autoOpenComment: autoOpenComment !== false,
     showThreadElbows: showThreadElbows === true,
     themePreference: (["system", "light", "dark"].includes(themePreference) ? themePreference : "system") as "system" | "light" | "dark",
     cacheTTLMinutes: normalizeCacheTTL(cacheTTL),
@@ -143,13 +140,6 @@ async function navigateToComment(clientMeta: ClientMeta, commentId: string) {
     } else if ("x" in clientMeta && "y" in clientMeta) {
       figma.viewport.center = { x: clientMeta.x, y: clientMeta.y };
       figma.viewport.zoom = 1;
-    }
-
-    const autoOpen = await figma.clientStorage.getAsync("autoOpenComment");
-    if (autoOpen !== false) {
-      figma.notify("Click the comment pin on the canvas to open the thread", {
-        timeout: 4000,
-      });
     }
 
     const result: NavigateResultMessage = {

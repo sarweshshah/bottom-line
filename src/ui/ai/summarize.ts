@@ -105,7 +105,7 @@ export async function summarizeThread(
   const apiKey = store.getApiKeyForProvider(provider);
   if (!apiKey) {
     throw new CloudAIError(
-      "No API key configured. Add one in Settings > AI & Summarization.",
+      "No API key configured. Add one in Settings > Summary.",
     );
   }
 
