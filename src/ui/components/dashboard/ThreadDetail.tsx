@@ -155,7 +155,7 @@ function CommentBubble({
       <UserAvatar
         handle={author.handle}
         imgUrl={author.img_url}
-        size={24}
+        size={20}
         className="relative z-10 ring-1 ring-figma-border bg-figma-bg"
       />
       <div className="flex-1 min-w-0">

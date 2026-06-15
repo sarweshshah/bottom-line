@@ -1,4 +1,11 @@
-import { ChevronDown, ArrowUp, ArrowDown, User } from "lucide-react";
+import {
+  ChevronDown,
+  ArrowUp,
+  ArrowDown,
+  User,
+  Layout,
+  FileText,
+} from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import type { SortField, CommentScope, WorkflowState } from "@shared/types";
 import { useFilterStore } from "@ui/store/filterStore";
@@ -17,9 +24,13 @@ const SORT_OPTIONS: { value: SortField; label: string }[] = [
   { value: "created_at", label: "Created" },
 ];
 
-const SCOPE_OPTIONS: { value: CommentScope; label: string }[] = [
-  { value: "current_page", label: "Current page" },
-  { value: "full_file", label: "Document" },
+const SCOPE_OPTIONS: {
+  value: CommentScope;
+  label: string;
+  Icon: typeof Layout;
+}[] = [
+  { value: "current_page", label: "Current page", Icon: Layout },
+  { value: "full_file", label: "Document", Icon: FileText },
 ];
 
 type MenuId = "status" | "scope" | "sort";
@@ -70,6 +81,8 @@ export function FilterBar() {
   }
 
   const activeSort = SORT_OPTIONS.find((o) => o.value === sortField);
+  const activeScope = SCOPE_OPTIONS.find((o) => o.value === commentScope);
+  const ScopeIcon = activeScope?.Icon ?? FileText;
   const DirIcon = sortDirection === "asc" ? ArrowUp : ArrowDown;
   const statusLabel =
     STATE_FILTER_OPTIONS.find((o) => o.value === workflowStateFilter)?.label ??
@@ -133,31 +146,38 @@ export function FilterBar() {
         <button
           type="button"
           onClick={() => toggleMenu("scope")}
-          className="flex items-center gap-1 text-xs text-figma-text-secondary hover:text-figma-text px-2.5 py-1 rounded-md bg-figma-bg-secondary transition-colors"
+          className="flex items-center gap-0.5 text-figma-text-secondary hover:text-figma-text p-1.5 rounded-md bg-figma-bg-secondary transition-colors"
+          data-tooltip={activeScope?.label}
+          data-tooltip-align="right"
+          data-tooltip-pos="bottom"
         >
-          {SCOPE_OPTIONS.find((o) => o.value === commentScope)?.label}
+          <ScopeIcon size={12} />
           <ChevronDown size={10} />
         </button>
 
         {openMenu === "scope" && (
           <div className="absolute right-0 top-full mt-1 bg-figma-bg border border-figma-border rounded-md shadow-lg z-20 min-w-[130px]">
-            {SCOPE_OPTIONS.map((opt) => (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => {
-                  setCommentScope(opt.value);
-                  closeMenu();
-                }}
-                className={`w-full text-left px-3 py-1.5 text-xs hover:bg-figma-bg-hover transition-colors ${
-                  commentScope === opt.value
-                    ? "text-accent font-medium"
-                    : "text-figma-text-secondary"
-                }`}
-              >
-                {opt.label}
-              </button>
-            ))}
+            {SCOPE_OPTIONS.map((opt) => {
+              const Icon = opt.Icon;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => {
+                    setCommentScope(opt.value);
+                    closeMenu();
+                  }}
+                  className={`w-full flex items-center gap-2 px-3 py-1.5 text-xs hover:bg-figma-bg-hover transition-colors ${
+                    commentScope === opt.value
+                      ? "text-accent font-medium"
+                      : "text-figma-text-secondary"
+                  }`}
+                >
+                  <Icon size={12} />
+                  {opt.label}
+                </button>
+              );
+            })}
           </div>
         )}
       </div>
