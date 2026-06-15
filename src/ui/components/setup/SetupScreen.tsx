@@ -17,7 +17,7 @@ import {
   ArrowLeft,
   MessageSquare,
   Sparkles,
-  BarChart3,
+  CheckSquare,
 } from "lucide-react";
 import { FieldError } from "@ui/components/common/FieldError";
 import { UserAvatar } from "@ui/components/common/UserAvatar";
@@ -55,18 +55,18 @@ const PAT_INFO_TOOLTIP_CLASSNAME = [
 const FEATURES = [
   {
     icon: MessageSquare,
-    title: "Smart Threads",
-    desc: "See all comment threads organized by status",
+    title: "Comment Dashboard",
+    desc: "Filter threads by Open, Read, or Done across the page or full file",
   },
   {
     icon: Sparkles,
     title: "AI Summaries",
-    desc: "Get instant summaries of long discussions",
+    desc: "Summarize threads on demand or in bulk with your chosen provider",
   },
   {
-    icon: BarChart3,
-    title: "Progress Tracking",
-    desc: "Track resolved vs open comments at a glance",
+    icon: CheckSquare,
+    title: "Tasks Tab",
+    desc: "Extract and track action items from discussions in one place",
   },
 ];
 

@@ -26,6 +26,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- Simplified workflow states to Open, Read, and Done (removed WIP and Blocked)
 - Refreshed UI with updated design tokens, thread cards, loading states, and accessibility improvements
 - Streamlined API key setup across Anthropic, OpenAI, Gemini, and custom providers
 
@@ -36,9 +37,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 #### Comment dashboard
 
 - Browse comment threads for a Figma file (design, file, or FigJam board URLs)
-- Workflow status filters: Open, WIP, Blocked, Done
+- Workflow status filters: Open, Read, Done
 - Sort by replies, participants, last updated, or created date
-- Search threads by message text
 - “Addressed to me” filter
 - Scope: current page or full document
 - Bulk workflow updates for selected threads

@@ -4,10 +4,10 @@
 
 |                    |                              |
 | ------------------ | ---------------------------- |
-| **Version**        | 1.8                          |
-| **Status**         | Phase 1 In Progress          |
-| **Author**         | Sarwesh                      |
-| **Date**           | February 27, 2026            |
+| **Version**        | 2.1                              |
+| **Status**         | Shipped (v2.1.0)                 |
+| **Author**         | Sarwesh                          |
+| **Date**           | June 14, 2026                    |
 | **Stakeholders**   | Design, Engineering, Product |
 | **Classification** | Internal                     |
 
@@ -82,20 +82,21 @@ The plugin is published to the Figma Community so anyone can install it. Public 
 
 ## 3.2 Scope Definition
 
-The following table clarifies what is and isn’t included in the V1 release:
+The following table clarifies what is shipped in v2.1 versus planned for later:
 
-| **In Scope (V1)**                            | **Out of Scope (Future)**                        |
+| **Shipped (v2.1)**                           | **Planned / Out of Scope**                       |
 | -------------------------------------------- | ------------------------------------------------ |
-| Thread listing with open/resolved filtering  | Third-party integrations (Slack, Jira, Linear)   |
-| On-demand AI thread summaries                | Comment creation or reply from within the plugin |
-| Task extraction from natural language        | Cross-file comment aggregation                   |
-| Personal view (“addressed to me”)            | Notification system / push alerts                |
-| Page-level and document-level toggle         | Comment analytics and reporting dashboards       |
+| Thread listing with Open / Read / Done states | Third-party integrations (Slack, Jira, Linear)   |
+| On-demand and bulk AI thread summaries       | Comment creation or reply from within the plugin |
+| Task extraction and Tasks tab                | Cross-file comment aggregation                   |
+| Personal view (“For me”)                     | Notification system / push alerts                |
+| Page-level and document-level scope          | Comment analytics and reporting dashboards       |
 | Navigate-to-comment on canvas click          | Webhook-based real-time sync                     |
-| PAT-based REST API authentication (required) | OAuth-based authentication flow (planned for V2) |
-| Keyword search across threads                | Full-text search with ranking/relevance scoring  |
-| Export to PDF, Markdown                      | Scheduled/automated exports                      |
+| Figma OAuth and PAT authentication           | Keyword search across threads                    |
+| Threads / Tasks dashboard tabs               | Export to PDF, Markdown                          |
+| Bulk workflow state updates                  | Custom thread tags                               |
 | User preference for AI provider              | Custom AI model fine-tuning                      |
+| Optional image analysis (vision providers)   | Resolving/reopening threads via REST API         |
 
 # 4. Detailed Functional Requirements
 
@@ -219,14 +220,10 @@ Users can filter the thread list using the following dimensions, which are combi
 
 | **Filter**   | **Options**                                                                        | **Default**  |
 | ------------ | ---------------------------------------------------------------------------------- | ------------ |
-| Status       | All / Open / Read / In Progress / Needs Review / Blocked / Resolved (multi-select) | Open         |
-| Scope        | Current Page / Entire Document                                                     | Current Page |
-| Addressed To | All / Me (based on @mentions)                                                      | All          |
-| Has Tasks    | All / With Tasks Only / My Tasks Only                                              | All          |
-| Author       | Dropdown of all commenters in file                                                 | All          |
-| Tags         | Multi-select of all tags in current view (OR logic)                                | All          |
-| Date Range   | Last 24h / Last 7 days / Last 30 days / All Time                                   | All Time     |
-| Sort         | Newest First / Oldest First / Most Replies / Unread First                          | Newest First |
+| Status       | All / Open / Read / Done (single-select)                                           | All          |
+| Scope        | Current Page / Entire Document                                                     | Entire Document |
+| Addressed To | All / For me (based on @mentions, authorship, and participation)                   | All          |
+| Sort         | Replies / Participants / Last updated / Created (asc or desc)                      | Replies (desc) |
 
 ### Acceptance Criteria
 
@@ -427,94 +424,65 @@ All settings are persisted in `clientStorage`.
 
 ## 4.9 FR-09: Thread Workflow States
 
-Figma natively supports only two thread states: Open and Resolved. This is insufficient for real design workflows where feedback moves through multiple stages. The plugin introduces intermediate states that live locally, while keeping the two native states bidirectionally synced with Figma.
+Figma natively supports only two thread states: Open and Resolved. The plugin adds a local **Read** state for triage and tracks **Done** (`resolved`) alongside Figma’s native status. All workflow states are stored locally — the Figma REST API does not support resolving or reopening comments from the plugin.
 
 ### State Model
 
-The plugin implements a six-state linear workflow. The first and last states sync with Figma; the four intermediate states are plugin-only:
+The plugin implements a three-state workflow. **Read** is plugin-only; **Open** and **Done** align with Figma’s native open/resolved status on refresh:
 
-| **State**        | **Syncs with Figma** | **Description**                                                                                                                                                                            | **Visual Treatment**         |
-| ---------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------- |
-| **Open**         | **✓ Yes**            | Thread is new or unaddressed. Default state for all incoming comments. Maps directly to Figma’s native Open state.                                                                         | Blue badge, open circle icon |
-| **Read**         | ✗ No (local only)    | Designer has seen the feedback but has not started working on it. Signals awareness to reduce anxiety on the commenter’s side (visible only to the plugin user in V1).                     | Gray badge, eye icon         |
-| **In Progress**  | ✗ No (local only)    | Actively being worked on. The designer is implementing changes or exploring the feedback. Useful for tracking personal workload.                                                           | Amber badge, wrench icon     |
-| **Needs Review** | ✗ No (local only)    | Changes have been made and the designer is waiting for the original commenter (or another stakeholder) to verify. A signal that the ball is in someone else’s court.                       | Purple badge, eye-check icon |
-| **Blocked**      | ✗ No (local only)    | Cannot proceed due to an external dependency — e.g., waiting for assets, a decision from another team, or a technical constraint. Pairs naturally with the task extraction system (FR-05). | Red badge, pause-circle icon |
-| **Resolved**     | **✓ Yes**            | Thread is complete. Maps directly to Figma’s native Resolved state. When set from the plugin, triggers a REST API call to resolve the thread in Figma.                                     | Green badge, checkmark icon  |
+| **State**    | **Figma sync (read)** | **Description**                                                                 | **Visual Treatment**          |
+| ------------ | --------------------- | ------------------------------------------------------------------------------- | ----------------------------- |
+| **Open**     | ✓ Yes                 | Thread is new or unaddressed. Default for unresolved comments in Figma.         | Violet badge, open circle icon |
+| **Read**     | ✗ No (local only)     | Designer has seen the feedback but has not finished it.                         | Amber badge, eye icon         |
+| **Done**     | ✓ Yes                 | Thread is complete. Maps to Figma’s native Resolved state on refresh.         | Green badge, checkmark icon   |
 
 ### State Transition Rules
 
-The following rules govern how states change and sync:
+49. **Any to any:** Users can move a thread to any state from any state. The workflow is suggested (Open → Read → Done), not enforced.
 
-49. **Forward and backward:** Users can move a thread to any state from any state. The workflow is suggested (linear), not enforced. A thread in “Needs Review” can jump back to “In Progress” or skip ahead to “Resolved.”
+50. **Local only:** Changing workflow state in the plugin does not call the Figma REST API. Resolve and reopen happen in Figma itself.
 
-50. **Open → Intermediate:** When a user sets any intermediate state, the thread remains Open in Figma. No API call is made.
-
-51. **Intermediate → Resolved:** When a user moves any thread to “Resolved,” the plugin calls the Figma REST API to resolve the thread natively. This requires a valid PAT with write permissions.
-
-52. **Resolved → Open (reopen):** When a user moves a Resolved thread back to “Open” (or any intermediate state), the plugin calls the REST API to reopen the thread in Figma, then applies the selected state locally.
+51. **Marking Done:** Setting a thread to Done also marks extracted tasks for that thread as done locally.
 
 > **SYNC RULE — FIGMA IS SOURCE OF TRUTH**
 >
-> If a thread’s state is changed outside the plugin (e.g., resolved natively in Figma by another team member), the plugin overrides the local intermediate state on the next data refresh. Example: A thread marked “In Progress” in the plugin will be overridden to “Resolved” if someone resolves it in Figma. A non-blocking toast notifies the user: “3 threads were resolved in Figma and their local states have been updated.”
+> On data refresh, if a thread was resolved or reopened in Figma, the plugin overrides the local state accordingly. A thread marked Read locally becomes Done if someone resolves it in Figma. A non-blocking toast notifies the user when states are synced.
 
 ### Conflict Detection & Resolution
 
-Because intermediate states are local-only, conflicts arise when Figma’s native state changes between plugin sessions. The plugin handles this as follows:
-
-| **Scenario**                                                                                | **Behavior**                                                                                                                                                   |
-| ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Thread resolved in Figma while plugin had it as Read / In Progress / Needs Review / Blocked | Override to Resolved. Show toast notification listing affected threads. Previous intermediate state is logged in local history for reference.                  |
-| Thread reopened in Figma while plugin had it as Resolved                                    | Override to Open. User can then assign a new intermediate state.                                                                                               |
-| Thread deleted in Figma while plugin had an intermediate state                              | Remove from plugin thread list. Clean up associated state data from clientStorage.                                                                             |
-| PAT lacks write permissions when user tries to Resolve/Reopen                               | Show error: “Your token doesn’t have write access. Resolve this thread directly in Figma, or update your token in Settings.” State change is reverted locally. |
-| REST API call to resolve/reopen fails (network error, rate limit)                           | Revert the local state change. Show error with retry option. Do not leave the plugin in a state inconsistent with Figma.                                       |
+| **Scenario**                                                     | **Behavior**                                                              |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| Thread resolved in Figma while plugin had it as Open or Read     | Override to Done. Show toast notification.                                |
+| Thread reopened in Figma while plugin had it as Done             | Override to Open. User can assign Read or leave as Open.                  |
+| Thread deleted in Figma while plugin had a local state         | Remove from thread list. Clean up state data from clientStorage.          |
 
 ### State Change UI
 
-The Thread Detail Screen includes a state selector in the header that allows quick transitions:
-
-- The current state badge in the detail header is clickable, opening a dropdown (`ChevronDown` Lucide icon) with all six states.
-
-- States are displayed with their colored badges and icons for quick visual identification.
-
-- The two Figma-synced states (Open, Resolved) have a subtle Figma icon indicator in the dropdown to signal that selecting them will trigger a sync.
-
-- When a user selects Resolved, a confirmation dialog appears: “This will resolve the thread in Figma. Continue?” to prevent accidental resolution.
-
-- Bulk state changes are supported: users can select multiple threads (via checkboxes) and apply a state to all at once.
+- The Thread Detail header includes a clickable state badge with a dropdown for Open, Read, and Done.
+- Bulk state changes: select multiple threads and apply a state to all at once.
+- Bulk summarization: select multiple threads and generate AI summaries with progress feedback.
 
 ### State Persistence
 
-- Intermediate states are stored in clientStorage keyed by file_key + thread_id.
-
-- State history (last 5 transitions per thread) is stored for auditability.
-
-- States are per-user in V1 (Designer A’s states are not visible to Designer B). Shared state visibility is a post-V1 consideration requiring a backend service.
-
-- A cleanup job runs on plugin open, removing state data for threads that no longer exist in the file.
+- Non-open states are stored in clientStorage keyed by thread ID (`wf_states`).
+- States are per-user (not shared across collaborators).
+- A cleanup job on plugin open removes state data for threads that no longer exist.
 
 ### Acceptance Criteria
 
-53. User can change any thread to any of the six states from the detail screen dropdown.
+53. User can change any thread to Open, Read, or Done from the detail screen dropdown.
 
-54. Setting state to Resolved triggers a Figma REST API call and resolves the thread natively. Confirmation dialog is shown.
+54. Intermediate (Read) state changes are instant with no API call.
 
-55. Setting state to Open (from Resolved) triggers a REST API call and reopens the thread natively.
+55. On data refresh, threads resolved or reopened in Figma override the local workflow state.
 
-56. Intermediate state changes are instant (\<100ms) with no API call.
+56. A toast notification appears when Figma sync overrides local states.
 
-57. On data refresh, any thread resolved/reopened externally in Figma overrides the local intermediate state.
+57. Bulk state changes work for selected threads.
 
-58. A toast notification lists threads whose states were overridden by Figma sync.
+58. State filter in the dashboard (FR-03) supports filtering by Open, Read, or Done.
 
-59. If the REST API call to resolve/reopen fails, the local state reverts and an error with retry is shown.
-
-60. Bulk state changes work for up to 50 threads at once.
-
-61. State filter in the dashboard (FR-03) supports filtering by any of the six states, including multi-select.
-
-62. State data persists across plugin sessions and survives Figma restarts.
+59. State data persists across plugin sessions.
 
 ## 4.10 FR-10: Custom Thread Tags
 
@@ -811,9 +779,8 @@ The core data model normalized from REST API responses:
 | clientMeta    | { x, y, nodeId, nodeOffset }                                       | REST API                                                              |
 | images        | string[] (CDN URLs)                                                | REST API (extracted from comment attachments)                         |
 | mentions      | string[] (user handles)                                            | Parsed from message text                                              |
-| workflowState | open \| read \| in_progress \| needs_review \| blocked \| resolved | Plugin state engine (synced for open/resolved)                        |
-| stateHistory  | StateTransition[] (last 5)                                         | Local state change log for auditability                               |
-| tags          | Tag[]                                                              | User-applied tags (local only, per-user)                              |
+| workflowState | open \| read \| resolved | Plugin state engine (Figma open/resolved synced on refresh)             |
+| tags          | Tag[]                    | Planned — not shipped in v2.1                                         |
 | summary       | string \| null                                                     | AI Engine output                                                      |
 | tasks         | Task[]                                                             | AI Engine output                                                      |
 

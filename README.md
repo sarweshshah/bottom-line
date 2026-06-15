@@ -6,10 +6,10 @@
 
 ## Features
 
-- **Comment Dashboard**: Browse all comment threads in a Figma file with workflow status filters (Open, WIP, Blocked, Done), sorting, search, and an “addressed to me” filter.
-- **Workflow States**: Track thread progress locally (Open → WIP → Blocked → Done), bulk-update selected threads, and sync when Figma’s native resolve/open status changes.
-- **AI Summaries**: Summarize long comment threads into concise digests using your choice of AI provider, with a configurable word limit (50–200 words).
-- **Task Extraction**: Automatically detect action items (revisions, approvals, blockers, questions) from thread conversations and track them in a unified Tasks view.
+- **Comment Dashboard**: Browse comment threads in a Threads tab with workflow filters (Open, Read, Done), “For me” filtering, current-page or full-document scope, and sorting by replies, participants, or date.
+- **Workflow States**: Track thread progress locally (Open → Read → Done), bulk-update selected threads, and sync when Figma’s native resolve/reopen status changes on refresh.
+- **AI Summaries**: Summarize threads on demand or in bulk using Anthropic, OpenAI, Gemini, or a custom OpenAI-compatible endpoint, with a configurable word limit (50–200 words).
+- **Task Extraction**: Automatically detect action items (revisions, approvals, blockers, questions) from thread conversations and track them in a unified Tasks tab.
 - **Image Analysis**: Optionally include thread images in AI context for richer, design-aware summaries (vision-capable providers only).
 
 ## Using Bottom Line in Figma
