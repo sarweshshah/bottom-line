@@ -231,6 +231,15 @@ export function App() {
             .getState()
             .setCurrentPageThreadIds(msg.requestId, msg.threadIds);
           break;
+        case "THREAD_PAGE_MAP_CHUNK":
+          useCommentsStore
+            .getState()
+            .appendThreadPageMapChunk(
+              msg.requestId,
+              msg.mappings,
+              msg.done,
+            );
+          break;
       }
     }
 

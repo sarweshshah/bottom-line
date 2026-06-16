@@ -61,6 +61,19 @@ export interface PageThreadsResolvedMessage {
   threadIds: string[];
 }
 
+export interface BuildThreadPageMapMessage {
+  type: "BUILD_THREAD_PAGE_MAP";
+  requestId: string;
+  threads: { threadId: string; nodeId: string }[];
+}
+
+export interface ThreadPageMapChunkMessage {
+  type: "THREAD_PAGE_MAP_CHUNK";
+  requestId: string;
+  mappings: { threadId: string; pageId: string | null }[];
+  done: boolean;
+}
+
 export interface NavigateToCommentMessage {
   type: "NAVIGATE_TO_COMMENT";
   clientMeta: ClientMeta;
@@ -103,6 +116,7 @@ export type SandboxMessage =
   | RequestInitMessage
   | ResizeUIMessage
   | ResolvePageThreadsMessage
+  | BuildThreadPageMapMessage
   | OpenExternalMessage;
 
 export type UIMessage =
@@ -110,4 +124,5 @@ export type UIMessage =
   | InitDataMessage
   | NavigateResultMessage
   | PageChangedMessage
-  | PageThreadsResolvedMessage;
+  | PageThreadsResolvedMessage
+  | ThreadPageMapChunkMessage;

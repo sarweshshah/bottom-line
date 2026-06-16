@@ -3,8 +3,8 @@ import {
   ArrowUp,
   ArrowDown,
   User,
-  Layout,
-  FileText,
+  File,
+  Files,
   Calendar,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
@@ -33,10 +33,10 @@ const SORT_OPTIONS: { value: SortField; label: string }[] = [
 const SCOPE_OPTIONS: {
   value: CommentScope;
   label: string;
-  Icon: typeof Layout;
+  Icon: typeof File;
 }[] = [
-  { value: "current_page", label: "Current page", Icon: Layout },
-  { value: "full_file", label: "Document", Icon: FileText },
+  { value: "current_page", label: "Current page", Icon: File },
+  { value: "full_file", label: "Document", Icon: Files },
 ];
 
 const TIME_FILTER_OPTIONS: { value: TimeFilterPreset; label: string }[] = [
@@ -103,7 +103,7 @@ export function FilterBar() {
 
   const activeSort = SORT_OPTIONS.find((o) => o.value === sortField);
   const activeScope = SCOPE_OPTIONS.find((o) => o.value === commentScope);
-  const ScopeIcon = activeScope?.Icon ?? FileText;
+  const ScopeIcon = activeScope?.Icon ?? Files;
   const DirIcon = sortDirection === "asc" ? ArrowUp : ArrowDown;
   const statusLabel =
     STATE_FILTER_OPTIONS.find((o) => o.value === workflowStateFilter)?.label ??

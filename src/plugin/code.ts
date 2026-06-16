@@ -5,6 +5,7 @@ import type {
   InitDataMessage,
   PageChangedMessage,
   PageThreadsResolvedMessage,
+  ThreadPageMapChunkMessage,
 } from "@shared/messages";
 import type { ClientMeta, CacheTTLMinutes } from "@shared/types";
 import { DEFAULT_UI_WIDTH, DEFAULT_UI_HEIGHT, clampUiSize } from "@shared/constants";
@@ -115,6 +116,90 @@ function findPageForNode(node: BaseNode): PageNode | null {
     current = current.parent;
   }
   return null;
+}
+
+const PAGE_MAP_BATCH_SIZE = 40;
+
+function resolvePriorityOnCurrentPage(
+  entries: { threadId: string; nodeId: string }[],
+  currentPageId: string,
+): string[] {
+  const pageNodeIds = new Set<string>([currentPageId]);
+  for (const node of figma.currentPage.findAll()) {
+    pageNodeIds.add(node.id);
+  }
+
+  const matched: string[] = [];
+  for (const entry of entries) {
+    if (pageNodeIds.has(entry.nodeId)) {
+      matched.push(entry.threadId);
+    }
+  }
+  return matched;
+}
+
+async function resolveNodePageId(nodeId: string): Promise<string | null> {
+  const syncNode = figma.getNodeById(nodeId);
+  if (syncNode) {
+    const page = findPageForNode(syncNode);
+    return page?.id ?? null;
+  }
+
+  try {
+    const node = await figma.getNodeByIdAsync(nodeId);
+    if (!node) return null;
+    const page = findPageForNode(node);
+    return page?.id ?? null;
+  } catch {
+    return null;
+  }
+}
+
+async function buildThreadPageMapInBackground(
+  requestId: string,
+  threads: { threadId: string; nodeId: string }[],
+) {
+  if (threads.length === 0) {
+    const empty: ThreadPageMapChunkMessage = {
+      type: "THREAD_PAGE_MAP_CHUNK",
+      requestId,
+      mappings: [],
+      done: true,
+    };
+    figma.ui.postMessage(empty);
+    return;
+  }
+
+  const nodeIdToPageId = new Map<string, string | null>();
+
+  for (let cursor = 0; cursor < threads.length; cursor += PAGE_MAP_BATCH_SIZE) {
+    const batch = threads.slice(cursor, cursor + PAGE_MAP_BATCH_SIZE);
+    const uniqueNodeIds = [...new Set(batch.map((entry) => entry.nodeId))];
+
+    for (const nodeId of uniqueNodeIds) {
+      if (!nodeIdToPageId.has(nodeId)) {
+        nodeIdToPageId.set(nodeId, await resolveNodePageId(nodeId));
+      }
+    }
+
+    const mappings = batch.map((entry) => ({
+      threadId: entry.threadId,
+      pageId: nodeIdToPageId.get(entry.nodeId) ?? null,
+    }));
+
+    const done = cursor + PAGE_MAP_BATCH_SIZE >= threads.length;
+    const chunk: ThreadPageMapChunkMessage = {
+      type: "THREAD_PAGE_MAP_CHUNK",
+      requestId,
+      mappings,
+      done,
+    };
+    figma.ui.postMessage(chunk);
+
+    if (!done) {
+      await new Promise<void>((resolve) => setTimeout(resolve, 0));
+    }
+  }
 }
 
 async function navigateToComment(clientMeta: ClientMeta, commentId: string) {
@@ -256,23 +341,21 @@ figma.ui.onmessage = async (msg: SandboxMessage) => {
     }
 
     case "RESOLVE_PAGE_THREADS": {
-      const pageNodeIds = new Set<string>([figma.currentPage.id]);
-      for (const node of figma.currentPage.findAll()) {
-        pageNodeIds.add(node.id);
-      }
-
-      const matched: string[] = [];
-      for (const entry of msg.threads) {
-        if (pageNodeIds.has(entry.nodeId)) {
-          matched.push(entry.threadId);
-        }
-      }
+      const matched = resolvePriorityOnCurrentPage(
+        msg.threads,
+        figma.currentPage.id,
+      );
       const resolved: PageThreadsResolvedMessage = {
         type: "PAGE_THREADS_RESOLVED",
         requestId: msg.requestId,
         threadIds: matched,
       };
       figma.ui.postMessage(resolved);
+      break;
+    }
+
+    case "BUILD_THREAD_PAGE_MAP": {
+      await buildThreadPageMapInBackground(msg.requestId, msg.threads);
       break;
     }
   }

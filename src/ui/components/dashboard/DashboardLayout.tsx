@@ -194,6 +194,8 @@ export function DashboardLayout() {
     refreshComments,
     cacheTTLMinutes,
     currentPageThreadIds,
+    isResolvingPages,
+    resolveCurrentPageThreads,
   } = useCommentsStore();
   const {
     applyFilters,
@@ -239,6 +241,23 @@ export function DashboardLayout() {
   useEffect(() => {
     fetchComments();
   }, [fetchComments]);
+
+  useEffect(() => {
+    if (
+      commentScope === "current_page" &&
+      threads.length > 0 &&
+      currentPageThreadIds === null &&
+      !isResolvingPages
+    ) {
+      resolveCurrentPageThreads();
+    }
+  }, [
+    commentScope,
+    threads.length,
+    currentPageThreadIds,
+    isResolvingPages,
+    resolveCurrentPageThreads,
+  ]);
 
   useEffect(() => {
     if (threads.length > 0) {

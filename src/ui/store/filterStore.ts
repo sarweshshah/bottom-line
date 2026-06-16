@@ -134,7 +134,7 @@ export const useFilterStore = create<FilterState>((set, get) => ({
   addressedToMe: false,
   sortField: DEFAULT_SORT_FIELD,
   sortDirection: DEFAULT_SORT_DIR,
-  commentScope: "full_file",
+  commentScope: "current_page",
   timeFilterPreset: "all",
   customTimeStart: null,
   customTimeEnd: null,
@@ -164,6 +164,7 @@ export const useFilterStore = create<FilterState>((set, get) => ({
 
   setCommentScope: (commentScope) => {
     set({ commentScope });
+    setStorage("commentScope", commentScope);
     if (commentScope === "current_page") {
       useCommentsStore.getState().resolveCurrentPageThreads();
     }
@@ -186,7 +187,7 @@ export const useFilterStore = create<FilterState>((set, get) => ({
       addressedToMe: false,
       sortField: DEFAULT_SORT_FIELD,
       sortDirection: DEFAULT_SORT_DIR,
-      commentScope: "full_file",
+      commentScope: "current_page",
       timeFilterPreset: "all",
       customTimeStart: null,
       customTimeEnd: null,
@@ -195,17 +196,19 @@ export const useFilterStore = create<FilterState>((set, get) => ({
     setStorage("addressedToMe", false);
     setStorage("sortField", DEFAULT_SORT_FIELD);
     setStorage("sortDirection", DEFAULT_SORT_DIR);
+    setStorage("commentScope", "current_page");
     setStorage("timeFilterPreset", "all");
     setStorage("customTimeStart", null);
     setStorage("customTimeEnd", null);
   },
 
   initFromStorage: async () => {
-    const [wf, atm, sf, sd, tfp, cts, cte] = await Promise.all([
+    const [wf, atm, sf, sd, cs, tfp, cts, cte] = await Promise.all([
       getStorage<WorkflowState | WorkflowState[] | null>("workflowFilter"),
       getStorage<boolean>("addressedToMe"),
       getStorage<SortField>("sortField"),
       getStorage<SortDirection>("sortDirection"),
+      getStorage<CommentScope>("commentScope"),
       getStorage<TimeFilterPreset>("timeFilterPreset"),
       getStorage<string | null>("customTimeStart"),
       getStorage<string | null>("customTimeEnd"),
@@ -215,10 +218,12 @@ export const useFilterStore = create<FilterState>((set, get) => ({
       addressedToMe: atm ?? false,
       sortField: sf ?? DEFAULT_SORT_FIELD,
       sortDirection: sd ?? DEFAULT_SORT_DIR,
+      commentScope: cs ?? "current_page",
       timeFilterPreset: tfp ?? "all",
       customTimeStart: cts ?? null,
       customTimeEnd: cte ?? null,
     });
+    useCommentsStore.getState().onFilterScopeHydrated();
   },
 
   applyFilters: (
