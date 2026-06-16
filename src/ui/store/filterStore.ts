@@ -12,6 +12,7 @@ import { useCommentsStore } from "@ui/store/commentsStore";
 
 const DEFAULT_SORT_FIELD: SortField = "replies";
 const DEFAULT_SORT_DIR: SortDirection = "desc";
+const DEFAULT_COMMENT_SCOPE: CommentScope = "full_file";
 
 const DEFAULT_DIRECTIONS: Record<SortField, SortDirection> = {
   replies: "desc",
@@ -134,7 +135,7 @@ export const useFilterStore = create<FilterState>((set, get) => ({
   addressedToMe: false,
   sortField: DEFAULT_SORT_FIELD,
   sortDirection: DEFAULT_SORT_DIR,
-  commentScope: "current_page",
+  commentScope: DEFAULT_COMMENT_SCOPE,
   timeFilterPreset: "all",
   customTimeStart: null,
   customTimeEnd: null,
@@ -187,7 +188,7 @@ export const useFilterStore = create<FilterState>((set, get) => ({
       addressedToMe: false,
       sortField: DEFAULT_SORT_FIELD,
       sortDirection: DEFAULT_SORT_DIR,
-      commentScope: "current_page",
+      commentScope: DEFAULT_COMMENT_SCOPE,
       timeFilterPreset: "all",
       customTimeStart: null,
       customTimeEnd: null,
@@ -196,7 +197,7 @@ export const useFilterStore = create<FilterState>((set, get) => ({
     setStorage("addressedToMe", false);
     setStorage("sortField", DEFAULT_SORT_FIELD);
     setStorage("sortDirection", DEFAULT_SORT_DIR);
-    setStorage("commentScope", "current_page");
+    setStorage("commentScope", DEFAULT_COMMENT_SCOPE);
     setStorage("timeFilterPreset", "all");
     setStorage("customTimeStart", null);
     setStorage("customTimeEnd", null);
@@ -218,7 +219,7 @@ export const useFilterStore = create<FilterState>((set, get) => ({
       addressedToMe: atm ?? false,
       sortField: sf ?? DEFAULT_SORT_FIELD,
       sortDirection: sd ?? DEFAULT_SORT_DIR,
-      commentScope: cs ?? "current_page",
+      commentScope: cs ?? DEFAULT_COMMENT_SCOPE,
       timeFilterPreset: tfp ?? "all",
       customTimeStart: cts ?? null,
       customTimeEnd: cte ?? null,
