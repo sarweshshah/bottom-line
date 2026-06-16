@@ -116,7 +116,7 @@ export function ViewSwitcherBar({
               data-tooltip-align="right"
               data-tooltip-pos="bottom"
             >
-              <ListChecks size={15} />
+              <ListChecks size={14} />
             </button>
             <button
               type="button"
@@ -128,9 +128,9 @@ export function ViewSwitcherBar({
               data-tooltip-pos="bottom"
             >
               {isLoading ? (
-                <Loader2 size={15} className="animate-spin" />
+                <Loader2 size={14} className="animate-spin" />
               ) : (
-                <RefreshCw size={15} />
+                <RefreshCw size={14} />
               )}
             </button>
             <span className="w-px self-stretch bg-figma-border shrink-0" aria-hidden />
@@ -144,7 +144,7 @@ export function ViewSwitcherBar({
           data-tooltip-align="right"
           data-tooltip-pos="bottom"
         >
-          <Settings size={15} />
+          <Settings size={14} />
         </button>
       </div>
     </div>

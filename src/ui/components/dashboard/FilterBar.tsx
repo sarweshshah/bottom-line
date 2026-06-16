@@ -5,9 +5,15 @@ import {
   User,
   Layout,
   FileText,
+  Calendar,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
-import type { SortField, CommentScope, WorkflowState } from "@shared/types";
+import type {
+  SortField,
+  CommentScope,
+  WorkflowState,
+  TimeFilterPreset,
+} from "@shared/types";
 import { useFilterStore } from "@ui/store/filterStore";
 
 const STATE_FILTER_OPTIONS: { value: WorkflowState | null; label: string }[] = [
@@ -33,7 +39,15 @@ const SCOPE_OPTIONS: {
   { value: "full_file", label: "Document", Icon: FileText },
 ];
 
-type MenuId = "status" | "scope" | "sort";
+const TIME_FILTER_OPTIONS: { value: TimeFilterPreset; label: string }[] = [
+  { value: "all", label: "All" },
+  { value: "24h", label: "Last 24 hours" },
+  { value: "7d", label: "Last 7 days" },
+  { value: "30d", label: "Last 30 days" },
+  { value: "custom", label: "Custom" },
+];
+
+type MenuId = "status" | "time" | "scope" | "sort";
 
 export function FilterBar() {
   const {
@@ -42,13 +56,19 @@ export function FilterBar() {
     sortField,
     sortDirection,
     commentScope,
+    timeFilterPreset,
+    customTimeStart,
+    customTimeEnd,
     setWorkflowStateFilter,
     setAddressedToMe,
     toggleSort,
     setCommentScope,
+    setTimeFilterPreset,
+    setCustomTimeRange,
   } = useFilterStore();
   const [openMenu, setOpenMenu] = useState<MenuId | null>(null);
   const statusRef = useRef<HTMLDivElement>(null);
+  const timeRef = useRef<HTMLDivElement>(null);
   const scopeRef = useRef<HTMLDivElement>(null);
   const sortRef = useRef<HTMLDivElement>(null);
 
@@ -58,6 +78,7 @@ export function FilterBar() {
     function handleClickOutside(e: MouseEvent) {
       let container: HTMLDivElement | null = null;
       if (openMenu === "status") container = statusRef.current;
+      else if (openMenu === "time") container = timeRef.current;
       else if (openMenu === "scope") container = scopeRef.current;
       else if (openMenu === "sort") container = sortRef.current;
 
@@ -87,6 +108,10 @@ export function FilterBar() {
   const statusLabel =
     STATE_FILTER_OPTIONS.find((o) => o.value === workflowStateFilter)?.label ??
     "All";
+  const activeTimeFilter = TIME_FILTER_OPTIONS.find(
+    (o) => o.value === timeFilterPreset,
+  );
+  const isTimeFilterActive = timeFilterPreset !== "all";
 
   return (
     <div className="flex items-center gap-1.5 px-2.5 py-3 border-b border-figma-border bg-figma-bg">
@@ -141,6 +166,72 @@ export function FilterBar() {
       </button>
 
       <div className="flex-1" />
+
+      <div className="relative" ref={timeRef}>
+        <button
+          type="button"
+          onClick={() => toggleMenu("time")}
+          className={`flex items-center gap-0.5 p-1.5 rounded-md transition-colors ${
+            isTimeFilterActive
+              ? "bg-accent-bg text-white shadow-sm"
+              : "text-figma-text-secondary hover:text-figma-text bg-figma-bg-secondary"
+          }`}
+          data-tooltip={activeTimeFilter?.label}
+          data-tooltip-align="right"
+          data-tooltip-pos="bottom"
+        >
+          <Calendar size={12} />
+          <ChevronDown size={10} />
+        </button>
+
+        {openMenu === "time" && (
+          <div className="absolute right-0 top-full mt-1 bg-figma-bg border border-figma-border rounded-md shadow-lg z-20 min-w-[160px] overflow-hidden">
+            {TIME_FILTER_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => {
+                  setTimeFilterPreset(opt.value);
+                  if (opt.value !== "custom") closeMenu();
+                }}
+                className={`w-full text-left px-3 py-1.5 text-xs hover:bg-figma-bg-hover transition-colors ${
+                  timeFilterPreset === opt.value
+                    ? "text-accent font-medium"
+                    : "text-figma-text-secondary"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+            {timeFilterPreset === "custom" && (
+              <div className="flex flex-col gap-2 px-3 pt-2 pb-3.5 bg-figma-bg-secondary border-t border-figma-border">
+                <label className="flex flex-col gap-1 text-[10px] text-figma-text-tertiary">
+                  From
+                  <input
+                    type="date"
+                    value={customTimeStart ?? ""}
+                    onChange={(e) =>
+                      setCustomTimeRange(e.target.value || null, customTimeEnd)
+                    }
+                    className="w-full px-2 py-1 text-xs rounded border border-figma-border bg-figma-bg text-figma-text"
+                  />
+                </label>
+                <label className="flex flex-col gap-1 text-[10px] text-figma-text-tertiary">
+                  To
+                  <input
+                    type="date"
+                    value={customTimeEnd ?? ""}
+                    onChange={(e) =>
+                      setCustomTimeRange(customTimeStart, e.target.value || null)
+                    }
+                    className="w-full px-2 py-1 text-xs rounded border border-figma-border bg-figma-bg text-figma-text"
+                  />
+                </label>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       <div className="relative" ref={scopeRef}>
         <button

@@ -4,6 +4,7 @@ import type {
   SortField,
   SortDirection,
   CommentScope,
+  TimeFilterPreset,
   CommentThread,
 } from "@shared/types";
 import { getStorage, setStorage } from "@ui/lib/storage";
@@ -50,17 +51,48 @@ function normalizeStoredWorkflowFilter(
   return stored;
 }
 
+export function getTimeRangeBounds(
+  preset: TimeFilterPreset,
+  customStart: string | null,
+  customEnd: string | null,
+): { start: number | null; end: number | null } {
+  const now = Date.now();
+  switch (preset) {
+    case "all":
+      return { start: null, end: null };
+    case "24h":
+      return { start: now - 24 * 60 * 60 * 1000, end: null };
+    case "7d":
+      return { start: now - 7 * 24 * 60 * 60 * 1000, end: null };
+    case "30d":
+      return { start: now - 30 * 24 * 60 * 60 * 1000, end: null };
+    case "custom": {
+      if (!customStart || !customEnd) return { start: null, end: null };
+      const start = new Date(customStart);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(customEnd);
+      end.setHours(23, 59, 59, 999);
+      return { start: start.getTime(), end: end.getTime() };
+    }
+  }
+}
+
 interface FilterState {
   workflowStateFilter: WorkflowState | null;
   addressedToMe: boolean;
   sortField: SortField;
   sortDirection: SortDirection;
   commentScope: CommentScope;
+  timeFilterPreset: TimeFilterPreset;
+  customTimeStart: string | null;
+  customTimeEnd: string | null;
 
   setWorkflowStateFilter: (state: WorkflowState | null) => void;
   setAddressedToMe: (enabled: boolean) => void;
   toggleSort: (field: SortField) => void;
   setCommentScope: (scope: CommentScope) => void;
+  setTimeFilterPreset: (preset: TimeFilterPreset) => void;
+  setCustomTimeRange: (start: string | null, end: string | null) => void;
   clearFilters: () => void;
   initFromStorage: () => Promise<void>;
   applyFilters: (
@@ -103,6 +135,9 @@ export const useFilterStore = create<FilterState>((set, get) => ({
   sortField: DEFAULT_SORT_FIELD,
   sortDirection: DEFAULT_SORT_DIR,
   commentScope: "full_file",
+  timeFilterPreset: "all",
+  customTimeStart: null,
+  customTimeEnd: null,
 
   setWorkflowStateFilter: (state) => {
     set({ workflowStateFilter: state });
@@ -134,6 +169,17 @@ export const useFilterStore = create<FilterState>((set, get) => ({
     }
   },
 
+  setTimeFilterPreset: (timeFilterPreset) => {
+    set({ timeFilterPreset });
+    setStorage("timeFilterPreset", timeFilterPreset);
+  },
+
+  setCustomTimeRange: (customTimeStart, customTimeEnd) => {
+    set({ customTimeStart, customTimeEnd });
+    setStorage("customTimeStart", customTimeStart);
+    setStorage("customTimeEnd", customTimeEnd);
+  },
+
   clearFilters: () => {
     set({
       workflowStateFilter: null,
@@ -141,25 +187,37 @@ export const useFilterStore = create<FilterState>((set, get) => ({
       sortField: DEFAULT_SORT_FIELD,
       sortDirection: DEFAULT_SORT_DIR,
       commentScope: "full_file",
+      timeFilterPreset: "all",
+      customTimeStart: null,
+      customTimeEnd: null,
     });
     setStorage("workflowFilter", null);
     setStorage("addressedToMe", false);
     setStorage("sortField", DEFAULT_SORT_FIELD);
     setStorage("sortDirection", DEFAULT_SORT_DIR);
+    setStorage("timeFilterPreset", "all");
+    setStorage("customTimeStart", null);
+    setStorage("customTimeEnd", null);
   },
 
   initFromStorage: async () => {
-    const [wf, atm, sf, sd] = await Promise.all([
+    const [wf, atm, sf, sd, tfp, cts, cte] = await Promise.all([
       getStorage<WorkflowState | WorkflowState[] | null>("workflowFilter"),
       getStorage<boolean>("addressedToMe"),
       getStorage<SortField>("sortField"),
       getStorage<SortDirection>("sortDirection"),
+      getStorage<TimeFilterPreset>("timeFilterPreset"),
+      getStorage<string | null>("customTimeStart"),
+      getStorage<string | null>("customTimeEnd"),
     ]);
     set({
       workflowStateFilter: normalizeStoredWorkflowFilter(wf),
       addressedToMe: atm ?? false,
       sortField: sf ?? DEFAULT_SORT_FIELD,
       sortDirection: sd ?? DEFAULT_SORT_DIR,
+      timeFilterPreset: tfp ?? "all",
+      customTimeStart: cts ?? null,
+      customTimeEnd: cte ?? null,
     });
   },
 
@@ -175,9 +233,26 @@ export const useFilterStore = create<FilterState>((set, get) => ({
       sortField,
       sortDirection,
       commentScope,
+      timeFilterPreset,
+      customTimeStart,
+      customTimeEnd,
     } = get();
 
     let filtered = threads;
+
+    const { start: timeStart, end: timeEnd } = getTimeRangeBounds(
+      timeFilterPreset,
+      customTimeStart,
+      customTimeEnd,
+    );
+    if (timeStart !== null || timeEnd !== null) {
+      filtered = filtered.filter((t) => {
+        const ts = new Date(t.lastUpdatedAt).getTime();
+        if (timeStart !== null && ts < timeStart) return false;
+        if (timeEnd !== null && ts > timeEnd) return false;
+        return true;
+      });
+    }
 
     if (commentScope === "current_page") {
       if (!currentPageThreadIds) {

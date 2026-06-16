@@ -91,6 +91,7 @@ export type StatusFilter = "all" | "open" | "resolved";
 export type SortField = "replies" | "participants" | "last_updated" | "created_at";
 export type SortDirection = "asc" | "desc";
 export type CommentScope = "current_page" | "full_file";
+export type TimeFilterPreset = "all" | "24h" | "7d" | "30d" | "custom";
 export type CacheTTLMinutes = 5 | 10 | 15 | 30;
 
 export type ThemePreference = "system" | "light" | "dark";

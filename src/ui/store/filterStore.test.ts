@@ -8,7 +8,10 @@ vi.mock("@ui/lib/storage", () => ({
 
 const { useFilterStore } = await import("./filterStore");
 
-function makeThread(id: string): CommentThread {
+function makeThread(
+  id: string,
+  lastUpdatedAt = "2026-01-01T00:00:00.000Z",
+): CommentThread {
   return {
     id,
     fileKey: "file",
@@ -23,7 +26,7 @@ function makeThread(id: string): CommentThread {
     participants: [],
     clientMeta: null,
     mentions: [],
-    lastUpdatedAt: "2026-01-01T00:00:00.000Z",
+    lastUpdatedAt,
   };
 }
 
@@ -99,5 +102,63 @@ describe("applyFilters current page scope", () => {
       .applyFilters(threads, currentPageThreadIds, () => "open");
 
     expect(filtered.map((t) => t.id)).toEqual(["a", "b"]);
+  });
+});
+
+describe("applyFilters time range", () => {
+  beforeEach(() => {
+    useFilterStore.setState({
+      commentScope: "full_file",
+      workflowStateFilter: null,
+      timeFilterPreset: "all",
+      customTimeStart: null,
+      customTimeEnd: null,
+    });
+  });
+
+  it("shows all threads when time filter is all", () => {
+    const threads = [
+      makeThread("a", "2020-01-01T00:00:00.000Z"),
+      makeThread("b", new Date().toISOString()),
+    ];
+
+    const filtered = useFilterStore
+      .getState()
+      .applyFilters(threads, null, () => "open");
+
+    expect(filtered.map((t) => t.id)).toEqual(["a", "b"]);
+  });
+
+  it("filters to threads updated in the last 24 hours", () => {
+    const now = Date.now();
+    const recent = new Date(now - 2 * 60 * 60 * 1000).toISOString();
+    const old = new Date(now - 48 * 60 * 60 * 1000).toISOString();
+    useFilterStore.setState({ timeFilterPreset: "24h" });
+    const threads = [makeThread("recent", recent), makeThread("old", old)];
+
+    const filtered = useFilterStore
+      .getState()
+      .applyFilters(threads, null, () => "open");
+
+    expect(filtered.map((t) => t.id)).toEqual(["recent"]);
+  });
+
+  it("filters to a custom date range", () => {
+    useFilterStore.setState({
+      timeFilterPreset: "custom",
+      customTimeStart: "2026-06-10",
+      customTimeEnd: "2026-06-12",
+    });
+    const threads = [
+      makeThread("in-range", "2026-06-11T12:00:00.000Z"),
+      makeThread("before", "2026-06-09T12:00:00.000Z"),
+      makeThread("after", "2026-06-13T12:00:00.000Z"),
+    ];
+
+    const filtered = useFilterStore
+      .getState()
+      .applyFilters(threads, null, () => "open");
+
+    expect(filtered.map((t) => t.id)).toEqual(["in-range"]);
   });
 });

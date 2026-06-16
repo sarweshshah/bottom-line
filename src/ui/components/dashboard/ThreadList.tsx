@@ -39,6 +39,9 @@ export function ThreadList({
     workflowStateFilter,
     sortField,
     sortDirection,
+    timeFilterPreset,
+    customTimeStart,
+    customTimeEnd,
   } = useFilterStore(
     useShallow((s) => ({
       applyFilters: s.applyFilters,
@@ -48,6 +51,9 @@ export function ThreadList({
       workflowStateFilter: s.workflowStateFilter,
       sortField: s.sortField,
       sortDirection: s.sortDirection,
+      timeFilterPreset: s.timeFilterPreset,
+      customTimeStart: s.customTimeStart,
+      customTimeEnd: s.customTimeEnd,
     })),
   );
   const getWorkflowState = useWorkflowStore((s) => s.getState);
@@ -80,6 +86,9 @@ export function ThreadList({
       sortField,
       sortDirection,
       commentScope,
+      timeFilterPreset,
+      customTimeStart,
+      customTimeEnd,
     ],
   );
 

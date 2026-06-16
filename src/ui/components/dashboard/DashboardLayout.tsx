@@ -202,6 +202,9 @@ export function DashboardLayout() {
     addressedToMe,
     sortField,
     sortDirection,
+    timeFilterPreset,
+    customTimeStart,
+    customTimeEnd,
   } = useFilterStore(
     useShallow((s) => ({
       applyFilters: s.applyFilters,
@@ -210,6 +213,9 @@ export function DashboardLayout() {
       addressedToMe: s.addressedToMe,
       sortField: s.sortField,
       sortDirection: s.sortDirection,
+      timeFilterPreset: s.timeFilterPreset,
+      customTimeStart: s.customTimeStart,
+      customTimeEnd: s.customTimeEnd,
     })),
   );
   const { showSettings, user, fileName } = useAuthStore();
@@ -336,6 +342,9 @@ export function DashboardLayout() {
     sortField,
     sortDirection,
     commentScope,
+    timeFilterPreset,
+    customTimeStart,
+    customTimeEnd,
   ]);
   const filteredCount = filteredThreads.length;
 
@@ -387,7 +396,7 @@ export function DashboardLayout() {
 
       {/* Bulk action bar */}
       {bulkMode && selectedIds.size > 0 && (
-        <div className="px-4 py-2.5 border-t border-figma-border bg-accent-subtle flex items-center justify-between">
+        <div className="pl-4 pr-2 py-2.5 border-t border-figma-border bg-accent-subtle flex items-center justify-between">
           <span className="text-xs font-medium text-accent">
             {selectedIds.size} selected
           </span>
