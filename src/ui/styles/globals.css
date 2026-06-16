@@ -78,15 +78,14 @@ body,
   color-scheme: dark;
 }
 
-.figma-dark .summarize-cta-button {
-  border: none;
-}
-
 .summarize-cta-button {
   background-position: 0% 50%;
+  background-clip: padding-box;
+  background-origin: padding-box;
   animation: ai-shimmer 10s linear infinite;
   box-shadow: none;
   filter: none;
+  border: none;
 }
 
 /*
