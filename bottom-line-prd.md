@@ -4,10 +4,10 @@
 
 |                    |                              |
 | ------------------ | ---------------------------- |
-| **Version**        | 2.1                              |
-| **Status**         | Shipped (v2.1.0)                 |
+| **Version**        | 2.2                              |
+| **Status**         | Shipped (v2.2.0)                 |
 | **Author**         | Sarwesh                          |
-| **Date**           | June 14, 2026                    |
+| **Date**           | June 16, 2026                    |
 | **Stakeholders**   | Design, Engineering, Product |
 | **Classification** | Internal                     |
 
@@ -82,9 +82,9 @@ The plugin is published to the Figma Community so anyone can install it. Public 
 
 ## 3.2 Scope Definition
 
-The following table clarifies what is shipped in v2.1 versus planned for later:
+The following table clarifies what is shipped in v2.2 versus planned for later:
 
-| **Shipped (v2.1)**                           | **Planned / Out of Scope**                       |
+| **Shipped (v2.2)**                           | **Planned / Out of Scope**                       |
 | -------------------------------------------- | ------------------------------------------------ |
 | Thread listing with Open / Read / Done states | Third-party integrations (Slack, Jira, Linear)   |
 | On-demand and bulk AI thread summaries       | Comment creation or reply from within the plugin |
@@ -780,7 +780,7 @@ The core data model normalized from REST API responses:
 | images        | string[] (CDN URLs)                                                | REST API (extracted from comment attachments)                         |
 | mentions      | string[] (user handles)                                            | Parsed from message text                                              |
 | workflowState | open \| read \| resolved | Plugin state engine (Figma open/resolved synced on refresh)             |
-| tags          | Tag[]                    | Planned — not shipped in v2.1                                         |
+| tags          | Tag[]                    | Planned — not shipped in v2.2                                         |
 | summary       | string \| null                                                     | AI Engine output                                                      |
 | tasks         | Task[]                                                             | AI Engine output                                                      |
 
