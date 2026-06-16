@@ -342,7 +342,7 @@ function SummarySection({ thread }: { thread: CommentThread }) {
 
   if (tooShort) {
     return (
-      <div className={SUMMARY_SECTION_CLASS}>
+      <div className="pl-4 pr-3.5 py-3 border-b border-figma-border">
         <div className="flex items-center gap-1.5 text-xs text-figma-text-secondary">
           <Sparkles size={12} />
           Thread too short to summarize (fewer than 3 comments).

@@ -159,10 +159,7 @@ export function TasksView({ onSelectThread }: TasksViewProps) {
 
   if (allTasks.length === 0) {
     return (
-      <div
-        className="flex-1 flex flex-col items-center px-6 text-center"
-        style={{ paddingTop: "33%" }}
-      >
+      <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
         <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center mb-3">
           <Sparkles size={20} className="text-accent" />
         </div>
