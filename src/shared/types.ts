@@ -88,7 +88,12 @@ export interface CommentThread {
 }
 
 export type StatusFilter = "all" | "open" | "resolved";
-export type SortField = "replies" | "participants" | "last_updated" | "created_at";
+export type SortField =
+  | "replies"
+  | "participants"
+  | "last_updated"
+  | "created_at"
+  | "relatedness";
 export type SortDirection = "asc" | "desc";
 export type CommentScope = "current_page" | "full_file";
 export type TimeFilterPreset = "all" | "24h" | "7d" | "30d" | "custom";
@@ -111,7 +116,9 @@ export function normalizeSummaryWordLimit(limit: number): SummaryWordLimit {
     SUMMARY_WORD_LIMIT_MAX,
     Math.max(SUMMARY_WORD_LIMIT_MIN, Math.round(limit)),
   );
-  return Math.round(clamped / SUMMARY_WORD_LIMIT_STEP) * SUMMARY_WORD_LIMIT_STEP;
+  return (
+    Math.round(clamped / SUMMARY_WORD_LIMIT_STEP) * SUMMARY_WORD_LIMIT_STEP
+  );
 }
 
 /** Selectable summary word-limit values (min–max in step increments). */
@@ -127,7 +134,12 @@ export const SUMMARY_WORD_LIMIT_OPTIONS: SummaryWordLimit[] = (() => {
   return out;
 })();
 
-export type TaskType = "revision" | "approval" | "blocker" | "question" | "general";
+export type TaskType =
+  | "revision"
+  | "approval"
+  | "blocker"
+  | "question"
+  | "general";
 export type TaskStatus = "pending" | "done";
 
 export interface Task {

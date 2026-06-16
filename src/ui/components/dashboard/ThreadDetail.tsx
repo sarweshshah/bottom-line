@@ -349,11 +349,18 @@ function SummarySection({ thread }: { thread: CommentThread }) {
             </button>
           )}
 
-          {isLoading && (
+          {isLoading && !result && (
             <div className="space-y-2">
               <div className="h-3 w-full rounded bg-ai-shimmer overflow-hidden" />
               <div className="h-3 w-4/5 rounded bg-ai-shimmer overflow-hidden" />
               <div className="h-3 w-3/5 rounded bg-ai-shimmer overflow-hidden" />
+            </div>
+          )}
+
+          {isLoading && result && (
+            <div className="flex items-center gap-1.5 text-[10px] text-figma-text-secondary mb-2">
+              <Loader2 size={11} className="animate-spin shrink-0" />
+              Regenerating summary…
             </div>
           )}
 

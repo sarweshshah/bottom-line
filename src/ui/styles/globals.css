@@ -142,7 +142,7 @@ body,
 .bg-ai-shimmer-cta {
   background-color: var(--bl-ai-cta-bg);
   background-image: linear-gradient(
-    90deg,
+    in oklch 90deg,
     var(--bl-ai-cta-c0) 0%,
     var(--bl-ai-cta-c1) 5%,
     var(--bl-ai-cta-c2) 10%,

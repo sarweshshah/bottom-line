@@ -145,6 +145,50 @@ describe("parseAIResponse", () => {
     expect(countSummaryWords(result.summary)).toBe(105);
     expect(result.summary.endsWith("...")).toBe(false);
   });
+
+  it("preserves bullet structure when truncating to word limit", () => {
+    const bullets = Array.from(
+      { length: 6 },
+      (_, i) =>
+        `- ${Array.from({ length: 20 }, (_, j) => `w${i * 20 + j}`).join(" ")}`,
+    ).join("\n");
+
+    const result = parseAIResponse(
+      JSON.stringify({ summary: bullets, tasks: [] }),
+      thread.id,
+      thread,
+      "openai",
+      "gpt",
+      50,
+    );
+
+    const lines = result.summary.split("\n").filter((line) => line.trim());
+    expect(lines.length).toBeGreaterThan(1);
+    expect(lines.every((line) => line.startsWith("- "))).toBe(true);
+    expect(countSummaryWords(result.summary)).toBeLessThanOrEqual(50);
+  });
+
+  it("formats multiline plain summaries into separate bullets", () => {
+    const raw = JSON.stringify({
+      summary:
+        "First line point\nSecond line point\nThird line point\nFourth line point",
+      tasks: [],
+    });
+
+    const result = parseAIResponse(
+      raw,
+      thread.id,
+      thread,
+      "openai",
+      "gpt",
+      SUMMARY_WORD_LIMIT_DEFAULT,
+    );
+    const lines = result.summary.split("\n");
+    expect(lines).toHaveLength(4);
+    expect(lines.every((line) => line.startsWith("- "))).toBe(true);
+    expect(lines[0]).toContain("First line point");
+    expect(lines[1]).toContain("Second line point");
+  });
 });
 
 describe("buildSystemPrompt", () => {

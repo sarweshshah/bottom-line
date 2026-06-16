@@ -163,7 +163,12 @@ export const useAIStore = create<AIState>((set, get) => ({
   setThreadLoading: (threadId) => {
     set((state) => {
       const next = new Map(state.threadSummaries);
-      next.set(threadId, { isLoading: true, result: null, error: null });
+      const existing = next.get(threadId);
+      next.set(threadId, {
+        isLoading: true,
+        result: existing?.result ?? null,
+        error: null,
+      });
       return { threadSummaries: next };
     });
   },

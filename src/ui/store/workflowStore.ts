@@ -29,10 +29,6 @@ function figmaStatus(thread: CommentThread): "open" | "resolved" {
   return thread.resolvedAt ? "resolved" : "open";
 }
 
-function isIntermediate(s: WorkflowState): boolean {
-  return s === "read";
-}
-
 async function persistStates(states: Map<string, WorkflowState>) {
   const obj: StateMap = {};
   for (const [id, state] of states) {
@@ -119,28 +115,38 @@ export const useWorkflowStore = create<WorkflowStoreState>((set, get) => ({
   reconcileWithFigma: (threads) => {
     const states = new Map(get().states);
     const overridden: string[] = [];
+    let changed = false;
 
     for (const t of threads) {
       const native = figmaStatus(t);
       const local = states.get(t.id);
+      let next: WorkflowState | null = null;
 
-      if (!local) {
-        states.set(t.id, native);
-        continue;
+      if (local === undefined) {
+        next = native;
+      } else if (native === "resolved" && local !== "resolved") {
+        next = "resolved";
+      } else if (native === "open" && local === "resolved") {
+        next = "open";
       }
 
-      if (native === "resolved" && isIntermediate(local)) {
-        states.set(t.id, "resolved");
-        overridden.push(t.id);
-      } else if (native === "open" && local === "resolved") {
-        states.set(t.id, "open");
-        overridden.push(t.id);
+      if (next === null || next === local) continue;
+
+      states.set(t.id, next);
+      changed = true;
+      overridden.push(t.id);
+
+      if (next === "resolved") {
+        completeTasksForThread(t.id);
       }
     }
 
-    if (overridden.length > 0) {
+    if (changed) {
       set({ states });
       persistStates(states);
+    }
+
+    if (overridden.length > 0) {
       const count = overridden.length;
       showToast(
         `${count} thread${count > 1 ? "s were" : " was"} updated in Figma and ${count > 1 ? "their" : "its"} local state has been synced.`,

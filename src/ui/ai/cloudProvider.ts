@@ -125,10 +125,17 @@ async function callAnthropic(
   }
 
   const data = await res.json();
-  const textBlock = data.content?.find(
-    (b: { type: string }) => b.type === "text",
-  );
-  return textBlock?.text ?? "";
+  return joinTextBlocks(data.content);
+}
+
+function joinTextBlocks(
+  blocks: Array<{ type?: string; text?: string }> | undefined,
+): string {
+  if (!blocks?.length) return "";
+  return blocks
+    .filter((b) => b.type === "text" && b.text)
+    .map((b) => b.text!)
+    .join("");
 }
 
 async function callOpenAI(
@@ -165,7 +172,19 @@ async function callOpenAI(
   }
 
   const data = await res.json();
-  return data.choices?.[0]?.message?.content ?? "";
+  return extractOpenAIContent(data.choices?.[0]?.message?.content);
+}
+
+function extractOpenAIContent(
+  content: string | Array<{ type?: string; text?: string }> | null | undefined,
+): string {
+  if (!content) return "";
+  if (typeof content === "string") return content;
+  if (!Array.isArray(content)) return "";
+  return content
+    .filter((part) => part.type === "text" && part.text)
+    .map((part) => part.text!)
+    .join("");
 }
 
 const GEMINI_PRIMARY_MODEL = "gemini-2.5-flash";
@@ -220,10 +239,15 @@ async function callGeminiModel(
   const data = await res.json();
   const responseParts: Array<{ text?: string; thought?: boolean }> =
     data.candidates?.[0]?.content?.parts ?? [];
-  const responsePart =
-    responseParts.find((p) => p.text && !p.thought) ??
-    responseParts.find((p) => p.text);
-  return responsePart?.text ?? "";
+  return joinGeminiTextParts(responseParts);
+}
+
+function joinGeminiTextParts(
+  parts: Array<{ text?: string; thought?: boolean }>,
+): string {
+  const visible = parts.filter((p) => p.text && !p.thought);
+  const source = visible.length > 0 ? visible : parts.filter((p) => p.text);
+  return source.map((p) => p.text!).join("");
 }
 
 async function callGemini(

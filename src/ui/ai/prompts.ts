@@ -41,6 +41,10 @@ Do not invent tasks that aren't clearly implied by the conversation.`;
 const MAX_CHARS = 16000;
 const SUMMARY_SOFT_OVERAGE_WORDS = 10;
 
+function countWords(text: string): number {
+  return (text.match(/\S+/g) ?? []).length;
+}
+
 function truncateToWordLimit(text: string, limit: SummaryWordLimit): string {
   const normalized = text
     .trim()
@@ -51,11 +55,33 @@ function truncateToWordLimit(text: string, limit: SummaryWordLimit): string {
   const words = normalized.match(/\S+/g) ?? [];
   if (words.length <= limit + SUMMARY_SOFT_OVERAGE_WORDS) return normalized;
 
+  const lines = normalized
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+  const isBulleted =
+    lines.length > 0 && lines.every((line) => /^[-*•]\s+/.test(line));
+
+  if (isBulleted) {
+    const keptLines: string[] = [];
+    let runningWords = 0;
+    for (const line of lines) {
+      const lineWords = countWords(line);
+      if (keptLines.length > 0 && runningWords + lineWords > limit) break;
+      keptLines.push(line);
+      runningWords += lineWords;
+    }
+    if (keptLines.length > 0) {
+      const truncated = keptLines.join("\n");
+      return keptLines.length < lines.length ? `${truncated}\n...` : truncated;
+    }
+  }
+
   const sentences = normalized.split(/(?<=[.!?])\s+/).filter(Boolean);
   const keptSentences: string[] = [];
   let runningWords = 0;
   for (const sentence of sentences) {
-    const sentenceWordCount = (sentence.match(/\S+/g) ?? []).length;
+    const sentenceWordCount = countWords(sentence);
     if (runningWords + sentenceWordCount > limit) break;
     keptSentences.push(sentence);
     runningWords += sentenceWordCount;
@@ -84,6 +110,16 @@ function ensureBulletedSummary(text: string): string {
         .filter(Boolean);
     });
     return expandedBullets.map((line) => `- ${line}`).join("\n");
+  }
+
+  if (lines.length > 1) {
+    const bulletCount = Math.min(4, lines.length);
+    return lines
+      .slice(0, bulletCount)
+      .map((line) =>
+        /^[-*•]\s+/.test(line) ? line : `- ${line.replace(/^[-*•]\s+/, "")}`,
+      )
+      .join("\n");
   }
 
   const sentences = text
@@ -168,6 +204,14 @@ function extractJSON(text: string): RawAIResponse | null {
   const summaryMatch = text.match(/"summary"\s*:\s*"((?:[^"\\]|\\.)*)"/);
   if (summaryMatch) {
     const summary = summaryMatch[1].replace(/\\"/g, '"').replace(/\\n/g, "\n");
+    return { summary };
+  }
+
+  const unclosedSummaryMatch = text.match(/"summary"\s*:\s*"((?:[^"\\]|\\.)*)/);
+  if (unclosedSummaryMatch?.[1]) {
+    const summary = unclosedSummaryMatch[1]
+      .replace(/\\"/g, '"')
+      .replace(/\\n/g, "\n");
     return { summary };
   }
 
