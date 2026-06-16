@@ -82,6 +82,13 @@ body,
   border: none;
 }
 
+.summarize-cta-button {
+  background-position: 0% 50%;
+  animation: ai-shimmer 10s linear infinite;
+  box-shadow: none;
+  filter: none;
+}
+
 /*
  * Seamless loop: gradient is two identical halves (0–50% and 50–100% stop space),
  * both ending on c0. background-size 200% + position 0%→100% aligns the same slice
@@ -142,7 +149,7 @@ body,
 .bg-ai-shimmer-cta {
   background-color: var(--bl-ai-cta-bg);
   background-image: linear-gradient(
-    in oklch 90deg,
+    90deg in oklch,
     var(--bl-ai-cta-c0) 0%,
     var(--bl-ai-cta-c1) 5%,
     var(--bl-ai-cta-c2) 10%,
@@ -174,10 +181,21 @@ body,
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .bg-ai-shimmer {
+  :root:not([data-motion="allow"]) .bg-ai-shimmer {
     animation: none;
     background-position: 0% 50%;
   }
+
+  :root:not([data-motion="allow"]) .summarize-cta-button {
+    animation: none;
+    background-position: 0% 50%;
+  }
+}
+
+:root[data-motion="reduce"] .bg-ai-shimmer,
+:root[data-motion="reduce"] .summarize-cta-button {
+  animation: none;
+  background-position: 0% 50%;
 }
 
 /* ─── Onboarding ─── */
@@ -215,8 +233,10 @@ body,
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .onboarding-step-enter { animation: none; }
+  :root:not([data-motion="allow"]) .onboarding-step-enter { animation: none; }
 }
+
+:root[data-motion="reduce"] .onboarding-step-enter { animation: none; }
 
 /* ─── Progressive setting disclosure ─── */
 
@@ -230,8 +250,10 @@ body,
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .setting-reveal { animation: none; }
+  :root:not([data-motion="allow"]) .setting-reveal { animation: none; }
 }
+
+:root[data-motion="reduce"] .setting-reveal { animation: none; }
 
 /* ─── Thread list: gentle staggered row entrance ─── */
 
@@ -255,8 +277,10 @@ body,
 .thread-list > *:nth-child(8) { animation-delay: 210ms; }
 
 @media (prefers-reduced-motion: reduce) {
-  .thread-list > * { animation: none; }
+  :root:not([data-motion="allow"]) .thread-list > * { animation: none; }
 }
+
+:root[data-motion="reduce"] .thread-list > * { animation: none; }
 
 /* ─── Empty state: soft entrance + halo ─── */
 
@@ -288,5 +312,7 @@ body,
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .empty-state-enter { animation: none; }
+  :root:not([data-motion="allow"]) .empty-state-enter { animation: none; }
 }
+
+:root[data-motion="reduce"] .empty-state-enter { animation: none; }

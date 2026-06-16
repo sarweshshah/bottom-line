@@ -100,6 +100,7 @@ export type TimeFilterPreset = "all" | "24h" | "7d" | "30d" | "custom";
 export type CacheTTLMinutes = 5 | 10 | 15 | 30;
 
 export type ThemePreference = "system" | "light" | "dark";
+export type MotionPreference = "system" | "reduce" | "allow";
 export type AIProvider = "anthropic" | "openai" | "gemini" | "custom";
 
 /** Stored preference; values are clamped to min/max and snapped to step at persistence boundaries. */
@@ -181,6 +182,7 @@ export interface StoredPreferences {
   cacheTTL: CacheTTLMinutes;
   showThreadElbows: boolean;
   themePreference: ThemePreference;
+  motionPreference: MotionPreference;
   aiProvider: AIProvider;
   anthropicApiKey: string;
   openaiApiKey: string;

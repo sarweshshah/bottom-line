@@ -40,6 +40,7 @@ export interface InitDataMessage {
   userId: string | null;
   showThreadElbows: boolean;
   themePreference: "system" | "light" | "dark";
+  motionPreference: "system" | "reduce" | "allow";
   cacheTTLMinutes: 5 | 10 | 15 | 30;
   currentPageId: string;
 }

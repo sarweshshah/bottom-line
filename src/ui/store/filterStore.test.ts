@@ -8,6 +8,19 @@ vi.mock("@ui/lib/storage", () => ({
 
 const { useFilterStore, sortByRelatedness } = await import("./filterStore");
 
+function resetFilterDefaults() {
+  useFilterStore.setState({
+    workflowStateFilter: null,
+    addressedToMe: false,
+    sortField: "replies",
+    sortDirection: "desc",
+    commentScope: "full_file",
+    timeFilterPreset: "all",
+    customTimeStart: null,
+    customTimeEnd: null,
+  });
+}
+
 function makeThread(
   id: string,
   overrides?: Partial<CommentThread>,
@@ -31,12 +44,43 @@ function makeThread(
   };
 }
 
+describe("default sort", () => {
+  beforeEach(() => {
+    resetFilterDefaults();
+  });
+
+  it("defaults to replies descending", () => {
+    expect(useFilterStore.getState().sortField).toBe("replies");
+    expect(useFilterStore.getState().sortDirection).toBe("desc");
+  });
+
+  it("sorts threads by reply count when no sort field is set", () => {
+    const threads = [
+      makeThread("few", { replyCount: 1 }),
+      makeThread("many", { replyCount: 10 }),
+      makeThread("none", { replyCount: 0 }),
+    ];
+
+    const sorted = useFilterStore
+      .getState()
+      .applyFilters(threads, null, () => "open");
+
+    expect(sorted.map((t) => t.id)).toEqual(["many", "few", "none"]);
+  });
+
+  it("restores replies sort when filters are cleared", () => {
+    useFilterStore.setState({ sortField: "last_updated", sortDirection: "asc" });
+
+    useFilterStore.getState().clearFilters();
+
+    expect(useFilterStore.getState().sortField).toBe("replies");
+    expect(useFilterStore.getState().sortDirection).toBe("desc");
+  });
+});
+
 describe("applyFilters workflow state", () => {
   beforeEach(() => {
-    useFilterStore.setState({
-      commentScope: "full_file",
-      workflowStateFilter: null,
-    });
+    resetFilterDefaults();
   });
 
   it("shows all threads when no state filter is set", () => {
@@ -65,10 +109,7 @@ describe("applyFilters workflow state", () => {
 
 describe("applyFilters current page scope", () => {
   beforeEach(() => {
-    useFilterStore.setState({
-      commentScope: "full_file",
-      workflowStateFilter: null,
-    });
+    resetFilterDefaults();
   });
 
   it("filters to threads on the current page", () => {
@@ -108,13 +149,7 @@ describe("applyFilters current page scope", () => {
 
 describe("applyFilters time range", () => {
   beforeEach(() => {
-    useFilterStore.setState({
-      commentScope: "full_file",
-      workflowStateFilter: null,
-      timeFilterPreset: "all",
-      customTimeStart: null,
-      customTimeEnd: null,
-    });
+    resetFilterDefaults();
   });
 
   it("shows all threads when time filter is all", () => {
@@ -168,6 +203,10 @@ describe("applyFilters time range", () => {
 });
 
 describe("sortByRelatedness", () => {
+  beforeEach(() => {
+    resetFilterDefaults();
+  });
+
   const nodeA = (x: number, y: number): ClientMeta => ({
     node_id: "nodeA",
     node_offset: { x, y },

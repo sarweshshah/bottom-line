@@ -64,6 +64,7 @@ async function sendInitData() {
     userId,
     showThreadElbows,
     themePreference,
+    motionPreference,
     cacheTTL,
   ] = await Promise.all([
     figma.clientStorage.getAsync("pat"),
@@ -78,6 +79,7 @@ async function sendInitData() {
     figma.clientStorage.getAsync("userId"),
     figma.clientStorage.getAsync("showThreadElbows"),
     figma.clientStorage.getAsync("themePreference"),
+    figma.clientStorage.getAsync("motionPreference"),
     figma.clientStorage.getAsync("cacheTTL"),
   ]);
 
@@ -103,6 +105,7 @@ async function sendInitData() {
     userId: userId ?? null,
     showThreadElbows: showThreadElbows === true,
     themePreference: (["system", "light", "dark"].includes(themePreference) ? themePreference : "system") as "system" | "light" | "dark",
+    motionPreference: (["system", "reduce", "allow"].includes(motionPreference) ? motionPreference : "system") as "system" | "reduce" | "allow",
     cacheTTLMinutes: normalizeCacheTTL(cacheTTL),
     currentPageId: figma.currentPage.id,
   };

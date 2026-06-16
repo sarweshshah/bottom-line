@@ -113,14 +113,27 @@ interface ResizeDragState {
   startHeight: number;
 }
 
+function applyMotion(pref: "system" | "reduce" | "allow") {
+  const root = document.documentElement;
+  if (pref === "system") {
+    root.removeAttribute("data-motion");
+  } else {
+    root.setAttribute("data-motion", pref);
+  }
+}
+
 export function App() {
-  const { screen, initFromSandbox, showDashboard, themePreference } =
+  const { screen, initFromSandbox, showDashboard, themePreference, motionPreference } =
     useAuthStore();
   const resizeDragStateRef = useRef<ResizeDragState | null>(null);
 
   useEffect(() => {
     applyTheme(themePreference);
   }, [themePreference]);
+
+  useEffect(() => {
+    applyMotion(motionPreference);
+  }, [motionPreference]);
 
   const sendResize = useCallback((width: number, height: number) => {
     parent.postMessage(

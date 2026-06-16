@@ -11,6 +11,8 @@ import {
   ChevronRight,
   Sun,
   Moon,
+  Zap,
+  ZapOff,
   TriangleAlert,
 } from "lucide-react";
 import { useAuthStore } from "@ui/store/authStore";
@@ -41,6 +43,7 @@ import type {
   CacheTTLMinutes,
   SummaryWordLimit,
   ThemePreference,
+  MotionPreference,
 } from "@shared/types";
 import { AboutTab } from "@ui/components/settings/AboutTab";
 import { SUMMARY_WORD_LIMIT_OPTIONS } from "@shared/types";
@@ -1078,12 +1081,24 @@ const THEME_OPTIONS: {
   { value: "dark", label: "Dark", icon: Moon },
 ];
 
+const MOTION_OPTIONS: {
+  value: MotionPreference;
+  label: string;
+  icon: typeof Monitor;
+}[] = [
+  { value: "system", label: "System", icon: Monitor },
+  { value: "reduce", label: "Reduced", icon: ZapOff },
+  { value: "allow", label: "Full", icon: Zap },
+];
+
 function DisplayTab() {
   const {
     showThreadElbows,
     setShowThreadElbows,
     themePreference,
     setThemePreference,
+    motionPreference,
+    setMotionPreference,
   } = useAuthStore();
 
   return (
@@ -1103,6 +1118,34 @@ function DisplayTab() {
                   key={opt.value}
                   type="button"
                   onClick={() => setThemePreference(opt.value)}
+                  className={`flex-1 flex items-center justify-center gap-1.5 px-2.5 py-2.5 rounded-md text-xs font-medium transition-all duration-150 ${
+                    isActive ? PILL_ACTIVE : PILL_INACTIVE
+                  }`}
+                >
+                  <Icon size={12} />
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
+        </SettingsSectionBody>
+      </SettingsSection>
+
+      <SettingsSection>
+        <SettingsSectionHeader
+          title="Motion"
+          description="Control animations or follow your system accessibility setting."
+        />
+        <SettingsSectionBody>
+          <div className="flex items-center gap-1.5">
+            {MOTION_OPTIONS.map((opt) => {
+              const Icon = opt.icon;
+              const isActive = motionPreference === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setMotionPreference(opt.value)}
                   className={`flex-1 flex items-center justify-center gap-1.5 px-2.5 py-2.5 rounded-md text-xs font-medium transition-all duration-150 ${
                     isActive ? PILL_ACTIVE : PILL_INACTIVE
                   }`}

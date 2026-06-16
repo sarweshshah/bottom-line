@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { FigmaUser, ThemePreference, FigmaAuthMethod } from "@shared/types";
+import type { FigmaUser, ThemePreference, MotionPreference, FigmaAuthMethod } from "@shared/types";
 import type { InitDataMessage } from "@shared/messages";
 import { deleteStorage, getStorage, setStorage } from "@ui/lib/storage";
 import { validateToken, getFileName, FigmaApiError } from "@ui/api/figmaApi";
@@ -27,6 +27,7 @@ interface AuthState {
   validationError: string | null;
   showThreadElbows: boolean;
   themePreference: ThemePreference;
+  motionPreference: MotionPreference;
 
   initFromSandbox: (data: InitDataMessage) => void;
   getRestAuth: () => RestAuth | null;
@@ -41,6 +42,7 @@ interface AuthState {
   fetchFileName: () => Promise<void>;
   setShowThreadElbows: (enabled: boolean) => void;
   setThemePreference: (pref: ThemePreference) => void;
+  setMotionPreference: (pref: MotionPreference) => void;
   completeSetup: () => void;
   showReconnect: () => Promise<void>;
   showSettings: () => void;
@@ -80,6 +82,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   validationError: null,
   showThreadElbows: false,
   themePreference: "system",
+  motionPreference: "system",
 
   getRestAuth: () => {
     const { authMethod, pat, figmaAccessToken } = get();
@@ -110,6 +113,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         },
         showThreadElbows: data.showThreadElbows === true,
         themePreference: data.themePreference ?? "system",
+        motionPreference: data.motionPreference ?? "system",
         screen: "dashboard",
       });
     } else {
@@ -126,6 +130,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           : null,
         showThreadElbows: data.showThreadElbows === true,
         themePreference: data.themePreference ?? "system",
+        motionPreference: data.motionPreference ?? "system",
         screen: "setup",
       });
     }
@@ -258,6 +263,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   setThemePreference: (pref: ThemePreference) => {
     set({ themePreference: pref });
     setStorage("themePreference", pref);
+  },
+
+  setMotionPreference: (pref: MotionPreference) => {
+    set({ motionPreference: pref });
+    setStorage("motionPreference", pref);
   },
 
   completeSetup: () => {
