@@ -80,7 +80,7 @@ export function ViewSwitcherBar({
 
   return (
     <div
-      className={`flex items-stretch justify-between h-9  pr-2.5 bg-figma-bg ${
+      className={`flex items-stretch justify-between h-9 bg-figma-bg ${
         hasFileName ? "" : "border-b border-figma-border"
       }`}
     >
@@ -101,50 +101,50 @@ export function ViewSwitcherBar({
         />
       </div>
 
-      <div className="flex items-center gap-1 self-center">
+      <div className="flex items-stretch self-stretch">
         {showThreadActions && (
           <>
             <button
               type="button"
               onClick={onToggleBulk}
-              className={`p-1.5 rounded-md transition-colors ${
+              className={`flex items-center justify-center w-9 shrink-0 transition-colors ${
                 bulkMode
                   ? "bg-accent-subtle text-accent"
-                  : "text-figma-icon-secondary hover:bg-figma-bg-secondary hover:text-figma-icon"
+                  : "text-figma-icon-secondary hover:bg-figma-bg-hover"
               }`}
               data-tooltip={bulkMode ? "Exit select mode" : "Select threads"}
               data-tooltip-align="right"
               data-tooltip-pos="bottom"
             >
-              <ListChecks size={14} />
+              <ListChecks size={15} />
             </button>
             <button
               type="button"
               onClick={onRefresh}
               disabled={isLoading}
-              className="p-1.5 rounded-md text-figma-icon-secondary hover:bg-figma-bg-secondary hover:text-figma-icon disabled:opacity-40 transition-colors"
+              className="flex items-center justify-center w-9 shrink-0 text-figma-icon-secondary hover:bg-figma-bg-hover disabled:opacity-40 transition-colors"
               data-tooltip="Refresh comments"
               data-tooltip-align="right"
               data-tooltip-pos="bottom"
             >
               {isLoading ? (
-                <Loader2 size={14} className="animate-spin" />
+                <Loader2 size={15} className="animate-spin" />
               ) : (
-                <RefreshCw size={14} />
+                <RefreshCw size={15} />
               )}
             </button>
-            <span className="w-px h-4 bg-figma-border shrink-0" aria-hidden />
+            <span className="w-px self-stretch bg-figma-border shrink-0" aria-hidden />
           </>
         )}
         <button
           type="button"
           onClick={onShowSettings}
-          className="p-1.5 rounded-md text-figma-icon-secondary hover:bg-figma-bg-secondary hover:text-figma-icon transition-colors"
+          className="flex items-center justify-center w-9 shrink-0 text-figma-icon-secondary hover:bg-figma-bg-hover transition-colors"
           data-tooltip="Settings"
           data-tooltip-align="right"
           data-tooltip-pos="bottom"
         >
-          <Settings size={14} />
+          <Settings size={15} />
         </button>
       </div>
     </div>

@@ -27,7 +27,7 @@ export function AboutTab() {
       </div>
 
       <div className="mb-3 space-y-1">
-        <h3 className="text-sm font-semibold text-figma-text">{PLUGIN_NAME}</h3>
+        <h3 className="text-md font-semibold text-figma-text">{PLUGIN_NAME}</h3>
         <span className="inline-block font-mono text-[9px] font-bold uppercase tracking-widest text-figma-text-tertiary">
           v{PLUGIN_VERSION}
         </span>
