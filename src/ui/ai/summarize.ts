@@ -8,6 +8,7 @@ import {
   formatModelName,
 } from "./cloudProvider";
 import { processThreadImages } from "./imageProcessor";
+import { ensureTopicHeader } from "./prompts";
 import { getStorage, setStorage, deleteStorage } from "@ui/lib/storage";
 import { showToast } from "@ui/components/common/Toast";
 
@@ -54,11 +55,13 @@ export function isTooShort(thread: CommentThread): boolean {
 export async function getCachedSummary(
   threadId: string,
   lastUpdatedAt: string,
+  thread?: CommentThread,
 ): Promise<SummaryResult | null> {
   const key = cacheKey(threadId, lastUpdatedAt);
   const cached = await getStorage<SummaryResult>(key);
   if (cached && cached.summary && VALID_PROVIDERS.has(cached.provider)) {
-    return applyStoredTaskStatuses(cached);
+    const withTasks = await applyStoredTaskStatuses(cached);
+    return thread ? ensureTopicHeader(withTasks, thread) : withTasks;
   }
   return null;
 }
@@ -96,7 +99,7 @@ export async function summarizeThread(
   const { provider, imageAnalysisEnabled, summaryWordLimit } = store;
 
   if (!skipCache) {
-    const cached = await getCachedSummary(thread.id, thread.lastUpdatedAt);
+    const cached = await getCachedSummary(thread.id, thread.lastUpdatedAt, thread);
     if (cached) {
       return cached;
     }

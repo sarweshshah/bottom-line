@@ -10,8 +10,10 @@ export function buildSystemPrompt(summaryWordLimit: SummaryWordLimit): string {
   return `You are an assistant that analyzes Figma design comment threads.
 For each thread, provide:
 
-1. TOPIC_HEADER: A short 5-10 word phrase naming the main topic of the
-   discussion (e.g. "Header spacing and alignment feedback").
+1. TOPIC_HEADER (required): A short 5-10 word phrase naming the main topic
+   of the discussion (e.g. "Header spacing and alignment feedback").
+   Always include topicHeader in the JSON response. This field is separate
+   from the summary and does not count toward the summary word limit.
 
 2. SUMMARY: A concise 2-4 bullet summary capturing the core feedback,
    current state, decisions made, and key discussion points.
@@ -21,7 +23,8 @@ For each thread, provide:
    Write in present tense. Be specific about design elements
    mentioned. If images are attached, describe the relevant
    visual content and how it relates to the feedback.
-   Keep the summary at or below ${summaryWordLimit} words.
+   Keep only the summary bullets at or below ${summaryWordLimit} words.
+   Do not include the topic header in the summary word count.
 
 3. TASKS: Extract any action items, requests, or assignments.
    For each task, provide:
@@ -183,6 +186,65 @@ function normalizeTopicHeader(value: unknown): string | undefined {
   return words.slice(0, TOPIC_HEADER_MAX_WORDS).join(" ");
 }
 
+function stripMentions(text: string): string {
+  return text.replace(/@[\w.-]+/g, "").replace(/\s+/g, " ").trim();
+}
+
+function deriveTopicHeaderFallback(
+  thread: CommentThread,
+  summary?: string,
+): string {
+  const fromMessage = stripMentions(thread.message);
+  if (fromMessage) {
+    const words = fromMessage.split(" ").filter(Boolean);
+    if (words.length > 0) {
+      return words.slice(0, TOPIC_HEADER_MAX_WORDS).join(" ");
+    }
+  }
+
+  if (summary) {
+    const firstLine = summary
+      .split("\n")
+      .map((line) => line.trim())
+      .find(Boolean);
+    if (firstLine) {
+      const cleaned = firstLine.replace(/^[-*•]\s+/, "").trim();
+      const words = cleaned.split(/\s+/).filter(Boolean);
+      if (words.length > 0) {
+        return words.slice(0, TOPIC_HEADER_MAX_WORDS).join(" ");
+      }
+    }
+  }
+
+  return "Design feedback discussion thread";
+}
+
+function resolveTopicHeader(
+  value: unknown,
+  thread: CommentThread,
+  summary: string,
+): string {
+  return (
+    normalizeTopicHeader(value) ?? deriveTopicHeaderFallback(thread, summary)
+  );
+}
+
+export function ensureTopicHeader(
+  result: SummaryResult,
+  thread: CommentThread,
+): SummaryResult {
+  return {
+    ...result,
+    topicHeader: resolveTopicHeader(result.topicHeader, thread, result.summary),
+  };
+}
+
+function extractTopicHeaderFromText(text: string): string | undefined {
+  const match = text.match(/"topicHeader"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+  if (!match) return undefined;
+  return match[1].replace(/\\"/g, '"').replace(/\\n/g, "\n");
+}
+
 const VALID_TASK_TYPES = new Set([
   "revision",
   "approval",
@@ -219,10 +281,11 @@ function extractJSON(text: string): RawAIResponse | null {
   }
 
   // Handle truncated JSON where closing braces/backticks are missing
+  const topicHeader = extractTopicHeaderFromText(text);
   const summaryMatch = text.match(/"summary"\s*:\s*"((?:[^"\\]|\\.)*)"/);
   if (summaryMatch) {
     const summary = summaryMatch[1].replace(/\\"/g, '"').replace(/\\n/g, "\n");
-    return { summary };
+    return { ...(topicHeader ? { topicHeader } : {}), summary };
   }
 
   const unclosedSummaryMatch = text.match(/"summary"\s*:\s*"((?:[^"\\]|\\.)*)/);
@@ -230,7 +293,7 @@ function extractJSON(text: string): RawAIResponse | null {
     const summary = unclosedSummaryMatch[1]
       .replace(/\\"/g, '"')
       .replace(/\\n/g, "\n");
-    return { summary };
+    return { ...(topicHeader ? { topicHeader } : {}), summary };
   }
 
   return null;
@@ -299,10 +362,13 @@ export function parseAIResponse(
       ? "Summary could not be generated. Please try again."
       : fallbackSummaryFromRaw(raw);
 
+    const summaryText = ensureBulletedSummary(
+      truncateToWordLimit(fallback, summaryWordLimit),
+    );
+
     return {
-      summary: ensureBulletedSummary(
-        truncateToWordLimit(fallback, summaryWordLimit),
-      ),
+      topicHeader: resolveTopicHeader(parsed?.topicHeader, thread, summaryText),
+      summary: summaryText,
       tasks: [],
       generatedAt: new Date().toISOString(),
       threadLastUpdatedAt: thread.lastUpdatedAt,
@@ -311,7 +377,10 @@ export function parseAIResponse(
     };
   }
 
-  const topicHeader = normalizeTopicHeader(parsed?.topicHeader);
+  const summaryText = ensureBulletedSummary(
+    truncateToWordLimit(summary, summaryWordLimit),
+  );
+  const topicHeader = resolveTopicHeader(parsed?.topicHeader, thread, summaryText);
 
   const rawTasks = Array.isArray(parsed?.tasks) ? parsed.tasks : [];
   const tasks: Task[] = rawTasks
@@ -335,10 +404,8 @@ export function parseAIResponse(
     }));
 
   return {
-    ...(topicHeader ? { topicHeader } : {}),
-    summary: ensureBulletedSummary(
-      truncateToWordLimit(summary, summaryWordLimit),
-    ),
+    topicHeader,
+    summary: summaryText,
     tasks,
     generatedAt: new Date().toISOString(),
     threadLastUpdatedAt: thread.lastUpdatedAt,

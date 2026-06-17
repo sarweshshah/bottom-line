@@ -80,29 +80,24 @@ function splitSummarySegments(summary: string): string[] {
 }
 
 function formatSummaryForCopy(result: SummaryResult): string {
-  if (result.topicHeader) {
-    return `${result.topicHeader}\n\n${result.summary}`;
-  }
-  return result.summary;
+  return `${result.topicHeader}\n\n${result.summary}`;
 }
 
 function AnimatedSummaryContent({ result }: { result: SummaryResult }) {
   const bullets = parseSummaryBullets(result.summary);
   const segments = bullets ?? splitSummarySegments(result.summary);
-  const headerOffset = result.topicHeader ? 1 : 0;
+  const headerOffset = 1;
   const footerDelay =
     (headerOffset + segments.length) * SUMMARY_LINE_STAGGER_MS + 40;
 
   return (
     <>
-      {result.topicHeader && (
-        <p
-          key={`${result.generatedAt}-topic`}
-          className="text-[11px] font-semibold text-figma-text leading-snug mb-1.5 ai-summary-line-enter"
-        >
-          {result.topicHeader}
-        </p>
-      )}
+      <p
+        key={`${result.generatedAt}-topic`}
+        className="text-[11px] font-semibold text-figma-text leading-snug mb-1.5 ai-summary-line-enter"
+      >
+        {result.topicHeader}
+      </p>
       {bullets ? (
         <ul
           key={result.generatedAt}

@@ -215,7 +215,7 @@ describe("parseAIResponse", () => {
     );
   });
 
-  it("omits topic header when not provided", () => {
+  it("falls back to thread message when topic header is not provided", () => {
     const raw = JSON.stringify({
       summary: "- First point.",
       tasks: [],
@@ -230,7 +230,7 @@ describe("parseAIResponse", () => {
       SUMMARY_WORD_LIMIT_DEFAULT,
     );
 
-    expect(result.topicHeader).toBeUndefined();
+    expect(result.topicHeader).toBe("Initial");
   });
 
   it("replaces placeholder summary values with a safe fallback", () => {
@@ -246,7 +246,7 @@ describe("parseAIResponse", () => {
         SUMMARY_WORD_LIMIT_DEFAULT,
       );
 
-      expect(result.topicHeader).toBeUndefined();
+      expect(result.topicHeader).toBe("Initial");
       expect(result.summary).toBe(
         "- Summary could not be generated.\n- Please try again.",
       );
@@ -299,8 +299,9 @@ describe("buildSystemPrompt", () => {
   it("includes configured summary word limit instruction", () => {
     const prompt = buildSystemPrompt(SUMMARY_WORD_LIMIT_MAX);
     expect(prompt).toContain(
-      `Keep the summary at or below ${SUMMARY_WORD_LIMIT_MAX} words.`,
+      `Keep only the summary bullets at or below ${SUMMARY_WORD_LIMIT_MAX} words.`,
     );
+    expect(prompt).toContain("does not count toward the summary word limit");
     expect(prompt).toContain("TOPIC_HEADER");
     expect(prompt).toContain("5-10 word");
     expect(prompt).toContain("A concise 2-4 bullet summary");

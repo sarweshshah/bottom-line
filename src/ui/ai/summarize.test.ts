@@ -1,6 +1,23 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { SummaryResult } from "@shared/types";
+import type { CommentThread, SummaryResult } from "@shared/types";
 import { getCachedSummary } from "./summarize";
+
+const thread: CommentThread = {
+  id: "thread-1",
+  fileKey: "FILE123",
+  orderNumber: 1,
+  author: { id: "u1", handle: "alice", img_url: "" },
+  message: "Initial",
+  createdAt: "2026-01-01T09:00:00.000Z",
+  resolvedAt: null,
+  status: "open",
+  replies: [],
+  replyCount: 0,
+  participants: [{ id: "u1", handle: "alice", img_url: "" }],
+  clientMeta: null,
+  mentions: [],
+  lastUpdatedAt: "2026-01-01T00:00:00.000Z",
+};
 
 const { getStorageMock } = vi.hoisted(() => ({
   getStorageMock: vi.fn(),
@@ -57,6 +74,7 @@ describe("getCachedSummary", () => {
 
   it("rehydrates persisted task statuses when summary cache is loaded", async () => {
     const cached: SummaryResult = {
+      topicHeader: "Initial thread discussion topic",
       summary: "Do the thing",
       generatedAt: "2026-01-01T00:00:00.000Z",
       threadLastUpdatedAt: "2026-01-01T00:00:00.000Z",
@@ -102,5 +120,24 @@ describe("getCachedSummary", () => {
     );
     expect(getStorageMock).toHaveBeenNthCalledWith(2, "taskStatus:task_1");
     expect(getStorageMock).toHaveBeenNthCalledWith(3, "taskStatus:task_2");
+  });
+
+  it("backfills topic header for legacy cached summaries", async () => {
+    getStorageMock.mockResolvedValueOnce({
+      summary: "Do the thing",
+      generatedAt: "2026-01-01T00:00:00.000Z",
+      threadLastUpdatedAt: "2026-01-01T00:00:00.000Z",
+      provider: "anthropic",
+      modelName: "claude",
+      tasks: [],
+    });
+
+    const result = await getCachedSummary(
+      "thread-1",
+      "2026-01-01T00:00:00.000Z",
+      thread,
+    );
+
+    expect(result?.topicHeader).toBe("Initial");
   });
 });

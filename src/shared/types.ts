@@ -143,7 +143,7 @@ export interface Task {
 }
 
 export interface SummaryResult {
-  topicHeader?: string;
+  topicHeader: string;
   summary: string;
   tasks: Task[];
   generatedAt: string;

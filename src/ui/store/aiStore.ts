@@ -328,7 +328,7 @@ export const useAIStore = create<AIState>((set, get) => ({
     if (toFetch.length === 0) return;
 
     const results = await Promise.all(
-      toFetch.map((t) => getCachedSummary(t.id, t.lastUpdatedAt)),
+      toFetch.map((t) => getCachedSummary(t.id, t.lastUpdatedAt, t)),
     );
 
     const next = new Map(get().threadSummaries);
