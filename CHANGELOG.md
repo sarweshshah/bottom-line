@@ -4,6 +4,14 @@ All notable changes to Bottom Line will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.2.1] - 2026-06-17
+
+### Added
+
+- Settings tabs for user preferences, including motion preference controls
+- Topic headers in AI summary responses
+- Virtualized ThreadList rendering for improved performance
+
 ## [2.2.0] - 2026-06-16
 
 ### Added

@@ -6,7 +6,6 @@ import type {
   CommentScope,
   TimeFilterPreset,
   CommentThread,
-  ClientMeta,
 } from "@shared/types";
 import { getStorage, setStorage } from "@ui/lib/storage";
 import { useCommentsStore } from "@ui/store/commentsStore";
@@ -20,7 +19,6 @@ const DEFAULT_DIRECTIONS: Record<SortField, SortDirection> = {
   participants: "desc",
   last_updated: "desc",
   created_at: "desc",
-  relatedness: "desc",
 };
 
 export function isAddressedToMe(
@@ -102,97 +100,6 @@ interface FilterState {
   ) => CommentThread[];
 }
 
-function getNodeId(meta: ClientMeta | null): string | null {
-  if (meta && "node_id" in meta) return meta.node_id;
-  return null;
-}
-
-function getPosition(
-  meta: ClientMeta | null,
-): { x: number; y: number } | null {
-  if (!meta) return null;
-  if ("node_offset" in meta) return meta.node_offset;
-  if ("x" in meta && "y" in meta) return { x: meta.x, y: meta.y };
-  return null;
-}
-
-function nearestNeighborOrder<T>(
-  items: T[],
-  posFn: (item: T) => { x: number; y: number },
-): T[] {
-  if (items.length <= 1) return [...items];
-
-  const remaining = new Set(items.map((_, i) => i));
-  const result: T[] = [];
-  let current = 0;
-  remaining.delete(current);
-  result.push(items[current]);
-
-  while (remaining.size > 0) {
-    const cur = posFn(items[current]);
-    let nearest = -1;
-    let nearestDist = Infinity;
-
-    for (const idx of remaining) {
-      const p = posFn(items[idx]);
-      const dist = (p.x - cur.x) ** 2 + (p.y - cur.y) ** 2;
-      if (dist < nearestDist) {
-        nearestDist = dist;
-        nearest = idx;
-      }
-    }
-
-    remaining.delete(nearest);
-    result.push(items[nearest]);
-    current = nearest;
-  }
-
-  return result;
-}
-
-export function sortByRelatedness(
-  threads: CommentThread[],
-  dir: SortDirection,
-): CommentThread[] {
-  const nodeGroups = new Map<string, CommentThread[]>();
-  const canvasThreads: CommentThread[] = [];
-  const orphans: CommentThread[] = [];
-
-  for (const thread of threads) {
-    const nodeId = getNodeId(thread.clientMeta);
-    if (nodeId) {
-      const group = nodeGroups.get(nodeId) ?? [];
-      group.push(thread);
-      nodeGroups.set(nodeId, group);
-    } else if (getPosition(thread.clientMeta)) {
-      canvasThreads.push(thread);
-    } else {
-      orphans.push(thread);
-    }
-  }
-
-  for (const group of nodeGroups.values()) {
-    group.sort((a, b) => {
-      const posA = getPosition(a.clientMeta)!;
-      const posB = getPosition(b.clientMeta)!;
-      const dy = posA.y - posB.y;
-      if (Math.abs(dy) > 1) return dy;
-      return posA.x - posB.x;
-    });
-  }
-
-  const sortedGroups = [...nodeGroups.values()].sort(
-    (a, b) => b.length - a.length,
-  );
-
-  const orderedCanvas = nearestNeighborOrder(canvasThreads, (t) =>
-    getPosition(t.clientMeta)!,
-  );
-
-  const result = [...sortedGroups.flat(), ...orderedCanvas, ...orphans];
-  return dir === "asc" ? result.reverse() : result;
-}
-
 function compare(
   a: CommentThread,
   b: CommentThread,
@@ -214,9 +121,6 @@ function compare(
       break;
     case "created_at":
       diff = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-      break;
-    case "relatedness":
-      diff = 0;
       break;
   }
   return dir === "desc" ? -diff : diff;
@@ -368,10 +272,6 @@ export const useFilterStore = create<FilterState>((set, get) => ({
 
     if (addressedToMe && userHandle) {
       filtered = filtered.filter((t) => isAddressedToMe(t, userHandle));
-    }
-
-    if (sortField === "relatedness") {
-      return sortByRelatedness([...filtered], sortDirection);
     }
 
     return [...filtered].sort((a, b) =>

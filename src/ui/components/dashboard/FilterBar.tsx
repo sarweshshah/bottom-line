@@ -28,7 +28,6 @@ const SORT_OPTIONS: { value: SortField; label: string }[] = [
   { value: "participants", label: "Participants" },
   { value: "last_updated", label: "Last updated" },
   { value: "created_at", label: "Created" },
-  { value: "relatedness", label: "Relatedness" },
 ];
 
 const SCOPE_OPTIONS: {

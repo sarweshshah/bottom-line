@@ -92,8 +92,7 @@ export type SortField =
   | "replies"
   | "participants"
   | "last_updated"
-  | "created_at"
-  | "relatedness";
+  | "created_at";
 export type SortDirection = "asc" | "desc";
 export type CommentScope = "current_page" | "full_file";
 export type TimeFilterPreset = "all" | "24h" | "7d" | "30d" | "custom";
