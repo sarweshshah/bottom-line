@@ -10,7 +10,10 @@ export function buildSystemPrompt(summaryWordLimit: SummaryWordLimit): string {
   return `You are an assistant that analyzes Figma design comment threads.
 For each thread, provide:
 
-1. SUMMARY: A concise 2-4 bullet summary capturing the core feedback,
+1. TOPIC_HEADER: A short 5-10 word phrase naming the main topic of the
+   discussion (e.g. "Header spacing and alignment feedback").
+
+2. SUMMARY: A concise 2-4 bullet summary capturing the core feedback,
    current state, decisions made, and key discussion points.
    Use "-" for each bullet and keep each bullet to one sentence.
    Put each bullet on its own line. Do not chain multiple bullets
@@ -20,7 +23,7 @@ For each thread, provide:
    visual content and how it relates to the feedback.
    Keep the summary at or below ${summaryWordLimit} words.
 
-2. TASKS: Extract any action items, requests, or assignments.
+3. TASKS: Extract any action items, requests, or assignments.
    For each task, provide:
    - description: What needs to be done
    - assignee: The @mentioned person, or "Unassigned" if none
@@ -28,6 +31,7 @@ For each thread, provide:
 
 Respond in JSON format:
 {
+  "topicHeader": "...",
   "summary": "...",
   "tasks": [
     { "description": "...", "assignee": "...", "type": "..." }
@@ -161,8 +165,20 @@ interface RawAITask {
 }
 
 interface RawAIResponse {
+  topicHeader?: string;
   summary?: string;
   tasks?: RawAITask[];
+}
+
+const TOPIC_HEADER_MIN_WORDS = 5;
+const TOPIC_HEADER_MAX_WORDS = 10;
+
+function normalizeTopicHeader(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined;
+  const words = value.trim().replace(/\s+/g, " ").split(" ").filter(Boolean);
+  if (words.length === 0) return undefined;
+  if (words.length < TOPIC_HEADER_MIN_WORDS) return words.join(" ");
+  return words.slice(0, TOPIC_HEADER_MAX_WORDS).join(" ");
 }
 
 const VALID_TASK_TYPES = new Set([
@@ -262,6 +278,8 @@ export function parseAIResponse(
     };
   }
 
+  const topicHeader = normalizeTopicHeader(parsed?.topicHeader);
+
   const tasks: Task[] = (parsed!.tasks ?? [])
     .filter(
       (t): t is RawAITask =>
@@ -283,6 +301,7 @@ export function parseAIResponse(
     }));
 
   return {
+    ...(topicHeader ? { topicHeader } : {}),
     summary: ensureBulletedSummary(
       truncateToWordLimit(summary, summaryWordLimit),
     ),

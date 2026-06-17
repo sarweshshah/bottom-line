@@ -17,7 +17,11 @@ import {
   CheckCircle2,
   Eye,
 } from "lucide-react";
-import type { CommentThread, SummaryResult, WorkflowState } from "@shared/types";
+import type {
+  CommentThread,
+  SummaryResult,
+  WorkflowState,
+} from "@shared/types";
 import { StatusBadge } from "@ui/components/common/StatusBadge";
 import { AvatarGroup } from "@ui/components/common/AvatarGroup";
 import { UserAvatar } from "@ui/components/common/UserAvatar";
@@ -75,13 +79,30 @@ function splitSummarySegments(summary: string): string[] {
   return sentences.length > 0 ? sentences : [summary];
 }
 
+function formatSummaryForCopy(result: SummaryResult): string {
+  if (result.topicHeader) {
+    return `${result.topicHeader}\n\n${result.summary}`;
+  }
+  return result.summary;
+}
+
 function AnimatedSummaryContent({ result }: { result: SummaryResult }) {
   const bullets = parseSummaryBullets(result.summary);
   const segments = bullets ?? splitSummarySegments(result.summary);
-  const footerDelay = segments.length * SUMMARY_LINE_STAGGER_MS + 40;
+  const headerOffset = result.topicHeader ? 1 : 0;
+  const footerDelay =
+    (headerOffset + segments.length) * SUMMARY_LINE_STAGGER_MS + 40;
 
   return (
     <>
+      {result.topicHeader && (
+        <p
+          key={`${result.generatedAt}-topic`}
+          className="text-[11px] font-semibold text-figma-text leading-snug mb-1.5 ai-summary-line-enter"
+        >
+          {result.topicHeader}
+        </p>
+      )}
       {bullets ? (
         <ul
           key={result.generatedAt}
@@ -92,7 +113,7 @@ function AnimatedSummaryContent({ result }: { result: SummaryResult }) {
               key={`${index}-${bullet}`}
               className="ai-summary-line-enter"
               style={{
-                animationDelay: `${index * SUMMARY_LINE_STAGGER_MS}ms`,
+                animationDelay: `${(headerOffset + index) * SUMMARY_LINE_STAGGER_MS}ms`,
               }}
             >
               {bullet}
@@ -103,6 +124,9 @@ function AnimatedSummaryContent({ result }: { result: SummaryResult }) {
         <p
           key={result.generatedAt}
           className="text-[11px] text-figma-text leading-relaxed whitespace-pre-line ai-summary-line-enter"
+          style={{
+            animationDelay: `${headerOffset * SUMMARY_LINE_STAGGER_MS}ms`,
+          }}
         >
           {result.summary}
         </p>
@@ -116,7 +140,7 @@ function AnimatedSummaryContent({ result }: { result: SummaryResult }) {
               key={`${index}-${segment}`}
               className="ai-summary-line-enter"
               style={{
-                animationDelay: `${index * SUMMARY_LINE_STAGGER_MS}ms`,
+                animationDelay: `${(headerOffset + index) * SUMMARY_LINE_STAGGER_MS}ms`,
               }}
             >
               {segment}
@@ -318,12 +342,13 @@ function SummarySection({ thread }: { thread: CommentThread }) {
 
   const handleCopySummary = useCallback(async () => {
     if (!result?.summary) return;
+    const text = formatSummaryForCopy(result);
     try {
       if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(result.summary);
+        await navigator.clipboard.writeText(text);
       } else {
         const textarea = document.createElement("textarea");
-        textarea.value = result.summary;
+        textarea.value = text;
         textarea.setAttribute("readonly", "");
         textarea.style.position = "absolute";
         textarea.style.left = "-9999px";

@@ -33,6 +33,7 @@ function countSummaryWords(summary: string): number {
 describe("parseAIResponse", () => {
   it("parses valid JSON and normalizes tasks", () => {
     const raw = JSON.stringify({
+      topicHeader: "Header spacing and alignment feedback",
       summary: "Adjust spacing in header and confirm with design lead.",
       tasks: [
         { description: "Update spacing scale", assignee: "@bob", type: "revision" },
@@ -49,6 +50,7 @@ describe("parseAIResponse", () => {
       SUMMARY_WORD_LIMIT_DEFAULT,
     );
 
+    expect(result.topicHeader).toBe("Header spacing and alignment feedback");
     expect(result.summary).toContain("Adjust spacing");
     expect(result.summary.startsWith("- ")).toBe(true);
     expect(result.tasks).toHaveLength(2);
@@ -189,6 +191,47 @@ describe("parseAIResponse", () => {
     expect(lines[0]).toContain("First line point");
     expect(lines[1]).toContain("Second line point");
   });
+
+  it("truncates topic headers longer than ten words", () => {
+    const raw = JSON.stringify({
+      topicHeader:
+        "one two three four five six seven eight nine ten eleven twelve",
+      summary: "- First point.",
+      tasks: [],
+    });
+
+    const result = parseAIResponse(
+      raw,
+      thread.id,
+      thread,
+      "openai",
+      "gpt",
+      SUMMARY_WORD_LIMIT_DEFAULT,
+    );
+
+    expect(result.topicHeader?.split(" ")).toHaveLength(10);
+    expect(result.topicHeader).toBe(
+      "one two three four five six seven eight nine ten",
+    );
+  });
+
+  it("omits topic header when not provided", () => {
+    const raw = JSON.stringify({
+      summary: "- First point.",
+      tasks: [],
+    });
+
+    const result = parseAIResponse(
+      raw,
+      thread.id,
+      thread,
+      "openai",
+      "gpt",
+      SUMMARY_WORD_LIMIT_DEFAULT,
+    );
+
+    expect(result.topicHeader).toBeUndefined();
+  });
 });
 
 describe("buildSystemPrompt", () => {
@@ -197,6 +240,8 @@ describe("buildSystemPrompt", () => {
     expect(prompt).toContain(
       `Keep the summary at or below ${SUMMARY_WORD_LIMIT_MAX} words.`,
     );
+    expect(prompt).toContain("TOPIC_HEADER");
+    expect(prompt).toContain("5-10 word");
     expect(prompt).toContain("A concise 2-4 bullet summary");
     expect(prompt).toContain("Put each bullet on its own line.");
   });
