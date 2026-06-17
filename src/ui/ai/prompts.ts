@@ -31,15 +31,16 @@ For each thread, provide:
 
 Respond in JSON format:
 {
-  "topicHeader": "...",
-  "summary": "...",
+  "topicHeader": "Header spacing and alignment feedback",
+  "summary": "- Header spacing needs adjustment before handoff.\n- The team is waiting on design lead confirmation.",
   "tasks": [
-    { "description": "...", "assignee": "...", "type": "..." }
+    { "description": "Update the header spacing", "assignee": "maya", "type": "revision" }
   ]
 }
 
 If no tasks are found, return an empty tasks array.
-Do not invent tasks that aren't clearly implied by the conversation.`;
+Do not invent tasks that aren't clearly implied by the conversation.
+Do not use placeholders such as "...", "[]", "{}", "null", or "N/A".`;
 }
 
 const MAX_CHARS = 16000;
@@ -177,6 +178,7 @@ function normalizeTopicHeader(value: unknown): string | undefined {
   if (typeof value !== "string") return undefined;
   const words = value.trim().replace(/\s+/g, " ").split(" ").filter(Boolean);
   if (words.length === 0) return undefined;
+  if (!isMeaningfulText(words.join(" "))) return undefined;
   if (words.length < TOPIC_HEADER_MIN_WORDS) return words.join(" ");
   return words.slice(0, TOPIC_HEADER_MAX_WORDS).join(" ");
 }
@@ -244,6 +246,42 @@ function cleanSummaryText(text: string): string {
   return cleaned.trim();
 }
 
+function isMeaningfulText(text: string): boolean {
+  const normalized = text
+    .trim()
+    .replace(/^[-*•]\s+/gm, "")
+    .replace(/[()[\]{}"'`.,;:!?…\s\\/_|-]+/g, "")
+    .toLowerCase();
+
+  if (!normalized) return false;
+  return !new Set(["null", "undefined", "na", "none", "empty"]).has(
+    normalized,
+  );
+}
+
+function normalizeSummaryValue(value: unknown): string | null {
+  if (typeof value === "string") {
+    const cleaned = cleanSummaryText(value);
+    return isMeaningfulText(cleaned) ? cleaned : null;
+  }
+
+  if (Array.isArray(value)) {
+    const lines = value
+      .map((item) => cleanSummaryText(String(item)))
+      .filter(isMeaningfulText);
+    return lines.length > 0 ? lines.join("\n") : null;
+  }
+
+  return null;
+}
+
+function fallbackSummaryFromRaw(raw: string): string {
+  const cleaned = cleanSummaryText(raw);
+  return isMeaningfulText(cleaned)
+    ? cleaned
+    : "Summary could not be generated. Please try again.";
+}
+
 export function parseAIResponse(
   raw: string,
   threadId: string,
@@ -254,17 +292,12 @@ export function parseAIResponse(
 ): SummaryResult {
   const parsed = extractJSON(raw);
 
-  const summary =
-    typeof parsed?.summary === "string"
-      ? parsed.summary
-      : Array.isArray(parsed?.summary)
-        ? (parsed.summary as string[]).map(String).join("\n")
-        : null;
+  const summary = normalizeSummaryValue(parsed?.summary);
 
   if (!summary) {
-    const fallback =
-      cleanSummaryText(raw) ||
-      "Summary could not be generated. Please try again.";
+    const fallback = parsed
+      ? "Summary could not be generated. Please try again."
+      : fallbackSummaryFromRaw(raw);
 
     return {
       summary: ensureBulletedSummary(
@@ -280,7 +313,8 @@ export function parseAIResponse(
 
   const topicHeader = normalizeTopicHeader(parsed?.topicHeader);
 
-  const tasks: Task[] = (parsed!.tasks ?? [])
+  const rawTasks = Array.isArray(parsed?.tasks) ? parsed.tasks : [];
+  const tasks: Task[] = rawTasks
     .filter(
       (t): t is RawAITask =>
         !!t?.description && typeof t.description === "string",

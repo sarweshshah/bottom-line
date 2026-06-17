@@ -232,6 +232,67 @@ describe("parseAIResponse", () => {
 
     expect(result.topicHeader).toBeUndefined();
   });
+
+  it("replaces placeholder summary values with a safe fallback", () => {
+    const placeholders = ["...", "[]", "{}", "null"];
+
+    for (const placeholder of placeholders) {
+      const result = parseAIResponse(
+        JSON.stringify({ topicHeader: "...", summary: placeholder, tasks: [] }),
+        thread.id,
+        thread,
+        "openai",
+        "gpt",
+        SUMMARY_WORD_LIMIT_DEFAULT,
+      );
+
+      expect(result.topicHeader).toBeUndefined();
+      expect(result.summary).toBe(
+        "- Summary could not be generated.\n- Please try again.",
+      );
+    }
+  });
+
+  it("filters placeholder items from summary arrays", () => {
+    const raw = JSON.stringify({
+      summary: [
+        "...",
+        "The modal footer needs clearer primary and secondary actions.",
+        "[]",
+      ],
+      tasks: [],
+    });
+
+    const result = parseAIResponse(
+      raw,
+      thread.id,
+      thread,
+      "openai",
+      "gpt",
+      SUMMARY_WORD_LIMIT_DEFAULT,
+    );
+
+    expect(result.summary).toBe(
+      "- The modal footer needs clearer primary and secondary actions.",
+    );
+  });
+
+  it("handles non-array task payloads without leaking raw output", () => {
+    const result = parseAIResponse(
+      JSON.stringify({
+        summary: "- Confirm the empty state copy before release.",
+        tasks: "[]",
+      }),
+      thread.id,
+      thread,
+      "openai",
+      "gpt",
+      SUMMARY_WORD_LIMIT_DEFAULT,
+    );
+
+    expect(result.summary).toContain("Confirm the empty state copy");
+    expect(result.tasks).toEqual([]);
+  });
 });
 
 describe("buildSystemPrompt", () => {
@@ -244,5 +305,6 @@ describe("buildSystemPrompt", () => {
     expect(prompt).toContain("5-10 word");
     expect(prompt).toContain("A concise 2-4 bullet summary");
     expect(prompt).toContain("Put each bullet on its own line.");
+    expect(prompt).toContain("Do not use placeholders");
   });
 });

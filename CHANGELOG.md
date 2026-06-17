@@ -28,7 +28,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
-- Summary word limit picker uses 10-word step options from 50–200 words
+- Summary word limit picker uses five options from 75–200 words
 - Refreshed settings screen layout and About tab styling
 - Updated design tokens and Tailwind configuration for UI consistency across dashboard, setup, reconnect, and tasks views
 
@@ -66,7 +66,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 #### AI summaries & tasks
 
 - Summarize comment threads via Anthropic, OpenAI, Google Gemini, or a custom OpenAI-compatible endpoint
-- Configurable summary word limit (50–200 words)
+- Configurable summary word limit (75–200 words)
 - Summary caching until a thread changes
 - Optional image analysis for vision-capable providers
 - One-time cloud AI consent dialog

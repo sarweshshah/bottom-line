@@ -8,7 +8,7 @@
 
 - **Comment Dashboard**: Browse comment threads in a Threads tab with workflow filters (Open, Read, Done), “For me” filtering, current-page or full-document scope, and sorting by replies, participants, or date.
 - **Workflow States**: Track thread progress locally (Open → Read → Done), bulk-update selected threads, and sync when Figma’s native resolve/reopen status changes on refresh.
-- **AI Summaries**: Summarize threads on demand or in bulk using Anthropic, OpenAI, Gemini, or a custom OpenAI-compatible endpoint, with a configurable word limit (50–200 words).
+- **AI Summaries**: Summarize threads on demand or in bulk using Anthropic, OpenAI, Gemini, or a custom OpenAI-compatible endpoint, with a configurable word limit (75–200 words).
 - **Task Extraction**: Automatically detect action items (revisions, approvals, blockers, questions) from thread conversations and track them in a unified Tasks tab.
 - **Image Analysis**: Optionally include thread images in AI context for richer, design-aware summaries (vision-capable providers only).
 
@@ -151,7 +151,7 @@ server/
 All settings are accessible from the plugin's **Settings** screen:
 
 - **General** — Set the Figma file URL to analyze (file, design, or board links).
-- **AI** — Choose provider, enter API key, set summary word limit (50–200), toggle image analysis. For **Custom**, set the API base URL, key, and model name.
+- **AI** — Choose provider, enter API key, set summary word limit (75–200), toggle image analysis. For **Custom**, set the API base URL, key, and model name.
 - **Behavior** — Auto-refresh interval (summary cache TTL), comment navigation reminders.
 - **Auth** — Sign in with Figma OAuth or manage a Personal Access Token; sign out clears stored credentials.
 - **Display** — Toggle thread reply elbows; theme follows Figma, or override with light / dark.

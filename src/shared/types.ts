@@ -103,37 +103,26 @@ export type ThemePreference = "system" | "light" | "dark";
 export type MotionPreference = "system" | "reduce" | "allow";
 export type AIProvider = "anthropic" | "openai" | "gemini" | "custom";
 
-/** Stored preference; values are clamped to min/max and snapped to step at persistence boundaries. */
+/** Stored preference; values are clamped and snapped to supported options at persistence boundaries. */
 export type SummaryWordLimit = number;
 
-export const SUMMARY_WORD_LIMIT_MIN = 50;
+export const SUMMARY_WORD_LIMIT_MIN = 75;
 export const SUMMARY_WORD_LIMIT_MAX = 200;
-/** Word-limit snap / normalization step (words). */
-export const SUMMARY_WORD_LIMIT_STEP = 10;
 export const SUMMARY_WORD_LIMIT_DEFAULT = 150;
+/** Selectable summary word-limit values. */
+export const SUMMARY_WORD_LIMIT_OPTIONS: SummaryWordLimit[] = [
+  75, 100, 125, 150, 200,
+];
 
 export function normalizeSummaryWordLimit(limit: number): SummaryWordLimit {
   const clamped = Math.min(
     SUMMARY_WORD_LIMIT_MAX,
     Math.max(SUMMARY_WORD_LIMIT_MIN, Math.round(limit)),
   );
-  return (
-    Math.round(clamped / SUMMARY_WORD_LIMIT_STEP) * SUMMARY_WORD_LIMIT_STEP
+  return SUMMARY_WORD_LIMIT_OPTIONS.reduce((nearest, option) =>
+    Math.abs(option - clamped) < Math.abs(nearest - clamped) ? option : nearest,
   );
 }
-
-/** Selectable summary word-limit values (min–max in step increments). */
-export const SUMMARY_WORD_LIMIT_OPTIONS: SummaryWordLimit[] = (() => {
-  const out: SummaryWordLimit[] = [];
-  for (
-    let v = SUMMARY_WORD_LIMIT_MIN;
-    v <= SUMMARY_WORD_LIMIT_MAX;
-    v += SUMMARY_WORD_LIMIT_STEP
-  ) {
-    out.push(v);
-  }
-  return out;
-})();
 
 export type TaskType =
   | "revision"
