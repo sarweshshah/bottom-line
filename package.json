@@ -17,6 +17,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@tanstack/react-virtual": "^3.14.3",
     "lucide-react": "^0.468.0",
     "marked": "^17.0.3",
     "react": "^19.0.0",

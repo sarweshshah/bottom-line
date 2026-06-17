@@ -1,4 +1,5 @@
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { useShallow } from "zustand/react/shallow";
 import type { CommentThread } from "@shared/types";
 import { ThreadCard } from "./ThreadCard";
@@ -22,6 +23,7 @@ export function ThreadList({
   selectedIds,
   onToggleSelect,
 }: ThreadListProps) {
+  const scrollParentRef = useRef<HTMLDivElement>(null);
   const { threads, isLoading, error, currentPageThreadIds } =
     useCommentsStore(
       useShallow((s) => ({
@@ -91,6 +93,13 @@ export function ThreadList({
       customTimeEnd,
     ],
   );
+  const rowVirtualizer = useVirtualizer({
+    count: filtered.length,
+    getScrollElement: () => scrollParentRef.current,
+    estimateSize: () => 104,
+    getItemKey: (index) => filtered[index]?.id ?? index,
+    overscan: 8,
+  });
 
   if (isLoading && threads.length === 0) {
     return (
@@ -169,19 +178,38 @@ export function ThreadList({
   }
 
   return (
-    <div className="thread-list flex-1 overflow-y-auto">
-      {filtered.map((thread) => (
-        <ThreadCard
-          key={thread.id}
-          thread={thread}
-          workflowState={getWorkflowState(thread.id)}
-          isAddressed={user ? isAddressedToMe(thread, user.handle) : false}
-          bulkMode={bulkMode}
-          isSelected={selectedIds.has(thread.id)}
-          onSelect={onSelectThread}
-          onToggleSelect={onToggleSelect}
-        />
-      ))}
+    <div ref={scrollParentRef} className="thread-list flex-1 overflow-y-auto">
+      <div
+        className="relative w-full"
+        style={{ height: rowVirtualizer.getTotalSize() }}
+      >
+        {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+          const thread = filtered[virtualRow.index];
+          if (!thread) return null;
+
+          return (
+            <div
+              key={virtualRow.key}
+              ref={rowVirtualizer.measureElement}
+              data-index={virtualRow.index}
+              className="absolute left-0 top-0 w-full"
+              style={{
+                transform: `translateY(${virtualRow.start}px)`,
+              }}
+            >
+              <ThreadCard
+                thread={thread}
+                workflowState={getWorkflowState(thread.id)}
+                isAddressed={user ? isAddressedToMe(thread, user.handle) : false}
+                bulkMode={bulkMode}
+                isSelected={selectedIds.has(thread.id)}
+                onSelect={onSelectThread}
+                onToggleSelect={onToggleSelect}
+              />
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
