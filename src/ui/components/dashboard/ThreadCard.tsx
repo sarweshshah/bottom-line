@@ -59,7 +59,7 @@ export function ThreadCard({
     >
       <span
         aria-hidden="true"
-        className={`pointer-events-none absolute inset-y-0 left-0 w-[3px] origin-center rounded-r-full bg-accent-bg transition-transform duration-200 ease-out ${
+        className={`pointer-events-none absolute left-0 top-0 -bottom-px w-[3px] origin-top bg-accent-bg transition-transform duration-200 ease-out ${
           isSelected ? "scale-y-100" : "scale-y-0 group-hover:scale-y-100"
         }`}
       />

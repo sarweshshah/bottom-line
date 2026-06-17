@@ -113,6 +113,7 @@ export function FilterBar() {
     (o) => o.value === timeFilterPreset,
   );
   const isTimeFilterActive = timeFilterPreset !== "all";
+  const isScopeFilterActive = commentScope === "current_page";
 
   return (
     <div className="flex items-center gap-1.5 px-2.5 py-3 border-b border-figma-border bg-figma-bg">
@@ -238,7 +239,11 @@ export function FilterBar() {
         <button
           type="button"
           onClick={() => toggleMenu("scope")}
-          className="flex items-center gap-0.5 text-figma-text-secondary hover:text-figma-text p-1.5 rounded-md bg-figma-bg-secondary transition-colors"
+          className={`flex items-center gap-0.5 p-1.5 rounded-md transition-colors ${
+            isScopeFilterActive
+              ? "bg-accent-bg text-white shadow-sm"
+              : "text-figma-text-secondary hover:text-figma-text bg-figma-bg-secondary"
+          }`}
           data-tooltip={activeScope?.label}
           data-tooltip-align="right"
           data-tooltip-pos="bottom"

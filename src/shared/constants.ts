@@ -1,7 +1,7 @@
 export const MIN_UI_WIDTH = 420;
 export const MAX_UI_WIDTH = 540;
 export const MIN_UI_HEIGHT = 640;
-export const MAX_UI_HEIGHT = 800;
+export const MAX_UI_HEIGHT = 1200;
 export const DEFAULT_UI_WIDTH = 420;
 export const DEFAULT_UI_HEIGHT = MAX_UI_HEIGHT;
 
