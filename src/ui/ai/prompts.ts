@@ -80,8 +80,11 @@ function truncateToWordLimit(text: string, limit: SummaryWordLimit): string {
       runningWords += lineWords;
     }
     if (keptLines.length > 0) {
-      const truncated = keptLines.join("\n");
-      return keptLines.length < lines.length ? `${truncated}\n...` : truncated;
+      if (keptLines.length < lines.length) {
+        const lastIndex = keptLines.length - 1;
+        keptLines[lastIndex] = `${keptLines[lastIndex].replace(/\.\.\.$/, "")} ...`;
+      }
+      return keptLines.join("\n");
     }
   }
 
@@ -102,6 +105,14 @@ function truncateToWordLimit(text: string, limit: SummaryWordLimit): string {
   return `${words.slice(0, limit).join(" ")}...`;
 }
 
+function toBulletedLines(segments: string[]): string {
+  return segments
+    .map((segment) => segment.trim())
+    .filter(isMeaningfulText)
+    .map((segment) => `- ${segment}`)
+    .join("\n");
+}
+
 function ensureBulletedSummary(text: string): string {
   const lines = text
     .split("\n")
@@ -117,17 +128,15 @@ function ensureBulletedSummary(text: string): string {
         .map((segment) => segment.trim())
         .filter(Boolean);
     });
-    return expandedBullets.map((line) => `- ${line}`).join("\n");
+    return toBulletedLines(expandedBullets);
   }
 
   if (lines.length > 1) {
     const bulletCount = Math.min(4, lines.length);
-    return lines
-      .slice(0, bulletCount)
-      .map((line) =>
-        /^[-*•]\s+/.test(line) ? line : `- ${line.replace(/^[-*•]\s+/, "")}`,
-      )
-      .join("\n");
+    const segments = lines.slice(0, bulletCount).map((line) =>
+      line.replace(/^[-*•]\s+/, "").trim(),
+    );
+    return toBulletedLines(segments);
   }
 
   const sentences = text
@@ -136,14 +145,11 @@ function ensureBulletedSummary(text: string): string {
     .filter(Boolean);
 
   if (sentences.length === 0) {
-    return `- ${text.trim()}`;
+    return toBulletedLines([text.trim()]);
   }
 
   const bulletCount = Math.min(4, sentences.length);
-  return sentences
-    .slice(0, bulletCount)
-    .map((sentence) => `- ${sentence}`)
-    .join("\n");
+  return toBulletedLines(sentences.slice(0, bulletCount));
 }
 
 export function formatThreadForPrompt(thread: CommentThread): string {

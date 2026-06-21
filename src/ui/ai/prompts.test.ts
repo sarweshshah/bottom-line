@@ -168,6 +168,45 @@ describe("parseAIResponse", () => {
     expect(lines.length).toBeGreaterThan(1);
     expect(lines.every((line) => line.startsWith("- "))).toBe(true);
     expect(countSummaryWords(result.summary)).toBeLessThanOrEqual(50);
+    expect(lines.some((line) => line.replace(/^[-*•]\s+/, "").trim() === "...")).toBe(
+      false,
+    );
+  });
+
+  it("does not emit ellipsis-only bullets from truncated summaries", () => {
+    const raw = JSON.stringify({
+      summary:
+        "- First bullet with enough words to consume most of the limit.\n- Second bullet continues the discussion with more detail.\n- Third bullet adds even more context.\n- Fourth bullet is dropped during truncation.",
+      tasks: [],
+    });
+
+    const result = parseAIResponse(raw, thread.id, thread, "openai", "gpt", 15);
+    const bulletTexts = result.summary
+      .split("\n")
+      .map((line) => line.replace(/^[-*•]\s+/, "").trim());
+
+    expect(bulletTexts.every((text) => text !== "...")).toBe(true);
+    expect(bulletTexts.every((text) => text.length > 0)).toBe(true);
+  });
+
+  it("filters placeholder bullets from mixed bullet summaries", () => {
+    const raw = JSON.stringify({
+      summary: "- ...\n- The modal footer needs clearer primary actions.",
+      tasks: [],
+    });
+
+    const result = parseAIResponse(
+      raw,
+      thread.id,
+      thread,
+      "openai",
+      "gpt",
+      SUMMARY_WORD_LIMIT_DEFAULT,
+    );
+
+    expect(result.summary).toBe(
+      "- The modal footer needs clearer primary actions.",
+    );
   });
 
   it("formats multiline plain summaries into separate bullets", () => {
