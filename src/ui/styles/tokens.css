@@ -298,7 +298,7 @@
   /* ─── Component overrides (dark) ─── */
   --bl-comp-status-open: var(--bl-violet-500);
   --bl-comp-status-open-bg: color-mix(in oklch, var(--bl-violet-500) 18%, transparent);
-  --bl-comp-status-open-text: var(--bl-violet-300);
+  --bl-comp-status-open-text: var(--bl-violet-200);
   --bl-comp-status-open-glow: color-mix(in oklch, var(--bl-violet-500) 40%, transparent);
 
   --bl-comp-status-read: var(--bl-warning-300);

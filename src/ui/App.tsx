@@ -23,21 +23,22 @@ import { LoadingSpinner } from "@ui/components/common/LoadingSpinner";
 import { useAIStore } from "@ui/store/aiStore";
 import { useFilterStore } from "@ui/store/filterStore";
 
+// Figma Design light tokens — https://developers.figma.com/docs/plugins/css-variables/
 const THEME_COLORS_LIGHT: Record<string, string> = {
   "--figma-color-bg": "#ffffff",
-  "--figma-color-bg-secondary": "#f6f5f8",
-  "--figma-color-bg-tertiary": "#ebe9ef",
-  "--figma-color-bg-hover": "#f0f0f7",
-  "--figma-color-bg-selected": "#ebebf6",
-  "--figma-color-text": "#333333",
-  "--figma-color-text-secondary": "#6f6b78",
-  "--figma-color-text-tertiary": "#9a96a3",
-  "--figma-color-text-disabled": "#c4c0ca",
-  "--figma-color-border": "#e8e6ec",
-  "--figma-color-border-strong": "#d4d0da",
-  "--figma-color-icon": "#333333",
-  "--figma-color-icon-secondary": "#6f6b78",
-  "--figma-color-icon-tertiary": "#b0acb8",
+  "--figma-color-bg-secondary": "#f5f5f5",
+  "--figma-color-bg-tertiary": "#e6e6e6",
+  "--figma-color-bg-hover": "#f5f5f5",
+  "--figma-color-bg-selected": "#e5f4ff",
+  "--figma-color-text": "#000000e5",
+  "--figma-color-text-secondary": "#00000080",
+  "--figma-color-text-tertiary": "#0000004d",
+  "--figma-color-text-disabled": "#0000004d",
+  "--figma-color-border": "#e6e6e6",
+  "--figma-color-border-strong": "#2c2c2c",
+  "--figma-color-icon": "#000000e5",
+  "--figma-color-icon-secondary": "#00000080",
+  "--figma-color-icon-tertiary": "#0000004d",
 };
 
 const THEME_COLORS_DARK: Record<string, string> = {
