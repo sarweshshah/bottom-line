@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import { useShallow } from "zustand/react/shallow";
 import {
   X,
@@ -19,9 +19,16 @@ import { bulkSummarizeThreads } from "@ui/ai/summarize";
 import { FilterBar } from "./FilterBar";
 import { ThreadList } from "./ThreadList";
 import { ThreadDetail } from "./ThreadDetail";
+import { ActivitySummaryPanel } from "./ActivitySummaryPanel";
 import { TasksView } from "@ui/components/tasks/TasksView";
 import { FileNameBar } from "@ui/components/common/FileNameBar";
 import { ViewSwitcherBar, type DashboardTab } from "./ViewSwitcherBar";
+import {
+  computeActivitySummary,
+  ACTIVITY_WINDOW_PRESET,
+  type ActivityFilter,
+} from "@ui/lib/activitySummary";
+import { getTimeRangeBounds } from "@ui/store/filterStore";
 
 const BULK_STATE_OPTIONS: {
   value: WorkflowState;
@@ -207,6 +214,9 @@ export function DashboardLayout() {
     timeFilterPreset,
     customTimeStart,
     customTimeEnd,
+    activityCategoryFilter,
+    setTimeFilterPreset,
+    setActivityCategoryFilter,
   } = useFilterStore(
     useShallow((s) => ({
       applyFilters: s.applyFilters,
@@ -218,6 +228,9 @@ export function DashboardLayout() {
       timeFilterPreset: s.timeFilterPreset,
       customTimeStart: s.customTimeStart,
       customTimeEnd: s.customTimeEnd,
+      activityCategoryFilter: s.activityCategoryFilter,
+      setTimeFilterPreset: s.setTimeFilterPreset,
+      setActivityCategoryFilter: s.setActivityCategoryFilter,
     })),
   );
   const { showSettings, user, fileName } = useAuthStore();
@@ -235,6 +248,7 @@ export function DashboardLayout() {
   const [activeTab, setActiveTab] = useState<DashboardTab>("threads");
   const [bulkMode, setBulkMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [activityDismissed, setActivityDismissed] = useState(false);
 
   const restoreCachedSummaries = useAIStore((s) => s.restoreCachedSummaries);
 
@@ -336,6 +350,32 @@ export function DashboardLayout() {
     setSelectedIds(new Set());
   };
 
+  const activitySinceMs = useMemo(
+    () =>
+      getTimeRangeBounds(ACTIVITY_WINDOW_PRESET, null, null).start ??
+      Date.now(),
+    [],
+  );
+
+  const activitySummary = useMemo(
+    () => computeActivitySummary(threads, activitySinceMs),
+    [threads, activitySinceMs],
+  );
+
+  const handleActivityFilterClick = useCallback(
+    (filter: ActivityFilter) => {
+      setTimeFilterPreset(ACTIVITY_WINDOW_PRESET);
+      setActivityCategoryFilter(
+        activityCategoryFilter === filter ? null : filter,
+      );
+    },
+    [
+      activityCategoryFilter,
+      setTimeFilterPreset,
+      setActivityCategoryFilter,
+    ],
+  );
+
   const isResolvingCurrentPage =
     commentScope === "current_page" &&
     currentPageThreadIds === null &&
@@ -364,6 +404,7 @@ export function DashboardLayout() {
     timeFilterPreset,
     customTimeStart,
     customTimeEnd,
+    activityCategoryFilter,
   ]);
   const filteredCount = filteredThreads.length;
 
@@ -398,6 +439,14 @@ export function DashboardLayout() {
 
       {activeTab === "threads" && (
         <>
+          {!activityDismissed && activitySummary.totalCount > 0 && (
+            <ActivitySummaryPanel
+              summary={activitySummary}
+              activeFilter={activityCategoryFilter}
+              onFilterClick={handleActivityFilterClick}
+              onDismiss={() => setActivityDismissed(true)}
+            />
+          )}
           <FilterBar />
           <BulkSummaryProgressBar />
           <ThreadList

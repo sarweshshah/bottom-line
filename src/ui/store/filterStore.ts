@@ -9,6 +9,11 @@ import type {
 } from "@shared/types";
 import { getStorage, setStorage } from "@ui/lib/storage";
 import { useCommentsStore } from "@ui/store/commentsStore";
+import {
+  getActivityCategory,
+  ACTIVITY_WINDOW_PRESET,
+  type ActivityFilter,
+} from "@ui/lib/activitySummary";
 
 const DEFAULT_SORT_FIELD: SortField = "replies";
 const DEFAULT_SORT_DIR: SortDirection = "desc";
@@ -83,6 +88,7 @@ interface FilterState {
   timeFilterPreset: TimeFilterPreset;
   customTimeStart: string | null;
   customTimeEnd: string | null;
+  activityCategoryFilter: ActivityFilter | null;
 
   setWorkflowStateFilter: (state: WorkflowState | null) => void;
   setAddressedToMe: (enabled: boolean) => void;
@@ -90,6 +96,7 @@ interface FilterState {
   setCommentScope: (scope: CommentScope) => void;
   setTimeFilterPreset: (preset: TimeFilterPreset) => void;
   setCustomTimeRange: (start: string | null, end: string | null) => void;
+  setActivityCategoryFilter: (category: ActivityFilter | null) => void;
   clearFilters: () => void;
   initFromStorage: () => Promise<void>;
   applyFilters: (
@@ -135,6 +142,7 @@ export const useFilterStore = create<FilterState>((set, get) => ({
   timeFilterPreset: "all",
   customTimeStart: null,
   customTimeEnd: null,
+  activityCategoryFilter: null,
 
   setWorkflowStateFilter: (state) => {
     set({ workflowStateFilter: state });
@@ -168,8 +176,16 @@ export const useFilterStore = create<FilterState>((set, get) => ({
   },
 
   setTimeFilterPreset: (timeFilterPreset) => {
-    set({ timeFilterPreset });
+    const updates: Partial<FilterState> = { timeFilterPreset };
+    if (timeFilterPreset !== ACTIVITY_WINDOW_PRESET) {
+      updates.activityCategoryFilter = null;
+    }
+    set(updates);
     setStorage("timeFilterPreset", timeFilterPreset);
+  },
+
+  setActivityCategoryFilter: (activityCategoryFilter) => {
+    set({ activityCategoryFilter });
   },
 
   setCustomTimeRange: (customTimeStart, customTimeEnd) => {
@@ -188,6 +204,7 @@ export const useFilterStore = create<FilterState>((set, get) => ({
       timeFilterPreset: "all",
       customTimeStart: null,
       customTimeEnd: null,
+      activityCategoryFilter: null,
     });
     setStorage("workflowFilter", null);
     setStorage("addressedToMe", false);
@@ -238,6 +255,7 @@ export const useFilterStore = create<FilterState>((set, get) => ({
       timeFilterPreset,
       customTimeStart,
       customTimeEnd,
+      activityCategoryFilter,
     } = get();
 
     let filtered = threads;
@@ -247,7 +265,16 @@ export const useFilterStore = create<FilterState>((set, get) => ({
       customTimeStart,
       customTimeEnd,
     );
-    if (timeStart !== null || timeEnd !== null) {
+
+    if (activityCategoryFilter !== null && timeStart !== null) {
+      filtered = filtered.filter((t) => {
+        const category = getActivityCategory(t, timeStart);
+        if (activityCategoryFilter === "all") {
+          return category !== null;
+        }
+        return category === activityCategoryFilter;
+      });
+    } else if (timeStart !== null || timeEnd !== null) {
       filtered = filtered.filter((t) => {
         const ts = new Date(t.lastUpdatedAt).getTime();
         if (timeStart !== null && ts < timeStart) return false;

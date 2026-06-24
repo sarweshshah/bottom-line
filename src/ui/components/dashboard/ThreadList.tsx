@@ -44,6 +44,7 @@ export function ThreadList({
     timeFilterPreset,
     customTimeStart,
     customTimeEnd,
+    activityCategoryFilter,
   } = useFilterStore(
     useShallow((s) => ({
       applyFilters: s.applyFilters,
@@ -56,6 +57,7 @@ export function ThreadList({
       timeFilterPreset: s.timeFilterPreset,
       customTimeStart: s.customTimeStart,
       customTimeEnd: s.customTimeEnd,
+      activityCategoryFilter: s.activityCategoryFilter,
     })),
   );
   const getWorkflowState = useWorkflowStore((s) => s.getState);
@@ -91,6 +93,7 @@ export function ThreadList({
       timeFilterPreset,
       customTimeStart,
       customTimeEnd,
+      activityCategoryFilter,
     ],
   );
   const rowVirtualizer = useVirtualizer({

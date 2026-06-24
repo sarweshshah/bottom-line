@@ -1,5 +1,6 @@
 import { describe, expect, it, beforeEach, vi } from "vitest";
 import type { CommentThread } from "@shared/types";
+import { ACTIVITY_WINDOW_PRESET } from "@ui/lib/activitySummary";
 
 vi.mock("@ui/lib/storage", () => ({
   getStorage: vi.fn().mockResolvedValue(null),
@@ -18,6 +19,7 @@ function resetFilterDefaults() {
     timeFilterPreset: "all",
     customTimeStart: null,
     customTimeEnd: null,
+    activityCategoryFilter: null,
   });
 }
 
@@ -199,5 +201,119 @@ describe("applyFilters time range", () => {
       .applyFilters(threads, null, () => "open");
 
     expect(filtered.map((t) => t.id)).toEqual(["in-range"]);
+  });
+});
+
+describe("applyFilters activity category", () => {
+  beforeEach(() => {
+    resetFilterDefaults();
+  });
+
+  it("filters to new threads when activity category is new", () => {
+    const now = Date.now();
+    const recent = new Date(now - 2 * 60 * 60 * 1000).toISOString();
+    const old = new Date(now - 48 * 60 * 60 * 1000).toISOString();
+
+    useFilterStore.setState({
+      timeFilterPreset: ACTIVITY_WINDOW_PRESET,
+      activityCategoryFilter: "new",
+    });
+
+    const threads = [
+      makeThread("new-thread", {
+        createdAt: recent,
+        lastUpdatedAt: recent,
+      }),
+      makeThread("old-updated", {
+        createdAt: old,
+        lastUpdatedAt: recent,
+      }),
+    ];
+
+    const filtered = useFilterStore
+      .getState()
+      .applyFilters(threads, null, () => "open");
+
+    expect(filtered.map((t) => t.id)).toEqual(["new-thread"]);
+  });
+
+  it("filters to resolved threads when activity category is resolved", () => {
+    const now = Date.now();
+    const recentResolve = new Date(now - 2 * 60 * 60 * 1000).toISOString();
+    const old = new Date(now - 48 * 60 * 60 * 1000).toISOString();
+
+    useFilterStore.setState({
+      timeFilterPreset: ACTIVITY_WINDOW_PRESET,
+      activityCategoryFilter: "resolved",
+    });
+
+    const threads = [
+      makeThread("resolved", {
+        createdAt: old,
+        lastUpdatedAt: old,
+        resolvedAt: recentResolve,
+        status: "resolved",
+      }),
+      makeThread("updated", {
+        createdAt: old,
+        lastUpdatedAt: recentResolve,
+      }),
+    ];
+
+    const filtered = useFilterStore
+      .getState()
+      .applyFilters(threads, null, () => "open");
+
+    expect(filtered.map((t) => t.id)).toEqual(["resolved"]);
+  });
+
+  it("clears activity category when time preset changes away from activity window", () => {
+    useFilterStore.setState({
+      timeFilterPreset: ACTIVITY_WINDOW_PRESET,
+      activityCategoryFilter: "new",
+    });
+
+    useFilterStore.getState().setTimeFilterPreset("all");
+
+    expect(useFilterStore.getState().activityCategoryFilter).toBeNull();
+  });
+
+  it("clears activity category when filters are cleared", () => {
+    useFilterStore.setState({
+      timeFilterPreset: ACTIVITY_WINDOW_PRESET,
+      activityCategoryFilter: "updated",
+    });
+
+    useFilterStore.getState().clearFilters();
+
+    expect(useFilterStore.getState().activityCategoryFilter).toBeNull();
+  });
+
+  it("filters to all activity threads when filter is all", () => {
+    const now = Date.now();
+    const recent = new Date(now - 2 * 60 * 60 * 1000).toISOString();
+    const old = new Date(now - 48 * 60 * 60 * 1000).toISOString();
+
+    useFilterStore.setState({
+      timeFilterPreset: ACTIVITY_WINDOW_PRESET,
+      activityCategoryFilter: "all",
+    });
+
+    const threads = [
+      makeThread("new-thread", {
+        createdAt: recent,
+        lastUpdatedAt: recent,
+      }),
+      makeThread("inactive", {
+        createdAt: old,
+        lastUpdatedAt: old,
+      }),
+    ];
+
+    const filtered = useFilterStore
+      .getState()
+      .applyFilters(threads, null, () => "open");
+
+    expect(filtered.map((t) => t.id)).toEqual(["new-thread"]);
   });
 });
