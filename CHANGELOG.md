@@ -4,6 +4,18 @@ All notable changes to Bottom Line will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.3.0] - 2026-06-25
+
+### Added
+
+- Activity summary panel showing new threads, replies, and resolved items from the last 24 hours
+- Clickable activity filters to narrow the thread list by activity category
+
+### Changed
+
+- Refactored AI summary topic header handling with truncation and legacy cache backfill
+- Updated theme colors and global styles for improved UI consistency
+
 ## [2.2.1] - 2026-06-17
 
 ### Added
