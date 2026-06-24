@@ -1,5 +1,15 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { ShieldAlert, X } from "lucide-react";
+import {
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+  ModalNoticePanel,
+  ModalTitle,
+} from "@ui/components/common/overlays";
+import { BodyText } from "@ui/components/common/typography";
+import { Button, IconButton } from "@ui/components/common/uiPrimitives";
 import { useAIStore } from "@ui/store/aiStore";
 import { PROVIDER_MODEL_LABELS } from "@ui/ai/cloudProvider";
 
@@ -35,69 +45,52 @@ export function ConsentDialog() {
 
   if (!visible) return null;
 
-  const providerName = provider === "custom"
-    ? "your custom endpoint"
-    : PROVIDER_MODEL_LABELS[provider] ?? provider;
+  const providerName =
+    provider === "custom"
+      ? "your custom endpoint"
+      : (PROVIDER_MODEL_LABELS[provider] ?? provider);
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50">
-      <div className="bg-figma-bg rounded-xl shadow-xl w-[340px] max-w-[90vw] border border-figma-border overflow-hidden">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-figma-border bg-figma-bg-secondary">
-          <div className="flex items-center gap-2">
-            <ShieldAlert size={16} className="text-warning" />
-            <span className="text-sm font-semibold text-figma-text">
-              Cloud AI Consent
-            </span>
-          </div>
-          <button
-            type="button"
-            onClick={handleCancel}
-            className="p-1.5 rounded-md text-figma-icon-tertiary hover:bg-figma-bg-tertiary hover:text-figma-icon transition-colors"
-          >
-            <X size={13} />
-          </button>
-        </div>
+    <Modal onBackdropClick={handleCancel}>
+      <ModalHeader>
+        <ModalTitle icon={ShieldAlert} iconClassName="text-warning">
+          Cloud AI Consent
+        </ModalTitle>
+        <IconButton variant="default" onClick={handleCancel} aria-label="Close">
+          <X size={13} />
+        </IconButton>
+      </ModalHeader>
 
-        <div className="px-4 py-4 space-y-3">
-          <p className="text-xs text-figma-text-secondary leading-relaxed">
-            To generate AI summaries, comment text from your Figma threads will
-            be sent to <strong className="text-figma-text">{providerName}</strong>.
-          </p>
+      <ModalBody>
+        <BodyText className="leading-relaxed">
+          To generate AI summaries, comment text from your Figma threads will
+          be sent to <strong className="text-figma-text">{providerName}</strong>.
+        </BodyText>
 
-          {imageAnalysisEnabled && (
-            <p className="text-xs text-figma-text-secondary leading-relaxed">
-              With image analysis enabled, images from comment threads will also
-              be sent to the AI provider for visual context.
-            </p>
-          )}
+        {imageAnalysisEnabled && (
+          <BodyText className="leading-relaxed">
+            With image analysis enabled, images from comment threads will also
+            be sent to the AI provider for visual context.
+          </BodyText>
+        )}
 
-          <div className="p-3 bg-figma-bg-secondary rounded-md border border-figma-border">
-            <p className="text-[11px] text-figma-text-tertiary leading-relaxed">
-              Your Figma token and personal data are <strong className="text-figma-text-secondary">never</strong> sent
-              to AI providers. Only the comment text
-              {imageAnalysisEnabled ? " and images" : ""} within a single thread
-              are transmitted per request.
-            </p>
-          </div>
-        </div>
+        <ModalNoticePanel>
+          Your Figma token and personal data are{" "}
+          <strong className="text-figma-text-secondary">never</strong> sent to AI
+          providers. Only the comment text
+          {imageAnalysisEnabled ? " and images" : ""} within a single thread are
+          transmitted per request.
+        </ModalNoticePanel>
+      </ModalBody>
 
-        <div className="flex justify-end gap-2 px-4 py-3 border-t border-figma-border">
-          <button
-            type="button"
-            onClick={handleCancel}
-            className="px-3.5 py-2 rounded-md text-xs font-medium bg-figma-bg-secondary text-figma-text-secondary hover:bg-figma-bg-tertiary transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={handleAccept}
-            className="px-3.5 py-2 rounded-md text-xs font-medium bg-accent-bg text-white hover:bg-accent-hover active:scale-[0.98] transition-all duration-150"
-          >
-            I understand, continue
-          </button>
-        </div>
-      </div>
-    </div>
+      <ModalFooter>
+        <Button variant="secondary" onClick={handleCancel}>
+          Cancel
+        </Button>
+        <Button variant="primary" onClick={handleAccept}>
+          I understand, continue
+        </Button>
+      </ModalFooter>
+    </Modal>
   );
 }

@@ -284,7 +284,7 @@
   --bl-sem-border-subtle: #404048;
   --bl-sem-border-faint: color-mix(
     in oklch,
-    var(--bl-sem-border-subtle) 35%,
+    var(--bl-sem-border-subtle) 18%,
     var(--bl-sem-bg-canvas)
   );
   --bl-sem-border-accent: var(--bl-violet-500);

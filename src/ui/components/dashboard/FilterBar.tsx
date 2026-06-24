@@ -7,7 +7,7 @@ import {
   Files,
   Calendar,
 } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import type {
   SortField,
   CommentScope,
@@ -15,6 +15,16 @@ import type {
   TimeFilterPreset,
 } from "@shared/types";
 import { useFilterStore } from "@ui/store/filterStore";
+import { FilterBarShell, FilterBarSpacer } from "@ui/components/common/layout";
+import {
+  DropdownMenu,
+  DropdownMenuItem,
+} from "@ui/components/common/overlays";
+import {
+  FilterChip,
+  IconFilterChip,
+} from "@ui/components/common/uiPrimitives";
+import { FilterCustomDateRangePanel } from "./dashboardPrimitives";
 
 const STATE_FILTER_OPTIONS: { value: WorkflowState | null; label: string }[] = [
   { value: null, label: "All" },
@@ -67,31 +77,6 @@ export function FilterBar() {
     setCustomTimeRange,
   } = useFilterStore();
   const [openMenu, setOpenMenu] = useState<MenuId | null>(null);
-  const statusRef = useRef<HTMLDivElement>(null);
-  const timeRef = useRef<HTMLDivElement>(null);
-  const scopeRef = useRef<HTMLDivElement>(null);
-  const sortRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!openMenu) return;
-
-    function handleClickOutside(e: MouseEvent) {
-      let container: HTMLDivElement | null = null;
-      if (openMenu === "status") container = statusRef.current;
-      else if (openMenu === "time") container = timeRef.current;
-      else if (openMenu === "scope") container = scopeRef.current;
-      else if (openMenu === "sort") container = sortRef.current;
-
-      if (container && !container.contains(e.target as Node)) {
-        setOpenMenu(null);
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside, {
-      passive: true,
-    });
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [openMenu]);
 
   function toggleMenu(menu: MenuId) {
     setOpenMenu((current) => (current === menu ? null : menu));
@@ -115,205 +100,156 @@ export function FilterBar() {
   const isScopeFilterActive = commentScope === "current_page";
 
   return (
-    <div className="flex items-center gap-1.5 px-2.5 py-3 border-b border-figma-border bg-figma-bg">
-      <div className="relative" ref={statusRef}>
-        <button
-          type="button"
-          onClick={() => toggleMenu("status")}
-          className={`flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-md transition-all duration-150 ${
-            workflowStateFilter
-              ? "bg-accent-bg text-white shadow-sm"
-              : "bg-figma-bg-secondary text-figma-text-secondary hover:text-figma-text"
-          }`}
-        >
-          {statusLabel}
-          <ChevronDown size={10} />
-        </button>
-
-        {openMenu === "status" && (
-          <div className="absolute left-0 top-full mt-1 bg-figma-bg border border-figma-border rounded-md shadow-lg z-20 min-w-[140px]">
-            {STATE_FILTER_OPTIONS.map((opt) => (
-              <button
-                key={opt.label}
-                type="button"
-                onClick={() => {
-                  setWorkflowStateFilter(opt.value);
-                  closeMenu();
-                }}
-                className={`w-full text-left px-3 py-1.5 text-xs hover:bg-figma-bg-hover transition-colors ${
-                  workflowStateFilter === opt.value
-                    ? "text-accent font-medium"
-                    : "text-figma-text-secondary"
-                }`}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <button
-        type="button"
-        onClick={() => setAddressedToMe(!addressedToMe)}
-        className={`flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-md transition-all duration-150 ${
-          addressedToMe
-            ? "bg-accent-bg text-white shadow-sm"
-            : "bg-figma-bg-secondary text-figma-text-secondary hover:text-figma-text"
-        }`}
+    <FilterBarShell>
+      <DropdownMenu
+        open={openMenu === "status"}
+        onClose={closeMenu}
+        panelClassName="min-w-[140px]"
+        trigger={
+          <FilterChip
+            active={Boolean(workflowStateFilter)}
+            onClick={() => toggleMenu("status")}
+            icon={<ChevronDown size={10} />}
+          >
+            {statusLabel}
+          </FilterChip>
+        }
       >
-        <User size={10} />
+        {STATE_FILTER_OPTIONS.map((opt) => (
+          <DropdownMenuItem
+            key={opt.label}
+            active={workflowStateFilter === opt.value}
+            onClick={() => {
+              setWorkflowStateFilter(opt.value);
+              closeMenu();
+            }}
+          >
+            {opt.label}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenu>
+
+      <FilterChip
+        active={addressedToMe}
+        onClick={() => setAddressedToMe(!addressedToMe)}
+        icon={<User size={10} />}
+      >
         For me
-      </button>
+      </FilterChip>
 
-      <div className="flex-1" />
+      <FilterBarSpacer />
 
-      <div className="relative" ref={timeRef}>
-        <button
-          type="button"
-          onClick={() => toggleMenu("time")}
-          className={`flex items-center gap-0.5 p-1.5 rounded-md transition-colors ${
-            isTimeFilterActive
-              ? "bg-accent-bg text-white shadow-sm"
-              : "text-figma-text-secondary hover:text-figma-text bg-figma-bg-secondary"
-          }`}
-          data-tooltip={activeTimeFilter?.label}
-          data-tooltip-align="right"
-          data-tooltip-pos="bottom"
-        >
-          <Calendar size={12} />
-          <ChevronDown size={10} />
-        </button>
-
-        {openMenu === "time" && (
-          <div className="absolute right-0 top-full mt-1 bg-figma-bg border border-figma-border rounded-md shadow-lg z-20 min-w-[160px] overflow-hidden">
-            {TIME_FILTER_OPTIONS.map((opt) => (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => {
-                  setTimeFilterPreset(opt.value);
-                  if (opt.value !== "custom") closeMenu();
-                }}
-                className={`w-full text-left px-3 py-1.5 text-xs hover:bg-figma-bg-hover transition-colors ${
-                  timeFilterPreset === opt.value
-                    ? "text-accent font-medium"
-                    : "text-figma-text-secondary"
-                }`}
-              >
-                {opt.label}
-              </button>
-            ))}
-            {timeFilterPreset === "custom" && (
-              <div className="flex flex-col gap-2 px-3 pt-2 pb-3.5 bg-figma-bg-secondary border-t border-figma-border">
-                <label className="flex flex-col gap-1 text-[10px] text-figma-text-tertiary">
-                  From
-                  <input
-                    type="date"
-                    value={customTimeStart ?? ""}
-                    onChange={(e) =>
-                      setCustomTimeRange(e.target.value || null, customTimeEnd)
-                    }
-                    className="w-full px-2 py-1 text-xs rounded border border-figma-border bg-figma-bg text-figma-text"
-                  />
-                </label>
-                <label className="flex flex-col gap-1 text-[10px] text-figma-text-tertiary">
-                  To
-                  <input
-                    type="date"
-                    value={customTimeEnd ?? ""}
-                    onChange={(e) =>
-                      setCustomTimeRange(customTimeStart, e.target.value || null)
-                    }
-                    className="w-full px-2 py-1 text-xs rounded border border-figma-border bg-figma-bg text-figma-text"
-                  />
-                </label>
-              </div>
-            )}
-          </div>
+      <DropdownMenu
+        open={openMenu === "time"}
+        onClose={closeMenu}
+        align="right"
+        panelClassName="min-w-[160px] overflow-hidden"
+        trigger={
+          <IconFilterChip
+            active={isTimeFilterActive}
+            onClick={() => toggleMenu("time")}
+            data-tooltip={activeTimeFilter?.label}
+            data-tooltip-align="right"
+            data-tooltip-pos="bottom"
+          >
+            <Calendar size={12} />
+            <ChevronDown size={10} />
+          </IconFilterChip>
+        }
+      >
+        {TIME_FILTER_OPTIONS.map((opt) => (
+          <DropdownMenuItem
+            key={opt.value}
+            active={timeFilterPreset === opt.value}
+            onClick={() => {
+              setTimeFilterPreset(opt.value);
+              if (opt.value !== "custom") closeMenu();
+            }}
+          >
+            {opt.label}
+          </DropdownMenuItem>
+        ))}
+        {timeFilterPreset === "custom" && (
+          <FilterCustomDateRangePanel
+            startValue={customTimeStart}
+            endValue={customTimeEnd}
+            onStartChange={(value) =>
+              setCustomTimeRange(value, customTimeEnd)
+            }
+            onEndChange={(value) =>
+              setCustomTimeRange(customTimeStart, value)
+            }
+          />
         )}
-      </div>
+      </DropdownMenu>
 
-      <div className="relative" ref={scopeRef}>
-        <button
-          type="button"
-          onClick={() => toggleMenu("scope")}
-          className={`flex items-center gap-0.5 p-1.5 rounded-md transition-colors ${
-            isScopeFilterActive
-              ? "bg-accent-bg text-white shadow-sm"
-              : "text-figma-text-secondary hover:text-figma-text bg-figma-bg-secondary"
-          }`}
-          data-tooltip={activeScope?.label}
-          data-tooltip-align="right"
-          data-tooltip-pos="bottom"
-        >
-          <ScopeIcon size={12} />
-          <ChevronDown size={10} />
-        </button>
+      <DropdownMenu
+        open={openMenu === "scope"}
+        onClose={closeMenu}
+        align="right"
+        panelClassName="min-w-[130px]"
+        trigger={
+          <IconFilterChip
+            active={isScopeFilterActive}
+            onClick={() => toggleMenu("scope")}
+            data-tooltip={activeScope?.label}
+            data-tooltip-align="right"
+            data-tooltip-pos="bottom"
+          >
+            <ScopeIcon size={12} />
+            <ChevronDown size={10} />
+          </IconFilterChip>
+        }
+      >
+        {SCOPE_OPTIONS.map((opt) => (
+          <DropdownMenuItem
+            key={opt.value}
+            active={commentScope === opt.value}
+            icon={opt.Icon}
+            onClick={() => {
+              setCommentScope(opt.value);
+              closeMenu();
+            }}
+          >
+            {opt.label}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenu>
 
-        {openMenu === "scope" && (
-          <div className="absolute right-0 top-full mt-1 bg-figma-bg border border-figma-border rounded-md shadow-lg z-20 min-w-[130px]">
-            {SCOPE_OPTIONS.map((opt) => {
-              const Icon = opt.Icon;
-              return (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => {
-                    setCommentScope(opt.value);
-                    closeMenu();
-                  }}
-                  className={`w-full flex items-center gap-2 px-3 py-1.5 text-xs hover:bg-figma-bg-hover transition-colors ${
-                    commentScope === opt.value
-                      ? "text-accent font-medium"
-                      : "text-figma-text-secondary"
-                  }`}
-                >
-                  <Icon size={12} />
-                  {opt.label}
-                </button>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      <div className="relative" ref={sortRef}>
-        <button
-          type="button"
-          onClick={() => toggleMenu("sort")}
-          className="flex items-center gap-1 text-xs text-figma-text-secondary hover:text-figma-text px-2.5 py-1 rounded-md bg-figma-bg-secondary transition-colors"
-        >
-          {activeSort?.label}
-          <DirIcon size={10} />
-        </button>
-
-        {openMenu === "sort" && (
-          <div className="absolute right-0 top-full mt-1 bg-figma-bg border border-figma-border rounded-md shadow-lg z-20 min-w-[140px]">
-            {SORT_OPTIONS.map((opt) => {
-              const isActive = sortField === opt.value;
-              return (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => {
-                    toggleSort(opt.value);
-                    if (!isActive) closeMenu();
-                  }}
-                  className={`w-full flex items-center justify-between px-3 py-1.5 text-xs hover:bg-figma-bg-hover transition-colors ${
-                    isActive
-                      ? "text-accent font-medium"
-                      : "text-figma-text-secondary"
-                  }`}
-                >
-                  {opt.label}
-                  {isActive && <DirIcon size={10} className="text-accent" />}
-                </button>
-              );
-            })}
-          </div>
-        )}
-      </div>
-    </div>
+      <DropdownMenu
+        open={openMenu === "sort"}
+        onClose={closeMenu}
+        align="right"
+        panelClassName="min-w-[140px]"
+        trigger={
+          <FilterChip
+            tone="sort"
+            active={false}
+            onClick={() => toggleMenu("sort")}
+            icon={<DirIcon size={10} />}
+          >
+            {activeSort?.label}
+          </FilterChip>
+        }
+      >
+        {SORT_OPTIONS.map((opt) => {
+          const isActive = sortField === opt.value;
+          return (
+            <DropdownMenuItem
+              key={opt.value}
+              active={isActive}
+              layout="split"
+              onClick={() => {
+                toggleSort(opt.value);
+                if (!isActive) closeMenu();
+              }}
+            >
+              {opt.label}
+              {isActive && <DirIcon size={10} className="text-accent" />}
+            </DropdownMenuItem>
+          );
+        })}
+      </DropdownMenu>
+    </FilterBarShell>
   );
 }

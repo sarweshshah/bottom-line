@@ -1,12 +1,4 @@
 import { useState, useCallback } from "react";
-import {
-  Eye,
-  EyeOff,
-  Loader2,
-  LogOut,
-  ChevronDown,
-  ChevronRight,
-} from "lucide-react";
 import { useAuthStore } from "@ui/store/authStore";
 import {
   isFigmaOAuthConfigured,
@@ -14,23 +6,24 @@ import {
   pollOAuthUntilComplete,
 } from "@ui/lib/figmaOAuth";
 import { openExternalUrl } from "@ui/lib/openExternal";
-import {
-  FIGMA_PAT_HELP_URL,
-  FIGMA_PAT_REQUIRED_SCOPES,
-} from "@shared/figmaPat";
-import { showToast } from "@ui/components/common/Toast";
+import { FIGMA_PAT_HELP_URL } from "@shared/figmaPat";
 import { FieldError } from "@ui/components/common/FieldError";
-import { UserAvatar } from "@ui/components/common/UserAvatar";
 import {
-  BTN_PRIMARY,
-  BTN_SECONDARY,
-  CARD_CLASS,
-  INPUT_CLASS,
+  AccountCard,
+  ExpandableDisclosure,
+  OAuthSignInButton,
+  PatScopesList,
+  ValidatingIndicator,
+} from "@ui/components/common/authUi";
+import {
+  SettingsConfirmField,
   SettingsFieldGroup,
+  SettingsMaskedField,
   SettingsSection,
   SettingsSectionBody,
   SettingsSectionHeader,
 } from "@ui/components/settings/settingsPrimitives";
+import { showToast } from "@ui/components/common/Toast";
 
 export function AuthTab() {
   const {
@@ -105,6 +98,9 @@ export function AuthTab() {
       ? "Signed in with Figma"
       : "Using personal access token";
 
+  const tokenTypeLabel =
+    authMethod === "oauth" ? "OAuth" : "Personal access token";
+
   return (
     <>
       {user && (
@@ -114,53 +110,26 @@ export function AuthTab() {
             description={connectionSubtitle}
           />
           <SettingsSectionBody>
-            <div className={CARD_CLASS}>
-              <div className="flex items-center gap-3">
-                <UserAvatar
-                  handle={user.handle}
-                  imgUrl={user.img_url}
-                  colorKey={user.id}
-                  size={36}
-                  className="border border-figma-border"
-                />
-                <div className="flex-1 min-w-0">
-                  <p className="text-[11px] font-medium text-figma-text truncate">
-                    {user.handle}
-                  </p>
-                  <p className="text-[10px] text-figma-text-tertiary mt-0.5 truncate">
-                    {authMethod === "oauth" ? "OAuth" : "Personal access token"}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => void logout()}
-                  className="p-1.5 rounded-md text-figma-icon-secondary hover:bg-danger-bg hover:text-danger transition-colors shrink-0"
-                  data-tooltip="Log out"
-                  data-tooltip-align="right"
-                  data-tooltip-pos="bottom"
-                >
-                  <LogOut size={14} />
-                </button>
-              </div>
-            </div>
-
-            {authMethod === "oauth" && oauthAvailable && (
-              <button
-                type="button"
-                disabled={oauthBusy || isValidating}
-                onClick={() => void handleSignInWithFigma()}
-                className={`w-full ${BTN_SECONDARY}`}
-              >
-                {oauthBusy ? (
-                  <span className="inline-flex items-center justify-center gap-2">
-                    <Loader2 size={12} className="animate-spin" />
-                    Waiting for browser…
-                  </span>
-                ) : (
-                  "Sign in again with Figma"
-                )}
-              </button>
-            )}
+            <AccountCard
+              handle={user.handle}
+              imgUrl={user.img_url}
+              colorKey={user.id}
+              subtitle={tokenTypeLabel}
+              onLogout={() => void logout()}
+              footer={
+                authMethod === "oauth" && oauthAvailable ? (
+                  <OAuthSignInButton
+                    busy={oauthBusy}
+                    disabled={isValidating}
+                    onClick={() => void handleSignInWithFigma()}
+                    label="Sign in again with Figma"
+                    controlSize="sm"
+                    onSurface
+                    stacked
+                  />
+                ) : undefined
+              }
+            />
           </SettingsSectionBody>
         </SettingsSection>
       )}
@@ -176,111 +145,62 @@ export function AuthTab() {
           helpUrl={FIGMA_PAT_HELP_URL}
         />
 
-        <div className="px-4 pb-5 space-y-3">
+        <SettingsSectionBody>
           {authMethod === "oauth" && (
-            <button
-              type="button"
-              onClick={() => setShowPatAdvanced((v) => !v)}
-              className="flex items-center gap-1 text-[11px] text-accent hover:text-accent-text-hover hover:underline"
+            <ExpandableDisclosure
+              open={showPatAdvanced}
+              onToggle={() => setShowPatAdvanced((v) => !v)}
             >
-              {showPatAdvanced ? (
-                <ChevronDown size={12} />
-              ) : (
-                <ChevronRight size={12} />
-              )}
               Use a personal access token instead
-            </button>
+            </ExpandableDisclosure>
           )}
 
           {(authMethod === "pat" ||
             (authMethod === "oauth" && showPatAdvanced)) && (
             <>
-              <div className="text-[11px] text-figma-text-secondary">
-                <p className="leading-snug mb-0.5">
-                  When generating a token, enable these permissions:
-                </p>
-                <ul className="list-disc list-inside space-y-0 leading-snug">
-                  {FIGMA_PAT_REQUIRED_SCOPES.map((scope) => (
-                    <li key={scope}>
-                      <code className="font-mono text-[10px]">{scope}</code>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              <PatScopesList />
 
               {!editing ? (
                 <SettingsFieldGroup>
-                  <div className="flex items-center gap-2 bg-figma-bg border border-figma-border rounded-md px-2.5 py-1.5">
-                    <code className="text-xs font-medium text-figma-text-secondary flex-1 truncate min-w-0">
-                      {showToken ? displaySecret : maskedCredential || "—"}
-                    </code>
-                    <button
-                      type="button"
-                      onClick={() => setShowToken(!showToken)}
-                      className="p-1 rounded-md text-figma-icon-secondary hover:bg-figma-bg-secondary hover:text-figma-icon shrink-0 transition-colors"
-                      data-tooltip={showToken ? "Hide token" : "Show token"}
-                      data-tooltip-align="right"
-                      data-tooltip-pos="bottom"
-                      disabled={!displaySecret}
-                    >
-                      {showToken ? <EyeOff size={12} /> : <Eye size={12} />}
-                    </button>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
+                  <SettingsMaskedField
+                    revealed={showToken}
+                    onToggleReveal={() => setShowToken(!showToken)}
+                    displayValue={displaySecret}
+                    maskedValue={maskedCredential || "—"}
+                    onAction={() => {
                       setEditing(true);
                       setNewPat("");
                     }}
-                    className={BTN_SECONDARY}
-                  >
-                    {authMethod === "oauth" ? "Save" : "Change token"}
-                  </button>
+                    actionLabel={
+                      authMethod === "oauth" ? "Save" : "Change token"
+                    }
+                    revealDisabled={!displaySecret}
+                    revealTooltip={{ show: "Show token", hide: "Hide token" }}
+                  />
                 </SettingsFieldGroup>
               ) : (
                 <SettingsFieldGroup>
-                  <input
-                    type="password"
+                  <SettingsConfirmField
                     value={newPat}
                     onChange={(e) => setNewPat(e.target.value)}
+                    onConfirm={() => void handleSaveToken()}
+                    onCancel={() => {
+                      setEditing(false);
+                      setNewPat("");
+                    }}
+                    confirmDisabled={!newPat.trim() || isValidating}
                     placeholder="figd_xxxxxxxxxxxxxxxx"
-                    className={INPUT_CLASS}
                     autoFocus
                   />
-                  {isValidating && (
-                    <div className="flex items-center gap-1.5 text-[11px] text-figma-text-tertiary">
-                      <Loader2 size={12} className="animate-spin" />
-                      Validating token...
-                    </div>
-                  )}
+                  {isValidating && <ValidatingIndicator />}
                   {validationError && (
                     <FieldError>{validationError}</FieldError>
                   )}
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => void handleSaveToken()}
-                      disabled={!newPat.trim() || isValidating}
-                      className={BTN_PRIMARY}
-                    >
-                      Save
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditing(false);
-                        setNewPat("");
-                      }}
-                      className={BTN_SECONDARY}
-                    >
-                      Cancel
-                    </button>
-                  </div>
                 </SettingsFieldGroup>
               )}
             </>
           )}
-        </div>
+        </SettingsSectionBody>
       </SettingsSection>
     </>
   );

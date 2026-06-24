@@ -1,15 +1,25 @@
 import { useState, useCallback, type MouseEvent } from "react";
-import {
-  Eye,
-  EyeOff,
-  ExternalLink,
-  CheckCircle2,
-  Loader2,
-  ShieldAlert,
-  ChevronDown,
-  ChevronRight,
-} from "lucide-react";
+import { CheckCircle2, ExternalLink, ShieldAlert } from "lucide-react";
 import { FieldError } from "@ui/components/common/FieldError";
+import {
+  AuthPatTokenGuide,
+  ConnectedStatus,
+  ExpandableDisclosure,
+  OAuthSignInButton,
+  ValidatingIndicator,
+} from "@ui/components/common/authUi";
+import {
+  AppScreenShell,
+  AuthScreenBody,
+  CenteredAlertHeader,
+  OnboardingFooter,
+} from "@ui/components/common/layout";
+import {
+  OnboardingErrorBlock,
+  OnboardingFieldStack,
+  OnboardingSpacedBlock,
+} from "@ui/components/onboarding/onboardingPrimitives";
+import { Button, SecretField } from "@ui/components/common/uiPrimitives";
 import { useAuthStore } from "@ui/store/authStore";
 import { useCommentsStore } from "@ui/store/commentsStore";
 import {
@@ -18,10 +28,7 @@ import {
   pollOAuthUntilComplete,
 } from "@ui/lib/figmaOAuth";
 import { openExternalUrl } from "@ui/lib/openExternal";
-import {
-  FIGMA_PAT_HELP_URL,
-  FIGMA_PAT_REQUIRED_SCOPES,
-} from "@shared/figmaPat";
+import { FIGMA_PAT_HELP_URL } from "@shared/figmaPat";
 
 export function ReconnectScreen() {
   const oauthAvailable = isFigmaOAuthConfigured();
@@ -92,135 +99,95 @@ export function ReconnectScreen() {
   const authReady = !!auth && (authMethod === "oauth" || tokenValid);
 
   return (
-    <div className="flex flex-col h-full bg-figma-bg">
-      <div className="flex-1 overflow-y-auto px-5 py-6">
-        <div className="flex flex-col items-center text-center mb-6">
-          <div className="w-12 h-12 rounded-full bg-danger-bg border border-danger-border flex items-center justify-center mb-3">
-            <ShieldAlert size={24} className="text-danger" />
-          </div>
-          <h1 className="text-lg font-semibold text-figma-text mb-1">
-            Reconnect to Figma
-          </h1>
-          <p className="text-sm text-figma-text-secondary max-w-[280px]">
-            Your session or token is no longer valid. Sign in again or paste a new personal
-            access token.
-          </p>
-        </div>
+    <AppScreenShell>
+      <AuthScreenBody>
+        <CenteredAlertHeader
+          icon={ShieldAlert}
+          title="Reconnect to Figma"
+          description="Your session or token is no longer valid. Sign in again or paste a new personal access token."
+        />
 
         {oauthAvailable && (
-          <div className="mb-4">
-            <button
-              type="button"
-              disabled={oauthBusy || isValidating}
+          <OnboardingSpacedBlock spacing="lg">
+            <OAuthSignInButton
+              busy={oauthBusy}
+              disabled={isValidating}
               onClick={() => void handleSignInWithFigma()}
-              className="w-full py-2.5 rounded-md text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed bg-figma-bg-secondary border border-figma-border text-figma-text hover:bg-figma-bg-tertiary"
-            >
-              {oauthBusy ? (
-                <span className="inline-flex items-center justify-center gap-2">
-                  <Loader2 size={14} className="animate-spin" />
-                  Waiting for browser…
-                </span>
-              ) : (
-                "Sign in with Figma"
-              )}
-            </button>
-          </div>
+            />
+          </OnboardingSpacedBlock>
         )}
 
         {oauthAvailable && (
-          <button
-            type="button"
-            onClick={() => setShowPatAdvanced((v) => !v)}
-            className="flex items-center gap-1 text-xs text-accent hover:text-accent-text-hover hover:underline mb-3 w-full justify-center"
-          >
-            {showPatAdvanced ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-            Use a personal access token instead
-          </button>
+          <OnboardingSpacedBlock>
+            <ExpandableDisclosure
+              open={showPatAdvanced}
+              onToggle={() => setShowPatAdvanced((v) => !v)}
+              align="center"
+            >
+              Use a personal access token instead
+            </ExpandableDisclosure>
+          </OnboardingSpacedBlock>
         )}
 
         {showPatAdvanced && (
-          <>
-            <div className="mb-4 text-xs text-figma-text-secondary space-y-2">
-              <p className="text-figma-text-tertiary">
-                When generating a token, enable these permissions:
-              </p>
-              <ul className="list-disc list-inside space-y-0.5 text-figma-text-tertiary">
-                {FIGMA_PAT_REQUIRED_SCOPES.map((scope) => (
-                  <li key={scope}>
-                    <code className="font-mono text-xs">{scope}</code>
-                  </li>
-                ))}
-              </ul>
-              <a
-                href={FIGMA_PAT_HELP_URL}
-                className="inline-flex items-center gap-1 text-accent hover:text-accent-text-hover hover:underline"
-                onClick={(e: MouseEvent<HTMLAnchorElement>) => {
-                  e.preventDefault();
-                  openExternalUrl(FIGMA_PAT_HELP_URL);
-                }}
-              >
+          <AuthPatTokenGuide
+            helpHref={FIGMA_PAT_HELP_URL}
+            onHelpClick={(e: MouseEvent<HTMLAnchorElement>) => {
+              e.preventDefault();
+              openExternalUrl(FIGMA_PAT_HELP_URL);
+            }}
+            helpLabel={
+              <>
                 How to generate a personal access token
                 <ExternalLink size={12} />
-              </a>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <div className="relative">
-                <input
-                  type={showToken ? "text" : "password"}
-                  value={pat}
-                  onChange={(e) => void handleTokenChange(e.target.value)}
-                  placeholder="Paste your new token here"
-                  className="w-full bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2 pr-9 text-xs text-figma-text placeholder:text-figma-text-disabled focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent-ring"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowToken(!showToken)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-figma-icon-tertiary hover:text-figma-icon-secondary"
-                >
-                  {showToken ? <EyeOff size={14} /> : <Eye size={14} />}
-                </button>
-              </div>
+              </>
+            }
+          >
+            <OnboardingFieldStack>
+              <SecretField
+                value={pat}
+                onChange={(e) => void handleTokenChange(e.target.value)}
+                show={showToken}
+                onToggleShow={() => setShowToken(!showToken)}
+                placeholder="Paste your new token here"
+              />
               {isValidating && authMethod !== "oauth" && (
-                <div className="flex items-center gap-1.5 text-xs text-figma-text-secondary">
-                  <Loader2 size={12} className="animate-spin" />
-                  Validating token...
-                </div>
+                <ValidatingIndicator label="Validating token..." />
               )}
               {tokenValid && authMethod === "pat" && (
-                <div className="flex items-center gap-1.5 text-xs text-status-resolved">
-                  <CheckCircle2 size={12} />
-                  Token is valid
-                </div>
+                <ConnectedStatus icon={CheckCircle2} message="Token is valid" />
               )}
-            </div>
-          </>
+            </OnboardingFieldStack>
+          </AuthPatTokenGuide>
         )}
 
         {authMethod === "oauth" && user && (
-          <div className="flex items-center justify-center gap-1.5 text-xs text-status-resolved mt-2">
-            <CheckCircle2 size={12} />
-            Signed in as {user.handle}
-          </div>
+          <ConnectedStatus
+            icon={CheckCircle2}
+            message={`Signed in as ${user.handle}`}
+            align="center"
+            spaced
+          />
         )}
 
         {validationError && (
-          <div className="mt-3">
+          <OnboardingErrorBlock spacing="lg">
             <FieldError>{validationError}</FieldError>
-          </div>
+          </OnboardingErrorBlock>
         )}
-      </div>
+      </AuthScreenBody>
 
-      <div className="px-5 py-4 border-t border-figma-border">
-        <button
-          type="button"
+      <OnboardingFooter>
+        <Button
+          variant="primary"
+          controlSize="md"
+          fullWidth
           disabled={!authReady || isValidating || oauthBusy}
           onClick={handleReconnect}
-          className="w-full py-2.5 rounded-md text-sm font-medium transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed bg-accent-bg text-white hover:bg-accent-hover active:scale-[0.98]"
         >
           Reconnect
-        </button>
-      </div>
-    </div>
+        </Button>
+      </OnboardingFooter>
+    </AppScreenShell>
   );
 }

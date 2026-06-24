@@ -1,37 +1,17 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback } from "react";
 import {
-  ArrowLeft,
-  Crosshair,
   Copy,
   Check,
-  ChevronDown,
-  ChevronRight,
-  Loader2,
   Sparkles,
   RefreshCw,
-  AlertCircle,
-  CheckSquare,
-  Square,
   X,
-  Circle,
-  CheckCircle2,
-  Eye,
 } from "lucide-react";
-import type {
-  CommentThread,
-  SummaryResult,
-  WorkflowState,
-} from "@shared/types";
-import { StatusBadge } from "@ui/components/common/StatusBadge";
+import type { CommentThread, SummaryResult } from "@shared/types";
 import { AvatarGroup } from "@ui/components/common/AvatarGroup";
-import { UserAvatar } from "@ui/components/common/UserAvatar";
-import {
-  TASK_TYPE_LABELS,
-  TASK_TYPE_COLORS,
-} from "@ui/components/common/taskTypeConfig";
+import { TaskTypeBadge } from "@ui/components/common/taskTypeConfig";
 import { showToast } from "@ui/components/common/Toast";
-import { timeAgo } from "@ui/lib/timeAgo";
-import { renderMentions } from "@ui/lib/renderMentions";
+import { AppScreenBody, AppScreenShell } from "@ui/components/common/layout";
+import { BodyText } from "@ui/components/common/typography";
 import { useNavigateToComment } from "@ui/lib/useNavigateToComment";
 import { useAuthStore } from "@ui/store/authStore";
 import { useAIStore } from "@ui/store/aiStore";
@@ -41,126 +21,47 @@ import {
   clearCachedSummary,
   isTooShort,
 } from "@ui/ai/summarize";
-import { PROVIDER_MODEL_LABELS, formatModelName } from "@ui/ai/cloudProvider";
+import { PROVIDER_MODEL_LABELS } from "@ui/ai/cloudProvider";
+import {
+  DetailSection,
+  ReplyThreadItem,
+} from "@ui/components/common/uiPrimitives";
 import {
   ThreadCentralTrunk,
   ReplyThreadBranch,
   LastReplyTrunkCap,
 } from "./ThreadElbow";
-
-const WORKFLOW_STATE_CONFIG: Record<
-  WorkflowState,
-  { label: string; Icon: typeof Circle }
-> = {
-  open: { label: "Open", Icon: Circle },
-  read: { label: "Read", Icon: Eye },
-  resolved: { label: "Resolved", Icon: CheckCircle2 },
-};
-
-const STATE_ORDER: WorkflowState[] = ["open", "read", "resolved"];
-
-const SUMMARY_SECTION_CLASS =
-  "pl-4 pr-3.5 pt-3 pb-4 border-b border-figma-border";
-
-const SUMMARY_LINE_STAGGER_MS = 80;
-
-function splitSummarySegments(summary: string): string[] {
-  const lines = summary
-    .split("\n")
-    .map((line) => line.trim())
-    .filter(Boolean);
-  if (lines.length > 1) return lines;
-
-  const sentences =
-    summary
-      .match(/[^.!?]+[.!?]+(?:\s|$)|[^.!?]+$/g)
-      ?.map((sentence) => sentence.trim())
-      .filter(Boolean) ?? [];
-  return sentences.length > 0 ? sentences : [summary];
-}
+import {
+  AnimatedSummaryContent,
+  CollapsibleSectionContent,
+  CollapsibleSectionHeader,
+  CommentBubble,
+  CommentReplyList,
+  CommentThreadContainer,
+  CommentThreadRoot,
+  CommentsSection,
+  DashboardSection,
+  DetailToolbar,
+  DetailToolbarButton,
+  NavigateToCommentFooterButton,
+  SummarizeCtaButton,
+  SummarizeCtaLabel,
+  SummaryErrorPanel,
+  SummaryLoadingShimmer,
+  SummaryOutdatedPrompt,
+  SummaryRegeneratingIndicator,
+  SummaryTooShortNotice,
+  TaskAssigneeLabel,
+  TaskListStack,
+  ThreadDetailFooter,
+  ThreadDetailHeader,
+  ThreadDetailMetaBar,
+  WorkflowStateSelector,
+} from "./dashboardPrimitives";
+import { TaskRow } from "@ui/components/tasks/tasksPrimitives";
 
 function formatSummaryForCopy(result: SummaryResult): string {
   return `${result.topicHeader}\n\n${result.summary}`;
-}
-
-function AnimatedSummaryContent({ result }: { result: SummaryResult }) {
-  const bullets = parseSummaryBullets(result.summary);
-  const segments = bullets ?? splitSummarySegments(result.summary);
-  const headerOffset = 1;
-  const footerDelay =
-    (headerOffset + segments.length) * SUMMARY_LINE_STAGGER_MS + 40;
-
-  return (
-    <>
-      <p
-        key={`${result.generatedAt}-topic`}
-        className="text-[11px] font-semibold text-figma-text leading-snug mb-1.5 ai-summary-line-enter"
-      >
-        {result.topicHeader}
-      </p>
-      {bullets ? (
-        <ul
-          key={result.generatedAt}
-          className="list-disc pl-4 space-y-1 text-[11px] text-figma-text leading-relaxed"
-        >
-          {bullets.map((bullet, index) => (
-            <li
-              key={`${index}-${bullet}`}
-              className="ai-summary-line-enter"
-              style={{
-                animationDelay: `${(headerOffset + index) * SUMMARY_LINE_STAGGER_MS}ms`,
-              }}
-            >
-              {bullet}
-            </li>
-          ))}
-        </ul>
-      ) : segments.length === 1 ? (
-        <p
-          key={result.generatedAt}
-          className="text-[11px] text-figma-text leading-relaxed whitespace-pre-line ai-summary-line-enter"
-          style={{
-            animationDelay: `${headerOffset * SUMMARY_LINE_STAGGER_MS}ms`,
-          }}
-        >
-          {result.summary}
-        </p>
-      ) : (
-        <div
-          key={result.generatedAt}
-          className="text-[11px] text-figma-text leading-relaxed space-y-1"
-        >
-          {segments.map((segment, index) => (
-            <p
-              key={`${index}-${segment}`}
-              className="ai-summary-line-enter"
-              style={{
-                animationDelay: `${(headerOffset + index) * SUMMARY_LINE_STAGGER_MS}ms`,
-              }}
-            >
-              {segment}
-            </p>
-          ))}
-        </div>
-      )}
-      <span
-        className="text-[10px] text-figma-text-disabled mt-1.5 block ai-summary-line-enter"
-        style={{ animationDelay: `${footerDelay}ms` }}
-      >
-        Generated by {formatModelName(result.modelName ?? result.provider)}{" "}
-        &middot; {timeAgo(result.generatedAt)}
-      </span>
-    </>
-  );
-}
-
-function ExpandChevron({ expanded }: { expanded: boolean }) {
-  return expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />;
-}
-
-interface ThreadDetailProps {
-  thread: CommentThread;
-  onBack: () => void;
 }
 
 function formatDate(dateStr: string): string {
@@ -173,118 +74,15 @@ function formatDate(dateStr: string): string {
   });
 }
 
-function StateSelector({ thread }: { thread: CommentThread }) {
-  const workflowState = useWorkflowStore((s) => s.getState(thread.id));
-  const setWorkflowState = useWorkflowStore((s) => s.setState);
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClick, { passive: true });
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
-
-  const handleSelect = (state: WorkflowState) => {
-    setOpen(false);
-    if (state === workflowState) return;
-    setWorkflowState(thread.id, state);
-  };
-
-  return (
-    <div className="relative" ref={ref}>
-      <button
-        type="button"
-        onClick={() => setOpen(!open)}
-        className="flex items-center gap-1 cursor-pointer"
-      >
-        <StatusBadge status={workflowState} />
-        <ChevronDown size={10} className="text-figma-text-tertiary" />
-      </button>
-
-      {open && (
-        <div className="absolute right-0 top-full mt-1 bg-figma-bg border border-figma-border rounded-md shadow-lg z-30 min-w-[160px]">
-          {STATE_ORDER.map((state) => {
-            const cfg = WORKFLOW_STATE_CONFIG[state];
-            const Icon = cfg.Icon;
-            const isActive = workflowState === state;
-            return (
-              <button
-                key={state}
-                type="button"
-                onClick={() => handleSelect(state)}
-                className={`w-full flex items-center gap-2 px-3 py-1.5 text-xs hover:bg-figma-bg-hover transition-colors ${
-                  isActive
-                    ? "text-accent font-medium"
-                    : "text-figma-text-secondary"
-                }`}
-              >
-                <Icon size={12} />
-                {cfg.label}
-              </button>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-}
-
-/** Reply indent — must match ThreadElbow branch width (pl-7 = w-7). */
-const REPLY_THREAD_INDENT = "pl-7";
-
-function CommentBubble({
-  author,
-  message,
-  createdAt,
-}: {
-  author: { handle: string; img_url: string };
-  message: string;
-  createdAt: string;
-}) {
-  return (
-    <div className="relative z-10 flex gap-2">
-      <UserAvatar
-        handle={author.handle}
-        imgUrl={author.img_url}
-        size={20}
-        className="relative z-10 ring-1 ring-figma-border bg-figma-bg"
-      />
-      <div className="flex-1 min-w-0">
-        <div className="flex items-baseline gap-2 mb-0.5">
-          <span className="text-sm font-medium text-figma-text">
-            {author.handle}
-          </span>
-          <span className="text-[10px] text-figma-text-tertiary">
-            {timeAgo(createdAt)}
-          </span>
-        </div>
-        <p className="text-[11px] text-figma-text-secondary leading-relaxed whitespace-pre-wrap break-words">
-          {renderMentions(message)}
-        </p>
-      </div>
-    </div>
-  );
+interface ThreadDetailProps {
+  thread: CommentThread;
+  onBack: () => void;
 }
 
 function normalizeAssignee(assignee: string | null): string | null {
   if (!assignee) return null;
   const cleaned = assignee.trim().replace(/^@+/, "");
   return cleaned || null;
-}
-
-function parseSummaryBullets(summary: string): string[] | null {
-  const lines = summary
-    .split("\n")
-    .map((line) => line.trim())
-    .filter(Boolean);
-  if (lines.length === 0) return null;
-  if (!lines.every((line) => /^[-*•]\s+/.test(line))) return null;
-  return lines.map((line) => line.replace(/^[-*•]\s+/, "").trim());
 }
 
 function SummarySection({ thread }: { thread: CommentThread }) {
@@ -362,139 +160,89 @@ function SummarySection({ thread }: { thread: CommentThread }) {
 
   if (tooShort) {
     return (
-      <div className="pl-4 pr-3.5 py-3 border-b border-figma-border">
-        <div className="flex items-center gap-1.5 text-xs text-figma-text-secondary">
-          <Sparkles size={12} />
-          Thread too short to summarize (fewer than 3 comments).
-        </div>
-      </div>
+      <SummaryTooShortNotice message="Thread too short to summarize (fewer than 3 comments)." />
     );
   }
 
   return (
-    <div className={SUMMARY_SECTION_CLASS}>
-      <div className="flex items-center justify-between">
-        <button
-          type="button"
-          onClick={() => setExpanded(!expanded)}
-          className="flex items-center gap-1.5 text-xs font-medium text-figma-text"
-        >
-          <ExpandChevron expanded={expanded} />
-          <Sparkles size={12} />
-          AI Summary
-        </button>
-        {result && expanded && (
-          <div className="flex items-center gap-0.5">
-            <button
-              type="button"
-              onClick={handleCopySummary}
-              className="p-1 rounded-md text-figma-icon-tertiary hover:bg-figma-bg-secondary hover:text-figma-icon transition-colors"
-              data-tooltip={copiedSummary ? "Copied" : "Copy summary"}
-              data-tooltip-align="right"
-              data-tooltip-pos="bottom"
-            >
-              {copiedSummary ? <Check size={12} /> : <Copy size={12} />}
-            </button>
-            <button
-              type="button"
-              onClick={() => handleSummarize(true)}
-              disabled={isLoading}
-              className="p-1 rounded-md text-figma-icon-tertiary hover:bg-figma-bg-secondary hover:text-figma-icon transition-colors"
-              data-tooltip="Regenerate summary"
-              data-tooltip-align="right"
-              data-tooltip-pos="bottom"
-            >
-              <RefreshCw
-                size={12}
-                className={isLoading ? "animate-spin" : ""}
-              />
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                clearCachedSummary(thread.id, thread.lastUpdatedAt);
-                clearThreadSummary(thread.id);
-              }}
-              className="p-1 rounded-md text-figma-icon-tertiary hover:bg-danger-bg hover:text-danger transition-colors"
-              data-tooltip="Clear summary"
-              data-tooltip-align="right"
-            >
-              <X size={12} />
-            </button>
-          </div>
-        )}
-      </div>
+    <DetailSection>
+      <CollapsibleSectionHeader
+        expanded={expanded}
+        onToggle={() => setExpanded(!expanded)}
+        trailing={
+          result && expanded ? (
+            <DetailToolbar>
+              <DetailToolbarButton
+                onClick={handleCopySummary}
+                tooltip={copiedSummary ? "Copied" : "Copy summary"}
+              >
+                {copiedSummary ? <Check size={12} /> : <Copy size={12} />}
+              </DetailToolbarButton>
+              <DetailToolbarButton
+                onClick={() => handleSummarize(true)}
+                disabled={isLoading}
+                tooltip="Regenerate summary"
+              >
+                <RefreshCw
+                  size={12}
+                  className={isLoading ? "animate-spin" : ""}
+                />
+              </DetailToolbarButton>
+              <DetailToolbarButton
+                variant="danger"
+                onClick={() => {
+                  clearCachedSummary(thread.id, thread.lastUpdatedAt);
+                  clearThreadSummary(thread.id);
+                }}
+                tooltip="Clear summary"
+              >
+                <X size={12} />
+              </DetailToolbarButton>
+            </DetailToolbar>
+          ) : undefined
+        }
+      >
+        <Sparkles size={12} />
+        AI Summary
+      </CollapsibleSectionHeader>
 
       {expanded && (
-        <div className="mt-2">
+        <CollapsibleSectionContent>
           {!result && !isLoading && !error && (
-            <button
-              type="button"
+            <SummarizeCtaButton
               onClick={() => handleSummarize()}
               disabled={isLoading}
-              className="summarize-cta-button flex items-center gap-2 px-3 py-2 rounded-md text-xs font-medium bg-ai-shimmer-cta text-figma-text shadow-none hover:opacity-90 active:opacity-85 transition-opacity duration-150"
             >
-              <span className="inline-flex min-w-0 flex-wrap items-baseline gap-x-1 gap-y-0.5">
-                <span>Summarize ({thread.replyCount + 1} comments)</span>
-                <span className="text-figma-text-secondary whitespace-nowrap">
-                  via{" "}
-                  {provider === "custom"
+              <SummarizeCtaLabel
+                commentCount={thread.replyCount + 1}
+                providerLabel={
+                  provider === "custom"
                     ? customModelName || "custom"
-                    : (PROVIDER_MODEL_LABELS[provider] ?? provider)}
-                </span>
-              </span>
-            </button>
+                    : (PROVIDER_MODEL_LABELS[provider] ?? provider)
+                }
+              />
+            </SummarizeCtaButton>
           )}
 
-          {isLoading && !result && (
-            <div className="space-y-2">
-              <div className="h-3 w-full rounded bg-ai-shimmer overflow-hidden" />
-              <div className="h-3 w-4/5 rounded bg-ai-shimmer overflow-hidden" />
-              <div className="h-3 w-3/5 rounded bg-ai-shimmer overflow-hidden" />
-            </div>
-          )}
+          {isLoading && !result && <SummaryLoadingShimmer />}
 
-          {isLoading && result && (
-            <div className="flex items-center gap-1.5 text-[10px] text-figma-text-secondary mb-2">
-              <Loader2 size={11} className="animate-spin shrink-0" />
-              Regenerating summary…
-            </div>
-          )}
+          {isLoading && result && <SummaryRegeneratingIndicator />}
 
           {error && (
-            <div className="flex items-start gap-2 p-2.5 rounded-md bg-danger-bg border border-danger-border">
-              <AlertCircle size={14} className="text-danger shrink-0 mt-0.5" />
-              <div className="flex-1 min-w-0 flex flex-col">
-                <p className="text-xs text-danger leading-relaxed">{error}</p>
-                <button
-                  type="button"
-                  onClick={() => handleSummarize()}
-                  className="mt-1 text-xs font-medium text-danger underline hover:opacity-80 transition-colors self-start"
-                >
-                  Retry
-                </button>
-              </div>
-            </div>
+            <SummaryErrorPanel error={error} onRetry={() => handleSummarize()} />
           )}
 
           {result && (
             <div>
               {isOutdated && (
-                <button
-                  type="button"
-                  onClick={() => handleSummarize(true)}
-                  className="flex items-center gap-1.5 text-xs text-warning mb-2 hover:opacity-80"
-                >
-                  <RefreshCw size={11} className="text-warning" />
-                  Summary outdated — regenerate?
-                </button>
+                <SummaryOutdatedPrompt onRegenerate={() => handleSummarize(true)} />
               )}
               <AnimatedSummaryContent result={result} />
             </div>
           )}
-        </div>
+        </CollapsibleSectionContent>
       )}
-    </div>
+    </DetailSection>
   );
 }
 
@@ -510,83 +258,57 @@ function TasksSection({ thread }: { thread: CommentThread }) {
   const doneCount = tasks.filter((t) => t.status === "done").length;
 
   return (
-    <div className="px-4 py-3 border-b border-figma-border">
-      <button
-        type="button"
-        onClick={() => setExpanded(!expanded)}
-        className="flex items-center gap-1.5 text-xs font-medium text-figma-text"
+    <DashboardSection>
+      <CollapsibleSectionHeader
+        expanded={expanded}
+        onToggle={() => setExpanded(!expanded)}
       >
-        <ExpandChevron expanded={expanded} />
         Tasks ({doneCount}/{tasks.length})
-      </button>
+      </CollapsibleSectionHeader>
 
       {expanded && (
-        <div className="mt-2">
+        <CollapsibleSectionContent>
           {tasks.length === 0 ? (
-            <p className="text-[11px] text-figma-text-secondary">
-              No tasks detected.
-            </p>
+            <BodyText>No tasks detected.</BodyText>
           ) : (
-            <div className="space-y-2">
+            <TaskListStack>
               {tasks.map((task) => {
                 const assignee = normalizeAssignee(task.assignee);
                 return (
-                  <div key={task.id} className="flex items-start gap-2 group">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        updateTaskStatus(
-                          task.id,
-                          task.status === "done" ? "pending" : "done",
-                        )
-                      }
-                      className="shrink-0 mt-0.5 text-figma-icon-secondary hover:text-figma-icon transition-colors"
-                    >
-                      {task.status === "done" ? (
-                        <CheckSquare
-                          size={14}
-                          className="text-status-resolved"
-                        />
-                      ) : (
-                        <Square size={14} />
-                      )}
-                    </button>
-                    <div className="flex-1 min-w-0">
-                      <p
-                        className={`text-[11px] leading-relaxed ${
-                          task.status === "done"
-                            ? "text-figma-text-disabled line-through"
-                            : "text-figma-text"
-                        }`}
-                      >
-                        {task.description}
-                      </p>
-                      <div className="flex items-center gap-2 mt-0.5">
+                  <TaskRow
+                    key={task.id}
+                    done={task.status === "done"}
+                    description={task.description}
+                    onToggle={() =>
+                      updateTaskStatus(
+                        task.id,
+                        task.status === "done" ? "pending" : "done",
+                      )
+                    }
+                    className="group"
+                    meta={
+                      <>
                         {assignee && (
-                          <span className="text-[10px] text-figma-text-secondary">
-                            {assignee}
-                          </span>
+                          <TaskAssigneeLabel>{assignee}</TaskAssigneeLabel>
                         )}
-                        <span
-                          className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${TASK_TYPE_COLORS[task.type]}`}
-                        >
-                          {TASK_TYPE_LABELS[task.type]}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+                        <TaskTypeBadge type={task.type} />
+                      </>
+                    }
+                  />
                 );
               })}
-            </div>
+            </TaskListStack>
           )}
-        </div>
+        </CollapsibleSectionContent>
       )}
-    </div>
+    </DashboardSection>
   );
 }
 
 export function ThreadDetail({ thread, onBack }: ThreadDetailProps) {
   const [threadExpanded, setThreadExpanded] = useState(true);
+  const workflowState = useWorkflowStore((s) => s.getState(thread.id));
+  const setWorkflowState = useWorkflowStore((s) => s.setState);
   const { showThreadElbows } = useAuthStore();
   const { navigating, navigate: handleNavigate } = useNavigateToComment(
     thread.clientMeta,
@@ -594,82 +316,53 @@ export function ThreadDetail({ thread, onBack }: ThreadDetailProps) {
   );
 
   return (
-    <div className="flex flex-col h-full bg-figma-bg">
-      {/* Header */}
-      <div className="flex items-stretch border-b border-figma-border">
-        <button
-          type="button"
-          onClick={onBack}
-          className="flex items-center justify-center w-9 shrink-0 text-figma-icon-secondary hover:bg-figma-bg-hover transition-colors"
-          data-tooltip="Back to dashboard"
-          data-tooltip-align="left"
-          data-tooltip-pos="bottom"
+    <AppScreenShell>
+      <ThreadDetailHeader
+        title={`Thread #${thread.orderNumber ?? thread.id.slice(0, 8)}`}
+        onBack={onBack}
+        trailing={
+          <WorkflowStateSelector
+            value={workflowState}
+            onChange={(state) => setWorkflowState(thread.id, state)}
+          />
+        }
+      />
+
+      <AppScreenBody>
+        <ThreadDetailMetaBar
+          dateLabel={formatDate(thread.createdAt)}
+          authorLabel={`Started by ${thread.author.handle}`}
         >
-          <ArrowLeft size={15} />
-        </button>
-        <div className="flex items-center justify-between gap-2 flex-1 min-w-0 py-3 pl-2 pr-2.5">
-          <span className="font-mono text-[9.5px] font-semibold uppercase tracking-widest text-figma-text leading-none truncate">
-            Thread #{thread.orderNumber ?? thread.id.slice(0, 8)}
-          </span>
-          <StateSelector thread={thread} />
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto">
-        {/* Meta */}
-        <div className="sticky top-0 z-20 px-4 py-3 border-b border-figma-border bg-accent-subtle-opaque">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-xs text-figma-text-secondary">
-              {formatDate(thread.createdAt)}
-            </span>
-            <span className="text-xs text-figma-text-disabled">&middot;</span>
-            <span className="text-xs text-figma-text-secondary">
-              Started by {thread.author.handle}
-            </span>
-          </div>
           <AvatarGroup users={thread.participants} max={8} size={24} />
-        </div>
-
-        {/* AI Summary */}
+        </ThreadDetailMetaBar>
         <SummarySection thread={thread} />
 
         {/* Extracted Tasks */}
         <TasksSection thread={thread} />
 
-        {/* Full comment thread */}
-        <div className="px-4 py-3">
-          <button
-            type="button"
-            onClick={() => setThreadExpanded(!threadExpanded)}
-            className="flex items-center gap-1.5 text-xs font-medium text-figma-text mb-3"
-          >
-            <ExpandChevron expanded={threadExpanded} />
-            Comments ({thread.replyCount + 1})
-          </button>
-
+        <CommentsSection
+          expanded={threadExpanded}
+          onToggle={() => setThreadExpanded(!threadExpanded)}
+          title={<>Comments ({thread.replyCount + 1})</>}
+        >
           {threadExpanded && (
-            <div className="relative">
+            <CommentThreadContainer>
               {showThreadElbows && thread.replies.length > 0 && (
                 <ThreadCentralTrunk />
               )}
-              {/* pb-3 keeps reply gap inside the root row so the stem stays continuous */}
-              <div className={thread.replies.length > 0 ? "pb-3" : ""}>
+              <CommentThreadRoot hasReplies={thread.replies.length > 0}>
                 <CommentBubble
                   author={thread.author}
                   message={thread.message}
                   createdAt={thread.createdAt}
                 />
-              </div>
+              </CommentThreadRoot>
               {thread.replies.length > 0 && (
-                <div className="mb-3">
+                <CommentReplyList>
                   {thread.replies.map((reply, index) => {
                     const isLast = index === thread.replies.length - 1;
                     return (
-                      <div
-                        key={reply.id}
-                        className={`relative ${REPLY_THREAD_INDENT} ${!isLast ? "pb-3" : ""}`}
-                      >
+                      <ReplyThreadItem key={reply.id} isLast={isLast}>
                         {showThreadElbows && (
                           <>
                             <ReplyThreadBranch />
@@ -681,34 +374,25 @@ export function ThreadDetail({ thread, onBack }: ThreadDetailProps) {
                           message={reply.message}
                           createdAt={reply.createdAt}
                         />
-                      </div>
+                      </ReplyThreadItem>
                     );
                   })}
-                </div>
+                </CommentReplyList>
               )}
-            </div>
+            </CommentThreadContainer>
           )}
-        </div>
-      </div>
+        </CommentsSection>
+      </AppScreenBody>
 
-      {/* Actions footer */}
       {thread.clientMeta && (
-        <div className="px-4 py-3 border-t border-figma-border">
-          <button
-            type="button"
+        <ThreadDetailFooter>
+          <NavigateToCommentFooterButton
+            navigating={navigating}
             onClick={handleNavigate}
             disabled={navigating}
-            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-md text-xs font-medium bg-accent-bg text-white hover:bg-accent-hover active:scale-[0.98] disabled:opacity-40 transition-all duration-150"
-          >
-            {navigating ? (
-              <Loader2 size={13} className="animate-spin" />
-            ) : (
-              <Crosshair size={13} />
-            )}
-            Navigate to comment
-          </button>
-        </div>
+          />
+        </ThreadDetailFooter>
       )}
-    </div>
+    </AppScreenShell>
   );
 }

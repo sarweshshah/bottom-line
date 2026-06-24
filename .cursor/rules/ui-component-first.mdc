@@ -1,0 +1,48 @@
+---
+description: Component-first UI structure for Bottom Line plugin screens
+globs: src/ui/**/*.tsx
+alwaysApply: false
+---
+
+# UI component-first structure
+
+When adding or changing UI in `src/ui`, extract layout and styling into components — even for one-off structure.
+
+## Layering
+
+| Layer | Location | Use for |
+|---|---|---|
+| App-wide | `components/common/*` | Buttons, typography, shells, overlays |
+| Domain | `*Primitives.tsx` per feature | Settings/dashboard/tasks/onboarding defaults |
+| Screens | `*Tab.tsx`, `*Screen.tsx`, `*View.tsx` | State, data, composition only |
+
+## Rules
+
+1. **No new inline layout blocks in screens** — if you write a `className` with flex/spacing/borders, add or reuse a primitive first.
+2. **Reuse before inventing** — check `layout.tsx`, domain `*Primitives.tsx`, and `uiPrimitives.tsx`.
+3. **Shared chrome** — top bars use `appHeaderBarClass()` / `h-9` (36px). Scroll areas use `AppScreenBody`, `TasksViewShell`, or `ThreadListScrollBody`. Filter bars use `FilterBarSpacer`; toolbars use `ToolbarDivider`.
+4. **Screens compose** — tabs and views wire stores/handlers; primitives own Tailwind structure.
+
+Key composites: `AuthPatTokenGuide`, `DashboardTabSegment`, `SettingsTabSegment`, `ThreadListVirtualSurface`, `OnboardingFileUrlInput`, `ModalNoticePanel`.
+
+## Examples
+
+```tsx
+// ❌ Screen owns layout
+<div className="flex flex-col h-full bg-figma-bg">
+  <div className="flex-1 overflow-y-auto px-5 py-5">...</div>
+</div>
+
+// ✅ Screen composes primitives
+<AppScreenShell>
+  <OnboardingStepBody>...</OnboardingStepBody>
+</AppScreenShell>
+```
+
+```tsx
+// ❌ Inline header with padding-driven height
+<div className="flex items-stretch border-b py-3">...</div>
+
+// ✅ Fixed chrome height
+<div className={appHeaderBarClass()}>...</div>
+```

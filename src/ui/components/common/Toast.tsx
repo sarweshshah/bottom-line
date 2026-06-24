@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { X, AlertCircle, CheckCircle2, Info } from "lucide-react";
+import { cn } from "@ui/lib/cn";
 
 type ToastType = "success" | "error" | "info";
 
@@ -21,11 +22,16 @@ const icons: Record<ToastType, typeof Info> = {
   info: Info,
 };
 
-const barStyles: Record<ToastType, string> = {
-  success: "bg-success-600 text-white border-t border-success-700",
-  error: "bg-danger text-white border-t border-[var(--bl-danger-700)]",
-  info: "bg-accent-bg text-white border-t border-accent-hover",
-};
+function toastBarClass(type: ToastType): string {
+  switch (type) {
+    case "success":
+      return "bg-success-600 text-white border-t border-success-700";
+    case "error":
+      return "bg-danger text-white border-t border-[var(--bl-danger-700)]";
+    case "info":
+      return "bg-accent-bg text-white border-t border-accent-hover";
+  }
+}
 
 export function ToastContainer() {
   const [toasts, setToasts] = useState<ToastData[]>([]);
@@ -78,7 +84,10 @@ function ToastBar({
 
   return (
     <div
-      className={`flex items-center gap-2 px-3 py-2.5 text-xs animate-in slide-in-from-bottom ${barStyles[toast.type]}`}
+      className={cn(
+        "flex items-center gap-2 px-3 py-2.5 text-xs animate-in slide-in-from-bottom",
+        toastBarClass(toast.type),
+      )}
     >
       <Icon size={13} className="shrink-0 opacity-80" />
       <span className="flex-1">{toast.message}</span>

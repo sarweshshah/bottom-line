@@ -1,4 +1,5 @@
 import type { Task } from "@shared/types";
+import { cn } from "@ui/lib/cn";
 
 export const TASK_TYPE_LABELS: Record<Task["type"], string> = {
   revision: "Revision",
@@ -8,10 +9,30 @@ export const TASK_TYPE_LABELS: Record<Task["type"], string> = {
   general: "Task",
 };
 
-export const TASK_TYPE_COLORS: Record<Task["type"], string> = {
+const TASK_TYPE_STYLES: Record<Task["type"], string> = {
   revision: "bg-tag-revision-bg text-tag-revision-text",
   approval: "bg-tag-approval-bg text-tag-approval-text",
   blocker: "bg-tag-blocker-bg text-tag-blocker-text",
   question: "bg-tag-question-bg text-tag-question-text",
   general: "bg-figma-bg-secondary text-figma-text-secondary",
 };
+
+export function TaskTypeBadge({
+  type,
+  className = "",
+}: {
+  type: Task["type"];
+  className?: string;
+}) {
+  return (
+    <span
+      className={cn(
+        "inline-block text-[9px] px-1.5 py-0.5 rounded-full font-medium",
+        TASK_TYPE_STYLES[type],
+        className,
+      )}
+    >
+      {TASK_TYPE_LABELS[type]}
+    </span>
+  );
+}

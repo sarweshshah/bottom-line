@@ -5,10 +5,18 @@ import type { CommentThread } from "@shared/types";
 import { ThreadCard } from "./ThreadCard";
 import { ThreadCardSkeleton } from "./ThreadCardSkeleton";
 import { EmptyState } from "@ui/components/common/EmptyState";
+import { Button } from "@ui/components/common/uiPrimitives";
 import { useCommentsStore } from "@ui/store/commentsStore";
 import { useFilterStore, isAddressedToMe } from "@ui/store/filterStore";
 import { useWorkflowStore } from "@ui/store/workflowStore";
 import { useAuthStore } from "@ui/store/authStore";
+import { InlineButtonRow } from "@ui/components/common/layout";
+import {
+  ThreadListScrollBody,
+  ThreadListScrollPlaceholder,
+  ThreadListVirtualItem,
+  ThreadListVirtualSurface,
+} from "./dashboardPrimitives";
 
 interface ThreadListProps {
   onSelectThread: (thread: CommentThread) => void;
@@ -106,11 +114,11 @@ export function ThreadList({
 
   if (isLoading && threads.length === 0) {
     return (
-      <div className="flex-1 overflow-y-auto">
+      <ThreadListScrollPlaceholder>
         {Array.from({ length: 5 }, (_, i) => (
           <ThreadCardSkeleton key={i} />
         ))}
-      </div>
+      </ThreadListScrollPlaceholder>
     );
   }
 
@@ -119,15 +127,15 @@ export function ThreadList({
       <EmptyState
         variant="api-error"
         action={
-          <div className="flex gap-2">
-            <button
-              type="button"
+          <InlineButtonRow>
+            <Button
+              controlSize="compact"
+              variant="primary"
               onClick={() => useCommentsStore.getState().refreshComments()}
-              className="px-3 py-1.5 rounded-md text-xs font-medium bg-accent-bg text-white hover:bg-accent-hover"
             >
               Retry
-            </button>
-          </div>
+            </Button>
+          </InlineButtonRow>
         }
       />
     );
@@ -139,11 +147,11 @@ export function ThreadList({
 
   if (isResolvingCurrentPage) {
     return (
-      <div className="flex-1 overflow-y-auto">
+      <ThreadListScrollPlaceholder>
         {Array.from({ length: 3 }, (_, i) => (
           <ThreadCardSkeleton key={i} />
         ))}
-      </div>
+      </ThreadListScrollPlaceholder>
     );
   }
 
@@ -153,13 +161,9 @@ export function ThreadList({
         <EmptyState
           variant="addressed-to-me"
           action={
-            <button
-              type="button"
-              onClick={clearFilters}
-              className="px-3 py-1.5 rounded-md text-xs font-medium bg-figma-bg-secondary text-figma-text-secondary hover:bg-figma-bg-tertiary"
-            >
+            <Button controlSize="compact" variant="secondary" onClick={clearFilters}>
               Clear filters
-            </button>
+            </Button>
           }
         />
       );
@@ -168,37 +172,27 @@ export function ThreadList({
       <EmptyState
         variant="no-matches"
         action={
-          <button
-            type="button"
-            onClick={clearFilters}
-            className="px-3 py-1.5 rounded-md text-xs font-medium bg-figma-bg-secondary text-figma-text-secondary hover:bg-figma-bg-tertiary"
-          >
+          <Button controlSize="compact" variant="secondary" onClick={clearFilters}>
             Clear filters
-          </button>
+          </Button>
         }
       />
     );
   }
 
   return (
-    <div ref={scrollParentRef} className="thread-list flex-1 overflow-y-auto">
-      <div
-        className="relative w-full"
-        style={{ height: rowVirtualizer.getTotalSize() }}
-      >
+    <ThreadListScrollBody ref={scrollParentRef}>
+      <ThreadListVirtualSurface height={rowVirtualizer.getTotalSize()}>
         {rowVirtualizer.getVirtualItems().map((virtualRow) => {
           const thread = filtered[virtualRow.index];
           if (!thread) return null;
 
           return (
-            <div
+            <ThreadListVirtualItem
               key={virtualRow.key}
-              ref={rowVirtualizer.measureElement}
-              data-index={virtualRow.index}
-              className="absolute left-0 top-0 w-full"
-              style={{
-                transform: `translateY(${virtualRow.start}px)`,
-              }}
+              index={virtualRow.index}
+              start={virtualRow.start}
+              measureRef={rowVirtualizer.measureElement}
             >
               <ThreadCard
                 thread={thread}
@@ -209,10 +203,10 @@ export function ThreadList({
                 onSelect={onSelectThread}
                 onToggleSelect={onToggleSelect}
               />
-            </div>
+            </ThreadListVirtualItem>
           );
         })}
-      </div>
-    </div>
+      </ThreadListVirtualSurface>
+    </ThreadListScrollBody>
   );
 }
