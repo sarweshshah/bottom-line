@@ -362,6 +362,26 @@ export function DashboardLayout() {
     [threads, activitySinceMs],
   );
 
+  const isActivityCardVisible =
+    !activityDismissed && activitySummary.totalCount > 0;
+  const initialActivityTimeFilterSyncDone = useRef(false);
+
+  useEffect(() => {
+    if (initialActivityTimeFilterSyncDone.current || isLoading) return;
+    initialActivityTimeFilterSyncDone.current = true;
+    if (
+      !isActivityCardVisible &&
+      timeFilterPreset === ACTIVITY_WINDOW_PRESET
+    ) {
+      setTimeFilterPreset("all");
+    }
+  }, [
+    isLoading,
+    isActivityCardVisible,
+    timeFilterPreset,
+    setTimeFilterPreset,
+  ]);
+
   const handleActivityFilterClick = useCallback(
     (filter: ActivityFilter) => {
       setTimeFilterPreset(ACTIVITY_WINDOW_PRESET);
@@ -439,7 +459,7 @@ export function DashboardLayout() {
 
       {activeTab === "threads" && (
         <>
-          {!activityDismissed && activitySummary.totalCount > 0 && (
+          {isActivityCardVisible && (
             <ActivitySummaryPanel
               summary={activitySummary}
               activeFilter={activityCategoryFilter}
