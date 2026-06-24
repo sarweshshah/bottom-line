@@ -69,6 +69,8 @@ export default {
           "text-secondary": "var(--bl-sem-text-secondary)",
           "text-tertiary": "var(--bl-sem-text-tertiary)",
           border: "var(--bl-sem-border-default)",
+          "border-subtle": "var(--bl-sem-border-subtle)",
+          "border-faint": "var(--bl-sem-border-faint)",
           "border-strong": "var(--bl-sem-border-strong)",
           accent: "var(--bl-sem-accent)",
           "accent-hover": "var(--bl-sem-accent-hover)",

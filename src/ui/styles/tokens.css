@@ -105,6 +105,11 @@
   --bl-sem-border-default: var(--bl-neutral-300);
   --bl-sem-border-strong: var(--bl-neutral-400);
   --bl-sem-border-subtle: var(--bl-neutral-200);
+  --bl-sem-border-faint: color-mix(
+    in oklch,
+    var(--bl-sem-border-subtle) 35%,
+    var(--bl-sem-bg-canvas)
+  );
   --bl-sem-border-accent: var(--bl-violet-500);
 
   --bl-sem-icon-primary: var(--bl-neutral-700);
@@ -277,6 +282,11 @@
   --bl-sem-border-default: #45454c;
   --bl-sem-border-strong: #5c5866;
   --bl-sem-border-subtle: #404048;
+  --bl-sem-border-faint: color-mix(
+    in oklch,
+    var(--bl-sem-border-subtle) 35%,
+    var(--bl-sem-bg-canvas)
+  );
   --bl-sem-border-accent: var(--bl-violet-500);
 
   --bl-sem-icon-primary: #f2f0f5;

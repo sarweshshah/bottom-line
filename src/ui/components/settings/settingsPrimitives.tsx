@@ -35,7 +35,7 @@ export function SettingsSection({
   className?: string;
 }) {
   return (
-    <section className={`border-b border-figma-border ${className}`}>
+    <section className={`border-b border-sem-border-faint ${className}`}>
       {children}
     </section>
   );

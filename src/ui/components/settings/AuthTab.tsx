@@ -176,8 +176,8 @@ export function AuthTab() {
           helpUrl={FIGMA_PAT_HELP_URL}
         />
 
-        {authMethod === "oauth" && (
-          <div className="px-4">
+        <div className="px-4 pb-5 space-y-3">
+          {authMethod === "oauth" && (
             <button
               type="button"
               onClick={() => setShowPatAdvanced((v) => !v)}
@@ -190,26 +190,24 @@ export function AuthTab() {
               )}
               Use a personal access token instead
             </button>
-          </div>
-        )}
+          )}
 
-        {(authMethod === "pat" ||
-          (authMethod === "oauth" && showPatAdvanced)) && (
-          <>
-            <div className="px-4 pb-1.5 text-[11px] text-figma-text-secondary">
-              <p className="leading-snug mb-0.5">
-                When generating a token, enable these permissions:
-              </p>
-              <ul className="list-disc list-inside space-y-0 leading-snug mb-2">
-                {FIGMA_PAT_REQUIRED_SCOPES.map((scope) => (
-                  <li key={scope}>
-                    <code className="font-mono text-[10px]">{scope}</code>
-                  </li>
-                ))}
-              </ul>
-            </div>
+          {(authMethod === "pat" ||
+            (authMethod === "oauth" && showPatAdvanced)) && (
+            <>
+              <div className="text-[11px] text-figma-text-secondary">
+                <p className="leading-snug mb-0.5">
+                  When generating a token, enable these permissions:
+                </p>
+                <ul className="list-disc list-inside space-y-0 leading-snug">
+                  {FIGMA_PAT_REQUIRED_SCOPES.map((scope) => (
+                    <li key={scope}>
+                      <code className="font-mono text-[10px]">{scope}</code>
+                    </li>
+                  ))}
+                </ul>
+              </div>
 
-            <SettingsSectionBody>
               {!editing ? (
                 <SettingsFieldGroup>
                   <div className="flex items-center gap-2 bg-figma-bg border border-figma-border rounded-md px-2.5 py-1.5">
@@ -236,9 +234,7 @@ export function AuthTab() {
                     }}
                     className={BTN_SECONDARY}
                   >
-                    {authMethod === "oauth"
-                      ? "Paste personal access token"
-                      : "Change token"}
+                    {authMethod === "oauth" ? "Save" : "Change token"}
                   </button>
                 </SettingsFieldGroup>
               ) : (
@@ -282,9 +278,9 @@ export function AuthTab() {
                   </div>
                 </SettingsFieldGroup>
               )}
-            </SettingsSectionBody>
-          </>
-        )}
+            </>
+          )}
+        </div>
       </SettingsSection>
     </>
   );
