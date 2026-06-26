@@ -207,7 +207,7 @@ export function OnboardingStep({
   return (
     <div
       className={cn(
-        "onboarding-step-enter flex flex-col h-full",
+        "flex flex-col h-full",
         variant === "welcome" && "text-center",
         className,
       )}
@@ -225,7 +225,7 @@ export function OnboardingStepBody({
   children: ReactNode;
 }) {
   return (
-    <div className={cn("flex-1 overflow-y-auto px-5 py-5", className)}>
+    <div className={cn("onboarding-step-enter flex-1 overflow-y-auto px-5 py-5", className)}>
       {children}
     </div>
   );
@@ -241,7 +241,7 @@ export function OnboardingWelcomeBody({
   return (
     <div
       className={cn(
-        "flex-1 flex flex-col items-center justify-center px-5",
+        "onboarding-step-enter flex-1 flex flex-col items-center justify-center px-5",
         className,
       )}
     >
