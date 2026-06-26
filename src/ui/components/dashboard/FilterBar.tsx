@@ -6,6 +6,7 @@ import {
   File,
   Files,
   Calendar,
+  Loader2,
 } from "lucide-react";
 import { useState } from "react";
 import { useShallow } from "zustand/react/shallow";
@@ -16,6 +17,7 @@ import type {
   TimeFilterPreset,
 } from "@shared/types";
 import { useFilterStore } from "@ui/store/filterStore";
+import { useCommentsStore } from "@ui/store/commentsStore";
 import { FilterBarShell, FilterBarSpacer } from "@ui/components/common/layout";
 import {
   DropdownMenu,
@@ -94,6 +96,12 @@ export function FilterBar() {
       setCustomTimeRange: s.setCustomTimeRange,
     })),
   );
+  const { threads, currentPageThreadIds } = useCommentsStore(
+    useShallow((s) => ({
+      threads: s.threads,
+      currentPageThreadIds: s.currentPageThreadIds,
+    })),
+  );
   const [openMenu, setOpenMenu] = useState<MenuId | null>(null);
 
   function toggleMenu(menu: MenuId) {
@@ -115,6 +123,10 @@ export function FilterBar() {
     (o) => o.value === timeFilterPreset,
   );
   const isTimeFilterActive = timeFilterPreset !== "all";
+  const isResolvingCurrentPage =
+    commentScope === "current_page" &&
+    currentPageThreadIds === null &&
+    threads.length > 0;
   const isScopeFilterActive = commentScope === "current_page";
 
   return (
@@ -209,12 +221,17 @@ export function FilterBar() {
         trigger={
           <IconFilterChip
             active={isScopeFilterActive}
+            loading={isResolvingCurrentPage}
             onClick={() => toggleMenu("scope")}
             data-tooltip={activeScope?.label}
             data-tooltip-align="right"
             data-tooltip-pos="bottom"
           >
-            <ScopeIcon size={12} />
+            {isResolvingCurrentPage ? (
+              <Loader2 size={12} className="animate-spin" />
+            ) : (
+              <ScopeIcon size={12} />
+            )}
             <ChevronDown size={10} />
           </IconFilterChip>
         }

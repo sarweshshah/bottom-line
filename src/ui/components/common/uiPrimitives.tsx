@@ -344,20 +344,27 @@ export function FilterChip({
 
 export function IconFilterChip({
   active = false,
+  loading = false,
   onClick,
   className = "",
   children,
   ...props
-}: ButtonHTMLAttributes<HTMLButtonElement> & { active?: boolean }) {
+}: ButtonHTMLAttributes<HTMLButtonElement> & {
+  active?: boolean;
+  loading?: boolean;
+}) {
+  const engaged = active || loading;
+
   return (
     <button
       type="button"
       onClick={onClick}
       className={cn(
         "flex items-center gap-0.5 p-1.5 rounded-md transition-colors",
-        active
-          ? "bg-accent-bg text-white shadow-sm"
+        engaged
+          ? "bg-accent-bg text-white shadow-sm [&_svg]:text-white"
           : "text-figma-text-secondary hover:text-figma-text bg-figma-bg-secondary",
+        loading && "cursor-wait",
         className,
       )}
       {...props}
