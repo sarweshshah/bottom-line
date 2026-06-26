@@ -608,7 +608,7 @@ export function ActivityFilterChip({
       )}
       aria-pressed={active}
       data-tooltip={tooltip}
-      data-tooltip-align="center"
+      data-tooltip-align="left"
       data-tooltip-pos="bottom"
     >
       {count} {label}
