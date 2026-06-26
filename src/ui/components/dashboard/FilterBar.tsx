@@ -134,7 +134,7 @@ export function FilterBar() {
       <DropdownMenu
         open={openMenu === "status"}
         onClose={closeMenu}
-        panelClassName="min-w-[140px]"
+        panelClassName="min-w-[72px]"
         trigger={
           <FilterChip
             active={Boolean(workflowStateFilter)}
@@ -173,7 +173,7 @@ export function FilterBar() {
         open={openMenu === "time"}
         onClose={closeMenu}
         align="right"
-        panelClassName="min-w-[160px] overflow-hidden"
+        panelClassName="overflow-hidden"
         trigger={
           <IconFilterChip
             active={isTimeFilterActive}
@@ -217,7 +217,6 @@ export function FilterBar() {
         open={openMenu === "scope"}
         onClose={closeMenu}
         align="right"
-        panelClassName="min-w-[130px]"
         trigger={
           <IconFilterChip
             active={isScopeFilterActive}
@@ -255,7 +254,6 @@ export function FilterBar() {
         open={openMenu === "sort"}
         onClose={closeMenu}
         align="right"
-        panelClassName="min-w-[140px]"
         trigger={
           <FilterChip
             tone="sort"

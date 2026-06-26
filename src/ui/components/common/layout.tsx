@@ -211,7 +211,7 @@ export function FeatureCard({
 }) {
   return (
     <div className="flex items-start gap-3 text-left p-2.5 rounded-md bg-sem-surface shadow-sem-card">
-      <div className="mt-0.5 p-1.5 rounded-md bg-accent/10">
+      <div className="mt-0.5 p-1.5 rounded-md bg-accent-subtle">
         <Icon size={14} className="text-accent" />
       </div>
       <div className="min-w-0">

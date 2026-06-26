@@ -49,7 +49,7 @@ export function EmptyState({ variant, action }: EmptyStateProps) {
         className={`relative w-12 h-12 rounded-2xl flex items-center justify-center mb-3.5 ${
           isError
             ? "bg-danger-bg empty-state-halo-error"
-            : "bg-accent/10 empty-state-halo"
+            : "bg-accent-subtle empty-state-halo"
         }`}
       >
         <Icon size={22} className={isError ? "text-danger" : "text-accent"} />

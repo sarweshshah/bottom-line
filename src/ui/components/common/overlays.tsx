@@ -124,7 +124,7 @@ export function DropdownMenuPanel({
   return (
     <div
       className={cn(
-        "absolute top-full mt-1 bg-figma-bg border border-figma-border rounded-md shadow-sem-lg z-20",
+        "absolute top-full mt-1 w-max bg-figma-bg border border-figma-border rounded-md shadow-sem-lg z-20 py-1",
         align === "right" ? "right-0" : "left-0",
         className,
       )}
@@ -154,7 +154,7 @@ export function DropdownMenuItem({
       type="button"
       onClick={onClick}
       className={cn(
-        "w-full flex items-center gap-2 px-3 py-1.5 text-xs hover:bg-figma-bg-hover transition-colors text-left",
+        "w-full flex items-center gap-2 px-3 py-1.5 text-xs whitespace-nowrap hover:bg-figma-bg-hover transition-colors text-left",
         layout === "split" && "justify-between",
         active ? "text-accent font-medium" : "text-figma-text-secondary",
         className,

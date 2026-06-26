@@ -195,7 +195,7 @@ export function TaskThreadLinkButton({ onClick }: { onClick: () => void }) {
 export function TasksEmptyState() {
   return (
     <HeroLayout className="flex-1">
-      <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center mb-3">
+      <div className="w-10 h-10 rounded-full bg-accent-subtle flex items-center justify-center mb-3">
         <Sparkles size={20} className="text-accent" />
       </div>
       <p className="text-sm font-medium text-figma-text mb-1">No tasks yet</p>

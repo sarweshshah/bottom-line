@@ -245,7 +245,7 @@ export function WorkflowStateSelector({
       open={open}
       onClose={() => setOpen(false)}
       align="right"
-      panelClassName="min-w-[160px] z-30"
+      panelClassName="z-30"
       trigger={
         <button
           type="button"
@@ -296,7 +296,7 @@ export function WorkflowStateDropdown({
       onClose={() => setOpen(false)}
       align={align}
       panelClassName={cn(
-        "min-w-[150px] z-30",
+        "z-30",
         placement === "above" && "top-auto bottom-full mb-1 mt-0",
       )}
       trigger={
