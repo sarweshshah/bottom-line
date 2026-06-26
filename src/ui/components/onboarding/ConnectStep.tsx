@@ -112,7 +112,7 @@ export function ConnectStep({ onNext, onBack }: ConnectStepProps) {
         )}
       </OnboardingStepBody>
 
-      <OnboardingStepNav step={1} onBack={onBack}>
+      <OnboardingStepNav step={0} onBack={onBack}>
         <OnboardingContinueButton disabled={!user} onClick={onNext}>
           Continue
           <ArrowRight size={14} />

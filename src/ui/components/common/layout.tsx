@@ -106,6 +106,7 @@ export function TabBar({
 }
 
 export function StepIndicator({
+  /** Zero-based active step; use -1 when no step is active yet (e.g. welcome). */
   current,
   total,
 }: {
@@ -118,11 +119,11 @@ export function StepIndicator({
         <div
           key={i}
           className={cn(
-            "h-1.5 rounded-full transition-all duration-300",
+            "h-1.5 shrink-0 rounded-full transition-all duration-300",
             i === current
               ? "w-6 bg-accent-bg"
               : i < current
-                ? "w-1.5 bg-accent-bg/50"
+                ? "w-1.5 bg-accent-bg"
                 : "w-1.5 bg-figma-border",
           )}
         />

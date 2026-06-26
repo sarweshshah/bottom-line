@@ -13,7 +13,7 @@ import {
 import { Button } from "@ui/components/common/uiPrimitives";
 import {
   ONBOARDING_FEATURES,
-  ONBOARDING_TOTAL_STEPS,
+  ONBOARDING_CONFIG_STEPS,
 } from "@ui/onboarding/onboardingConfig";
 import pluginLogo from "@ui/assets/plugin-logo.png";
 
@@ -46,7 +46,7 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
 
       <OnboardingFooter
         stepIndicator={
-          <StepIndicator current={0} total={ONBOARDING_TOTAL_STEPS} />
+          <StepIndicator current={-1} total={ONBOARDING_CONFIG_STEPS} />
         }
       >
         <Button

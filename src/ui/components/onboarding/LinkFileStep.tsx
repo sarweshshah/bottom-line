@@ -52,7 +52,7 @@ export function LinkFileStep({ onBack }: LinkFileStepProps) {
         {fileKey && !urlError && <SetupReadyBanner />}
       </OnboardingStepBody>
 
-      <OnboardingStepNav step={3} onBack={onBack}>
+      <OnboardingStepNav step={2} onBack={onBack}>
         <OnboardingContinueButton
           disabled={!canSubmit}
           onClick={() => void handleSubmit()}

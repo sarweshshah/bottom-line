@@ -3,7 +3,7 @@ import { Check, CheckCircle2, X, ArrowLeft } from "lucide-react";
 import { HeroLayout, OnboardingFooter, StepIndicator } from "@ui/components/common/layout";
 import { BodyText } from "@ui/components/common/typography";
 import { Button, Input } from "@ui/components/common/uiPrimitives";
-import { ONBOARDING_TOTAL_STEPS } from "@ui/onboarding/onboardingConfig";
+import { ONBOARDING_CONFIG_STEPS } from "@ui/onboarding/onboardingConfig";
 import { cn } from "@ui/lib/cn";
 
 const PAT_TRANSPARENCY_ITEMS = [
@@ -393,7 +393,7 @@ export function OnboardingStepNav({
   return (
     <OnboardingFooter
       stepIndicator={
-        <StepIndicator current={step} total={ONBOARDING_TOTAL_STEPS} />
+        <StepIndicator current={step} total={ONBOARDING_CONFIG_STEPS} />
       }
     >
       {onBack && <OnboardingBackButton onClick={onBack} />}

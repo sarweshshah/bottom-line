@@ -1,7 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import { CheckSquare, MessageSquare, Sparkles } from "lucide-react";
 
-export const ONBOARDING_TOTAL_STEPS = 4;
 export const ONBOARDING_CONFIG_STEPS = 3;
 
 export type OnboardingFeature = {

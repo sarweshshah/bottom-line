@@ -4,6 +4,21 @@ All notable changes to Bottom Line will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.4.0] - 2026-06-26
+
+### Added
+
+- Dedicated AI provider setup step in onboarding (Anthropic, OpenAI, Gemini, or custom endpoint)
+- Shared AI provider configuration components for onboarding and settings
+- Loading indicator on filter chips while resolving current-page comments
+- Component-first UI structure with shared primitives across dashboard, settings, onboarding, and tasks
+
+### Changed
+
+- Refactored AI provider integration and Summary settings tab to use shared configuration logic
+- Enhanced user preferences management with normalized theme and motion settings
+- Refreshed Auth tab layout and Tailwind configuration
+
 ## [2.3.0] - 2026-06-25
 
 ### Added

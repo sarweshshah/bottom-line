@@ -47,7 +47,7 @@ export function AiProviderStep({ onNext, onBack }: AiProviderStepProps) {
         </OnboardingFieldStack>
       </OnboardingStepBody>
 
-      <OnboardingStepNav step={2} onBack={onBack}>
+      <OnboardingStepNav step={1} onBack={onBack}>
         <OnboardingContinueButton
           disabled={!hasConfiguredProvider}
           onClick={handleContinue}
