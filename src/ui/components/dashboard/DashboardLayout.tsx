@@ -7,10 +7,12 @@ import { useAuthStore } from "@ui/store/authStore";
 import { useAIStore } from "@ui/store/aiStore";
 import { useWorkflowStore } from "@ui/store/workflowStore";
 import { bulkSummarizeThreads } from "@ui/ai/summarize";
+import { requestAiConsent } from "@ui/ai/consent";
 import { FilterBar } from "./FilterBar";
 import { ThreadList } from "./ThreadList";
 import { ThreadDetail } from "./ThreadDetail";
 import { ActivitySummaryPanel } from "./ActivitySummaryPanel";
+import { useFilteredThreads } from "./useFilteredThreads";
 import { AppScreenShell } from "@ui/components/common/layout";
 import { TasksView } from "@ui/components/tasks/TasksView";
 import {
@@ -36,40 +38,41 @@ export function DashboardLayout() {
     currentPageThreadIds,
     isResolvingPages,
     resolveCurrentPageThreads,
-  } = useCommentsStore();
+  } = useCommentsStore(
+    useShallow((s) => ({
+      threads: s.threads,
+      isLoading: s.isLoading,
+      fetchComments: s.fetchComments,
+      refreshComments: s.refreshComments,
+      cacheTTLMinutes: s.cacheTTLMinutes,
+      currentPageThreadIds: s.currentPageThreadIds,
+      isResolvingPages: s.isResolvingPages,
+      resolveCurrentPageThreads: s.resolveCurrentPageThreads,
+    })),
+  );
   const {
-    applyFilters,
     commentScope,
-    workflowStateFilter,
-    addressedToMe,
-    sortField,
-    sortDirection,
     timeFilterPreset,
-    customTimeStart,
-    customTimeEnd,
     activityCategoryFilter,
     setTimeFilterPreset,
     setActivityCategoryFilter,
   } = useFilterStore(
     useShallow((s) => ({
-      applyFilters: s.applyFilters,
       commentScope: s.commentScope,
-      workflowStateFilter: s.workflowStateFilter,
-      addressedToMe: s.addressedToMe,
-      sortField: s.sortField,
-      sortDirection: s.sortDirection,
       timeFilterPreset: s.timeFilterPreset,
-      customTimeStart: s.customTimeStart,
-      customTimeEnd: s.customTimeEnd,
       activityCategoryFilter: s.activityCategoryFilter,
       setTimeFilterPreset: s.setTimeFilterPreset,
       setActivityCategoryFilter: s.setActivityCategoryFilter,
     })),
   );
-  const { showSettings, user, fileName } = useAuthStore();
+  const { showSettings, fileName } = useAuthStore(
+    useShallow((s) => ({
+      showSettings: s.showSettings,
+      fileName: s.fileName,
+    })),
+  );
   const taskCount = useAIStore((s) => s.allTasks.length);
   const needsConsent = useAIStore((s) => s.needsConsent);
-  const getWorkflowState = useWorkflowStore((s) => s.getState);
   const initStates = useWorkflowStore((s) => s.initStates);
   const reconcileWithFigma = useWorkflowStore((s) => s.reconcileWithFigma);
   const cleanup = useWorkflowStore((s) => s.cleanup);
@@ -162,13 +165,7 @@ export function DashboardLayout() {
   const handleBulkSummarize = async () => {
     const selectedThreads = threads.filter((t) => selectedIds.has(t.id));
     if (needsConsent()) {
-      window.dispatchEvent(
-        new CustomEvent("show-ai-consent", {
-          detail: {
-            onConsent: () => void bulkSummarizeThreads(selectedThreads),
-          },
-        }),
-      );
+      requestAiConsent(() => void bulkSummarizeThreads(selectedThreads));
       setBulkMode(false);
       setSelectedIds(new Set());
       return;
@@ -229,36 +226,7 @@ export function DashboardLayout() {
     ],
   );
 
-  const isResolvingCurrentPage =
-    commentScope === "current_page" &&
-    currentPageThreadIds === null &&
-    threads.length > 0;
-
-  const filteredThreads = useMemo(() => {
-    if (isResolvingCurrentPage) return [];
-    return applyFilters(
-      threads,
-      currentPageThreadIds,
-      getWorkflowState,
-      user?.handle ?? null,
-    );
-  }, [
-    isResolvingCurrentPage,
-    applyFilters,
-    threads,
-    currentPageThreadIds,
-    getWorkflowState,
-    user?.handle,
-    workflowStateFilter,
-    addressedToMe,
-    sortField,
-    sortDirection,
-    commentScope,
-    timeFilterPreset,
-    customTimeStart,
-    customTimeEnd,
-    activityCategoryFilter,
-  ]);
+  const { filteredThreads, isResolvingCurrentPage } = useFilteredThreads();
   const filteredCount = filteredThreads.length;
 
   if (selectedThread) {
@@ -303,6 +271,8 @@ export function DashboardLayout() {
           <FilterBar />
           <BulkSummaryProgressBar />
           <ThreadList
+            filteredThreads={filteredThreads}
+            isResolvingCurrentPage={isResolvingCurrentPage}
             onSelectThread={handleSelectThread}
             bulkMode={bulkMode}
             selectedIds={selectedIds}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isValidFigmaUrl, parseFileKey } from "./parseFileUrl";
+import { isValidFigmaUrl, parseFileKey, validateFigmaFileUrl } from "./parseFileUrl";
 
 describe("parseFileUrl", () => {
   it("extracts file key from supported figma URL shapes", () => {
@@ -26,5 +26,20 @@ describe("parseFileUrl", () => {
       true,
     );
     expect(isValidFigmaUrl("https://google.com/file/AbC123xyz")).toBe(false);
+  });
+
+  it("validates file URLs with structured errors", () => {
+    expect(validateFigmaFileUrl("")).toEqual({
+      ok: false,
+      error: "Please enter a Figma file URL.",
+    });
+    expect(validateFigmaFileUrl("https://example.com/file/abc")).toEqual({
+      ok: false,
+      error: "Please enter a valid Figma file URL.",
+    });
+    expect(validateFigmaFileUrl("https://www.figma.com/design/AbC123xyz/Flow")).toEqual({
+      ok: true,
+      key: "AbC123xyz",
+    });
   });
 });

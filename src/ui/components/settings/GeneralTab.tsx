@@ -1,7 +1,9 @@
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
+import { useShallow } from "zustand/react/shallow";
 import { useAuthStore } from "@ui/store/authStore";
 import { useCommentsStore } from "@ui/store/commentsStore";
-import { parseFileKey, isValidFigmaUrl } from "@ui/lib/parseFileUrl";
+import { useFigmaFileUrlInput } from "@ui/hooks/useFigmaFileUrlInput";
+import { validateFigmaFileUrl } from "@ui/lib/parseFileUrl";
 import { showToast } from "@ui/components/common/Toast";
 import { FieldError } from "@ui/components/common/FieldError";
 import {
@@ -13,40 +15,38 @@ import {
   SettingsSegmentedControl,
   SettingsSubsectionHeader,
   SettingsToggleRow,
-  TTL_OPTIONS,
 } from "@ui/components/settings/settingsPrimitives";
+import { CACHE_TTL_OPTIONS } from "@shared/constants";
 
 export function GeneralTab() {
-  const { fileUrl, fileKey, fileName, setFileInfo } = useAuthStore();
+  const { fileUrl, fileKey, fileName, setFileInfo } = useAuthStore(
+    useShallow((s) => ({
+      fileUrl: s.fileUrl,
+      fileKey: s.fileKey,
+      fileName: s.fileName,
+      setFileInfo: s.setFileInfo,
+    })),
+  );
   const { refreshComments, cacheTTLMinutes, setCacheTTLMinutes } =
-    useCommentsStore();
+    useCommentsStore(
+      useShallow((s) => ({
+        refreshComments: s.refreshComments,
+        cacheTTLMinutes: s.cacheTTLMinutes,
+        setCacheTTLMinutes: s.setCacheTTLMinutes,
+      })),
+    );
 
-  const [url, setUrl] = useState(fileUrl ?? "");
-  const [urlError, setUrlError] = useState<string | null>(null);
-
-  const handleUrlChange = useCallback((value: string) => {
-    setUrl(value);
-    setUrlError(null);
-  }, []);
+  const { fileUrl: url, urlError, handleUrlChange, validateForSave } =
+    useFigmaFileUrlInput(fileUrl ?? "");
 
   const handleSaveUrl = useCallback(async () => {
-    if (!url.trim()) {
-      setUrlError("Please enter a Figma file URL.");
-      return;
-    }
-    if (!isValidFigmaUrl(url)) {
-      setUrlError("Please enter a valid Figma file URL.");
-      return;
-    }
-    const key = parseFileKey(url);
-    if (!key) {
-      setUrlError("Could not extract file key from URL.");
-      return;
-    }
-    await setFileInfo(url, key);
+    if (!validateForSave()) return;
+    const result = validateFigmaFileUrl(url);
+    if (!result.ok) return;
+    await setFileInfo(url, result.key);
     refreshComments();
     showToast("File updated successfully", "success");
-  }, [url, setFileInfo, refreshComments]);
+  }, [url, validateForSave, setFileInfo, refreshComments]);
 
   return (
     <>
@@ -80,7 +80,7 @@ export function GeneralTab() {
             onChange={(e) => handleUrlChange(e.target.value)}
             placeholder="https://www.figma.com/design/abc123/..."
             actionLabel="Save"
-            onAction={handleSaveUrl}
+            onAction={() => void handleSaveUrl()}
             error={urlError ? <FieldError>{urlError}</FieldError> : undefined}
           />
         </SettingsSectionBody>
@@ -99,7 +99,7 @@ export function GeneralTab() {
               variant="inline"
               value={cacheTTLMinutes}
               onChange={setCacheTTLMinutes}
-              options={TTL_OPTIONS.map((minutes) => ({
+              options={CACHE_TTL_OPTIONS.map((minutes) => ({
                 value: minutes,
                 label: `${minutes}m`,
               }))}

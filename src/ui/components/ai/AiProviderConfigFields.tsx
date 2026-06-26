@@ -37,7 +37,7 @@ export function AiProviderConfigFields({
     maskedKey,
     hasConfiguredProvider,
     setCurrentKey,
-    setCustomConfig,
+    updateCustomConfig,
     setSummaryWordLimit,
     setImageAnalysisEnabled,
     selectProvider,
@@ -62,128 +62,123 @@ export function AiProviderConfigFields({
             label={opt.label}
             description={opt.description}
           >
-            {opt.value !== "custom" ? (
-              <SettingsFieldGroup>
-                <SettingsFieldHeader
-                  label="API key"
-                  trailing={
-                    opt.apiKeyUrl ? (
-                      <SettingsInlineLink
-                        href={opt.apiKeyUrl}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          openExternalUrl(opt.apiKeyUrl!);
-                        }}
-                      >
-                        Get your {opt.label} API key
-                        <ExternalLink size={9} />
-                      </SettingsInlineLink>
-                    ) : undefined
-                  }
-                />
-                <SettingsSecretInput
-                  value={currentKey}
-                  maskedValue={maskedKey}
-                  show={showKey}
-                  onToggleShow={() => setShowKey(!showKey)}
-                  onChange={(e) => setCurrentKey(e.target.value)}
-                  onFocus={handleApiKeyFocus}
-                  onBlur={handleApiKeyBlur}
-                  placeholder="Paste your API key"
-                  revealTooltip={{ show: "Show key", hide: "Hide key" }}
-                />
-              </SettingsFieldGroup>
-            ) : (
+            {isSelected && (
               <>
-                <SettingsInput
-                  type="text"
-                  value={customConfig.baseUrl}
-                  onChange={(e) =>
-                    setCustomConfig({
-                      ...customConfig,
-                      baseUrl: e.target.value,
-                    })
-                  }
-                  onFocus={handleCustomConfigFocus}
-                  onBlur={handleCustomConfigBlur}
-                  placeholder="Base URL (https://api.example.com/v1)"
-                />
-                <SettingsInput
-                  type="password"
-                  value={customConfig.apiKey}
-                  onChange={(e) =>
-                    setCustomConfig({
-                      ...customConfig,
-                      apiKey: e.target.value,
-                    })
-                  }
-                  onFocus={handleCustomConfigFocus}
-                  onBlur={handleCustomConfigBlur}
-                  placeholder="API key (optional)"
-                />
-                <SettingsInput
-                  type="text"
-                  value={customConfig.modelName}
-                  onChange={(e) =>
-                    setCustomConfig({
-                      ...customConfig,
-                      modelName: e.target.value,
-                    })
-                  }
-                  onFocus={handleCustomConfigFocus}
-                  onBlur={handleCustomConfigBlur}
-                  placeholder="Model name (e.g., llama-3.1-8b-instant)"
-                />
-              </>
-            )}
+                {opt.value !== "custom" ? (
+                  <SettingsFieldGroup>
+                    <SettingsFieldHeader
+                      label="API key"
+                      trailing={
+                        opt.apiKeyUrl ? (
+                          <SettingsInlineLink
+                            href={opt.apiKeyUrl}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              openExternalUrl(opt.apiKeyUrl!);
+                            }}
+                          >
+                            Get your {opt.label} API key
+                            <ExternalLink size={9} />
+                          </SettingsInlineLink>
+                        ) : undefined
+                      }
+                    />
+                    <SettingsSecretInput
+                      value={currentKey}
+                      maskedValue={maskedKey}
+                      show={showKey}
+                      onToggleShow={() => setShowKey(!showKey)}
+                      onChange={(e) => setCurrentKey(e.target.value)}
+                      onFocus={handleApiKeyFocus}
+                      onBlur={handleApiKeyBlur}
+                      placeholder="Paste your API key"
+                      revealTooltip={{ show: "Show key", hide: "Hide key" }}
+                    />
+                  </SettingsFieldGroup>
+                ) : (
+                  <>
+                    <SettingsInput
+                      type="text"
+                      value={customConfig.baseUrl}
+                      onChange={(e) =>
+                        updateCustomConfig({ baseUrl: e.target.value })
+                      }
+                      onFocus={handleCustomConfigFocus}
+                      onBlur={handleCustomConfigBlur}
+                      placeholder="Base URL (https://api.example.com/v1)"
+                    />
+                    <SettingsInput
+                      type="password"
+                      value={customConfig.apiKey}
+                      onChange={(e) =>
+                        updateCustomConfig({ apiKey: e.target.value })
+                      }
+                      onFocus={handleCustomConfigFocus}
+                      onBlur={handleCustomConfigBlur}
+                      placeholder="API key (optional)"
+                    />
+                    <SettingsInput
+                      type="text"
+                      value={customConfig.modelName}
+                      onChange={(e) =>
+                        updateCustomConfig({ modelName: e.target.value })
+                      }
+                      onFocus={handleCustomConfigFocus}
+                      onBlur={handleCustomConfigBlur}
+                      placeholder="Model name (e.g., llama-3.1-8b-instant)"
+                    />
+                  </>
+                )}
 
-            {showAdvancedOptions && isSelected && hasConfiguredProvider && hasVision && (
-              <SettingsControlRow
-                as="label"
-                align="center"
-                label="Image analysis"
-                description={
-                  imageAnalysisEnabled
-                    ? undefined
-                    : "Include attached images when generating summaries."
-                }
-                warning={
-                  imageAnalysisEnabled ? (
-                    <SettingsWarningInline>
-                      Uses more tokens per summary
-                    </SettingsWarningInline>
-                  ) : undefined
-                }
-                trailing={
-                  <SettingsCheckbox
-                    checked={imageAnalysisEnabled}
-                    onChange={setImageAnalysisEnabled}
-                  />
-                }
-              />
-            )}
-
-            {showAdvancedOptions && isSelected && hasConfiguredProvider && (
-              <SettingsControlRow
-                label="Summary length"
-                description="Cap summary length in words."
-                trailing={
-                  <SettingsSelectField
-                    value={summaryWordLimit}
-                    onChange={(e) =>
-                      setSummaryWordLimit(
-                        Number(e.target.value) as SummaryWordLimit,
-                      )
+                {showAdvancedOptions && hasConfiguredProvider && hasVision && (
+                  <SettingsControlRow
+                    as="label"
+                    align="center"
+                    label="Image analysis"
+                    description={
+                      imageAnalysisEnabled
+                        ? undefined
+                        : "Include attached images when generating summaries."
                     }
-                  >
-                    {SUMMARY_WORD_LIMIT_OPTIONS.map((limit) => (
-                      <option key={limit} value={limit}>
-                        {limit} words
-                      </option>
-                    ))}
-                  </SettingsSelectField>
-                }
-              />
+                    warning={
+                      imageAnalysisEnabled ? (
+                        <SettingsWarningInline>
+                          Uses more tokens per summary
+                        </SettingsWarningInline>
+                      ) : undefined
+                    }
+                    trailing={
+                      <SettingsCheckbox
+                        checked={imageAnalysisEnabled}
+                        onChange={setImageAnalysisEnabled}
+                      />
+                    }
+                  />
+                )}
+
+                {showAdvancedOptions && hasConfiguredProvider && (
+                  <SettingsControlRow
+                    label="Summary length"
+                    description="Cap summary length in words."
+                    trailing={
+                      <SettingsSelectField
+                        value={summaryWordLimit}
+                        onChange={(e) =>
+                          setSummaryWordLimit(
+                            Number(e.target.value) as SummaryWordLimit,
+                          )
+                        }
+                      >
+                        {SUMMARY_WORD_LIMIT_OPTIONS.map((limit) => (
+                          <option key={limit} value={limit}>
+                            {limit} words
+                          </option>
+                        ))}
+                      </SettingsSelectField>
+                    }
+                  />
+                )}
+              </>
             )}
           </SettingsOptionRow>
         );

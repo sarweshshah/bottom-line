@@ -20,9 +20,9 @@ import {
   type ButtonVariant,
 } from "@ui/components/common/uiPrimitives";
 import { openExternalUrl } from "@ui/lib/openExternal";
-import type { CacheTTLMinutes } from "@shared/types";
+import { CACHE_TTL_OPTIONS } from "@shared/constants";
 
-export const TTL_OPTIONS: CacheTTLMinutes[] = [5, 10, 15, 30];
+export const TTL_OPTIONS = CACHE_TTL_OPTIONS;
 
 const InputGroupContext = createContext(false);
 

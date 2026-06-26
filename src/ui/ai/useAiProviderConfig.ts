@@ -1,48 +1,44 @@
 import { useState, useCallback, useRef } from "react";
+import { useShallow } from "zustand/react/shallow";
 import { useAIStore } from "@ui/store/aiStore";
 import { showToast } from "@ui/components/common/Toast";
-import { PROVIDER_OPTIONS } from "@ui/ai/providerOptions";
+import { getProviderLabel } from "@ui/ai/providerOptions";
+import type { CustomProviderConfig } from "@shared/types";
 
 export function useAiProviderConfig() {
   const {
     provider,
-    anthropicApiKey,
-    openaiApiKey,
-    geminiApiKey,
     customConfig,
     imageAnalysisEnabled,
     summaryWordLimit,
+    currentKey,
+    hasConfiguredProvider,
     setProvider,
-    setAnthropicApiKey,
-    setOpenaiApiKey,
-    setGeminiApiKey,
     setCustomConfig,
     setSummaryWordLimit,
     setImageAnalysisEnabled,
-    hasConfiguredProvider,
-  } = useAIStore();
+    setApiKeyForProvider,
+  } = useAIStore(
+    useShallow((s) => ({
+      provider: s.provider,
+      customConfig: s.customConfig,
+      imageAnalysisEnabled: s.imageAnalysisEnabled,
+      summaryWordLimit: s.summaryWordLimit,
+      currentKey: s.getRawApiKeyForProvider(),
+      hasConfiguredProvider: s.hasConfiguredProvider(),
+      setProvider: s.setProvider,
+      setCustomConfig: s.setCustomConfig,
+      setSummaryWordLimit: s.setSummaryWordLimit,
+      setImageAnalysisEnabled: s.setImageAnalysisEnabled,
+      setApiKeyForProvider: s.setApiKeyForProvider,
+    })),
+  );
 
   const [showKey, setShowKey] = useState(false);
   const apiKeyOnFocus = useRef("");
   const customConfigOnFocus = useRef("");
 
-  const currentKey = (() => {
-    switch (provider) {
-      case "anthropic":
-        return anthropicApiKey;
-      case "openai":
-        return openaiApiKey;
-      case "gemini":
-        return geminiApiKey;
-      case "custom":
-        return customConfig.apiKey;
-      default:
-        return "";
-    }
-  })();
-
-  const providerLabel =
-    PROVIDER_OPTIONS.find((opt) => opt.value === provider)?.label ?? "API";
+  const providerLabel = getProviderLabel(provider);
 
   const customConfigSnapshot = useCallback(
     () =>
@@ -88,29 +84,16 @@ export function useAiProviderConfig() {
 
   const setCurrentKey = useCallback(
     (key: string) => {
-      switch (provider) {
-        case "anthropic":
-          setAnthropicApiKey(key);
-          break;
-        case "openai":
-          setOpenaiApiKey(key);
-          break;
-        case "gemini":
-          setGeminiApiKey(key);
-          break;
-        case "custom":
-          setCustomConfig({ ...customConfig, apiKey: key });
-          break;
-      }
+      setApiKeyForProvider(provider, key);
     },
-    [
-      provider,
-      customConfig,
-      setAnthropicApiKey,
-      setOpenaiApiKey,
-      setGeminiApiKey,
-      setCustomConfig,
-    ],
+    [provider, setApiKeyForProvider],
+  );
+
+  const updateCustomConfig = useCallback(
+    (patch: Partial<CustomProviderConfig>) => {
+      setCustomConfig({ ...customConfig, ...patch });
+    },
+    [customConfig, setCustomConfig],
   );
 
   const maskedKey = currentKey
@@ -134,9 +117,9 @@ export function useAiProviderConfig() {
     setShowKey,
     currentKey,
     maskedKey,
-    hasConfiguredProvider: hasConfiguredProvider(),
+    hasConfiguredProvider,
     setCurrentKey,
-    setCustomConfig,
+    updateCustomConfig,
     setSummaryWordLimit,
     setImageAnalysisEnabled,
     selectProvider,

@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type { CacheTTLMinutes, CommentThread } from "@shared/types";
 import { hasNodeId } from "@shared/types";
+import { DEFAULT_CACHE_TTL_MINUTES } from "@shared/constants";
 import type { ApiErrorCode } from "@ui/api/figmaApi";
 import type {
   BuildThreadPageMapMessage,
@@ -12,8 +13,6 @@ import { setStorage } from "@ui/lib/storage";
 import { useAuthStore } from "./authStore";
 import { useWorkflowStore } from "./workflowStore";
 import { useFilterStore } from "./filterStore";
-
-const DEFAULT_CACHE_TTL_MINUTES: CacheTTLMinutes = 5;
 
 type AnchoredEntry = { threadId: string; nodeId: string };
 

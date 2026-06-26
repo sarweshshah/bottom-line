@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react";
+import { useRef } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useShallow } from "zustand/react/shallow";
 import type { CommentThread } from "@shared/types";
@@ -19,6 +19,8 @@ import {
 } from "./dashboardPrimitives";
 
 interface ThreadListProps {
+  filteredThreads: CommentThread[];
+  isResolvingCurrentPage: boolean;
   onSelectThread: (thread: CommentThread) => void;
   bulkMode: boolean;
   selectedIds: Set<string>;
@@ -26,89 +28,35 @@ interface ThreadListProps {
 }
 
 export function ThreadList({
+  filteredThreads,
+  isResolvingCurrentPage,
   onSelectThread,
   bulkMode,
   selectedIds,
   onToggleSelect,
 }: ThreadListProps) {
   const scrollParentRef = useRef<HTMLDivElement>(null);
-  const { threads, isLoading, error, currentPageThreadIds } =
-    useCommentsStore(
-      useShallow((s) => ({
-        threads: s.threads,
-        isLoading: s.isLoading,
-        error: s.error,
-        currentPageThreadIds: s.currentPageThreadIds,
-      })),
-    );
-  const {
-    applyFilters,
-    clearFilters,
-    addressedToMe,
-    commentScope,
-    workflowStateFilter,
-    sortField,
-    sortDirection,
-    timeFilterPreset,
-    customTimeStart,
-    customTimeEnd,
-    activityCategoryFilter,
-  } = useFilterStore(
+  const { threads, isLoading, error } = useCommentsStore(
     useShallow((s) => ({
-      applyFilters: s.applyFilters,
+      threads: s.threads,
+      isLoading: s.isLoading,
+      error: s.error,
+    })),
+  );
+  const { clearFilters, addressedToMe } = useFilterStore(
+    useShallow((s) => ({
       clearFilters: s.clearFilters,
       addressedToMe: s.addressedToMe,
-      commentScope: s.commentScope,
-      workflowStateFilter: s.workflowStateFilter,
-      sortField: s.sortField,
-      sortDirection: s.sortDirection,
-      timeFilterPreset: s.timeFilterPreset,
-      customTimeStart: s.customTimeStart,
-      customTimeEnd: s.customTimeEnd,
-      activityCategoryFilter: s.activityCategoryFilter,
     })),
   );
   const getWorkflowState = useWorkflowStore((s) => s.getState);
   const user = useAuthStore((s) => s.user);
 
-  const isResolvingCurrentPage =
-    commentScope === "current_page" &&
-    currentPageThreadIds === null &&
-    threads.length > 0;
-
-  const filtered = useMemo(
-    () => {
-      if (isResolvingCurrentPage) return [];
-      return applyFilters(
-        threads,
-        currentPageThreadIds,
-        getWorkflowState,
-        user?.handle ?? null,
-      );
-    },
-    [
-      isResolvingCurrentPage,
-      applyFilters,
-      threads,
-      currentPageThreadIds,
-      getWorkflowState,
-      user?.handle,
-      workflowStateFilter,
-      addressedToMe,
-      sortField,
-      sortDirection,
-      commentScope,
-      timeFilterPreset,
-      customTimeStart,
-      customTimeEnd,
-      activityCategoryFilter,
-    ],
-  );
   const rowVirtualizer = useVirtualizer({
-    count: filtered.length,
+    count: filteredThreads.length,
     getScrollElement: () => scrollParentRef.current,
     estimateSize: () => 104,
-    getItemKey: (index) => filtered[index]?.id ?? index,
+    getItemKey: (index) => filteredThreads[index]?.id ?? index,
     overscan: 8,
   });
 
@@ -155,7 +103,7 @@ export function ThreadList({
     );
   }
 
-  if (filtered.length === 0) {
+  if (filteredThreads.length === 0) {
     if (addressedToMe) {
       return (
         <EmptyState
@@ -184,7 +132,7 @@ export function ThreadList({
     <ThreadListScrollBody ref={scrollParentRef}>
       <ThreadListVirtualSurface height={rowVirtualizer.getTotalSize()}>
         {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-          const thread = filtered[virtualRow.index];
+          const thread = filteredThreads[virtualRow.index];
           if (!thread) return null;
 
           return (

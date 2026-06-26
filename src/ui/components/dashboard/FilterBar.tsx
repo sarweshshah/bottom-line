@@ -8,6 +8,7 @@ import {
   Calendar,
 } from "lucide-react";
 import { useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 import type {
   SortField,
   CommentScope,
@@ -75,7 +76,24 @@ export function FilterBar() {
     setCommentScope,
     setTimeFilterPreset,
     setCustomTimeRange,
-  } = useFilterStore();
+  } = useFilterStore(
+    useShallow((s) => ({
+      workflowStateFilter: s.workflowStateFilter,
+      addressedToMe: s.addressedToMe,
+      sortField: s.sortField,
+      sortDirection: s.sortDirection,
+      commentScope: s.commentScope,
+      timeFilterPreset: s.timeFilterPreset,
+      customTimeStart: s.customTimeStart,
+      customTimeEnd: s.customTimeEnd,
+      setWorkflowStateFilter: s.setWorkflowStateFilter,
+      setAddressedToMe: s.setAddressedToMe,
+      toggleSort: s.toggleSort,
+      setCommentScope: s.setCommentScope,
+      setTimeFilterPreset: s.setTimeFilterPreset,
+      setCustomTimeRange: s.setCustomTimeRange,
+    })),
+  );
   const [openMenu, setOpenMenu] = useState<MenuId | null>(null);
 
   function toggleMenu(menu: MenuId) {

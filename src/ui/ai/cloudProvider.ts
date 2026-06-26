@@ -14,6 +14,8 @@ import type { ProcessedImage } from "./imageProcessor";
 
 const TIMEOUT_MS = 15_000;
 const ANTHROPIC_MODEL = "claude-haiku-4-5";
+const OPENAI_MODEL = "gpt-4o-mini";
+const GEMINI_MODEL = "gemini-2.5-flash";
 
 export class CloudAIError extends Error {
   constructor(
@@ -307,7 +309,7 @@ export async function cloudSummarize(
       rawResponse = await callAnthropic(apiKey, threadText, systemPrompt, images);
       break;
     case "openai":
-      modelName = "gpt-4o-mini";
+      modelName = OPENAI_MODEL;
       rawResponse = await callOpenAI(apiKey, threadText, systemPrompt, images);
       break;
     case "gemini": {
@@ -371,9 +373,9 @@ export const PROVIDER_API_KEY_URLS: Partial<Record<AIProvider, string>> = {
 };
 
 const MODEL_DISPLAY_NAMES: Record<string, string> = {
-  [ANTHROPIC_MODEL]: "Claude Haiku 4.5",
-  "gpt-4o-mini": "GPT-4o mini",
-  "gemini-2.5-flash": "Gemini 2.5 Flash",
+  [ANTHROPIC_MODEL]: PROVIDER_MODEL_LABELS.anthropic,
+  [OPENAI_MODEL]: PROVIDER_MODEL_LABELS.openai,
+  [GEMINI_MODEL]: PROVIDER_MODEL_LABELS.gemini,
   "gemini-1.5-flash": "Gemini 1.5 Flash",
 };
 

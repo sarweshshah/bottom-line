@@ -14,6 +14,7 @@ import {
 } from "@shared/types";
 import { getStorage, setStorage } from "@ui/lib/storage";
 import { getCachedSummary, isTooShort } from "@ui/ai/summarize";
+import { API_KEY_FIELD, isStandardProvider } from "@ui/ai/providerKeys";
 
 interface ThreadSummaryState {
   isLoading: boolean;
@@ -53,6 +54,8 @@ interface AIState {
   setCloudAiConsented: (consented: boolean, includesImages: boolean) => void;
 
   getApiKeyForProvider: (provider?: AIProvider) => string;
+  getRawApiKeyForProvider: (provider?: AIProvider) => string;
+  setApiKeyForProvider: (provider: AIProvider, key: string) => void;
   hasConfiguredProvider: () => boolean;
   needsConsent: () => boolean;
 
@@ -138,20 +141,25 @@ export const useAIStore = create<AIState>((set, get) => ({
     setStorage("cloudAiConsentIncludesImages", includesImages);
   },
 
-  getApiKeyForProvider: (provider) => {
+  getRawApiKeyForProvider: (provider) => {
     const p = provider ?? get().provider;
-    switch (p) {
-      case "anthropic":
-        return (get().anthropicApiKey || "").trim();
-      case "openai":
-        return (get().openaiApiKey || "").trim();
-      case "gemini":
-        return (get().geminiApiKey || "").trim();
-      case "custom":
-        return (get().customConfig.apiKey || "").trim();
-      default:
-        return "";
+    if (p === "custom") return get().customConfig.apiKey;
+    if (isStandardProvider(p)) return get()[API_KEY_FIELD[p]];
+    return "";
+  },
+
+  getApiKeyForProvider: (provider) => {
+    return get().getRawApiKeyForProvider(provider).trim();
+  },
+
+  setApiKeyForProvider: (targetProvider, key) => {
+    if (targetProvider === "custom") {
+      get().setCustomConfig({ ...get().customConfig, apiKey: key });
+      return;
     }
+    if (targetProvider === "anthropic") get().setAnthropicApiKey(key);
+    else if (targetProvider === "openai") get().setOpenaiApiKey(key);
+    else if (targetProvider === "gemini") get().setGeminiApiKey(key);
   },
 
   hasConfiguredProvider: () => {

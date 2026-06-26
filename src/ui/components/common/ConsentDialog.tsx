@@ -11,7 +11,7 @@ import {
 import { BodyText } from "@ui/components/common/typography";
 import { Button, IconButton } from "@ui/components/common/uiPrimitives";
 import { useAIStore } from "@ui/store/aiStore";
-import { PROVIDER_MODEL_LABELS } from "@ui/ai/cloudProvider";
+import { getProviderDisplayName } from "@ui/ai/providerOptions";
 
 export function ConsentDialog() {
   const [visible, setVisible] = useState(false);
@@ -45,10 +45,7 @@ export function ConsentDialog() {
 
   if (!visible) return null;
 
-  const providerName =
-    provider === "custom"
-      ? "your custom endpoint"
-      : (PROVIDER_MODEL_LABELS[provider] ?? provider);
+  const providerName = getProviderDisplayName(provider, "consent");
 
   return (
     <Modal onBackdropClick={handleCancel}>

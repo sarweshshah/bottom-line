@@ -1,11 +1,9 @@
 import type { ButtonHTMLAttributes, MouseEvent, ReactNode } from "react";
-import { Check, CheckCircle2, ExternalLink, X, ArrowLeft } from "lucide-react";
-import { PatHelpLink, PatScopesList } from "@ui/components/common/authUi";
-import { HeroLayout } from "@ui/components/common/layout";
+import { Check, CheckCircle2, X, ArrowLeft } from "lucide-react";
+import { HeroLayout, OnboardingFooter, StepIndicator } from "@ui/components/common/layout";
 import { BodyText } from "@ui/components/common/typography";
 import { Button, Input } from "@ui/components/common/uiPrimitives";
-import { FIGMA_PAT_HELP_URL } from "@shared/figmaPat";
-import { openExternalUrl } from "@ui/lib/openExternal";
+import { ONBOARDING_TOTAL_STEPS } from "@ui/onboarding/onboardingConfig";
 import { cn } from "@ui/lib/cn";
 
 const PAT_TRANSPARENCY_ITEMS = [
@@ -113,40 +111,6 @@ export function WelcomeHero({
       <p className="text-sm text-figma-text-secondary mb-8 max-w-[260px] leading-relaxed">
         {description}
       </p>
-    </div>
-  );
-}
-
-export function PatSetupGuide({ className = "" }: { className?: string }) {
-  return (
-    <div
-      className={cn(
-        "text-xs text-figma-text-secondary mb-3 space-y-1.5",
-        className,
-      )}
-    >
-      <p className="font-medium text-figma-text-secondary">
-        How to get your token:
-      </p>
-      <p className="text-figma-text-tertiary">
-        Follow Figma&apos;s guide to create a token named &quot;Bottom Line&quot;
-        and enable these permissions:
-      </p>
-      <PatScopesList className="text-figma-text-tertiary" />
-      <p className="text-figma-text-tertiary">
-        Copy the token and paste it below.
-      </p>
-      <PatHelpLink
-        href={FIGMA_PAT_HELP_URL}
-        className="text-xs mt-1 block"
-        onClick={(e: MouseEvent<HTMLAnchorElement>) => {
-          e.preventDefault();
-          openExternalUrl(FIGMA_PAT_HELP_URL);
-        }}
-      >
-        How to generate a personal access token
-        <ExternalLink size={10} />
-      </PatHelpLink>
     </div>
   );
 }
@@ -414,5 +378,26 @@ export function OnboardingBackButton({
     >
       <ArrowLeft size={14} />
     </Button>
+  );
+}
+
+export function OnboardingStepNav({
+  step,
+  onBack,
+  children,
+}: {
+  step: number;
+  onBack?: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <OnboardingFooter
+      stepIndicator={
+        <StepIndicator current={step} total={ONBOARDING_TOTAL_STEPS} />
+      }
+    >
+      {onBack && <OnboardingBackButton onClick={onBack} />}
+      {children}
+    </OnboardingFooter>
   );
 }

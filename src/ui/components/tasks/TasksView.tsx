@@ -3,6 +3,7 @@ import type { TaskStatus, CommentThread } from "@shared/types";
 import { useAIStore } from "@ui/store/aiStore";
 import { TaskTypeBadge } from "@ui/components/common/taskTypeConfig";
 import { useCommentsStore } from "@ui/store/commentsStore";
+import { normalizeAssignee } from "@ui/lib/assignee";
 import {
   TaskGroupHeader,
   TaskList,
@@ -18,12 +19,6 @@ import {
 interface TaskGroup {
   assignee: string;
   tasks: DisplayTask[];
-}
-
-function normalizeAssignee(assignee: string | null): string | null {
-  if (!assignee || typeof assignee !== "string") return null;
-  const cleaned = assignee.trim().replace(/^@+/, "");
-  return cleaned || null;
 }
 
 interface DisplayTask {

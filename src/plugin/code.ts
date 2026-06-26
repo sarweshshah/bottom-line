@@ -8,10 +8,12 @@ import type {
   ThreadPageMapChunkMessage,
 } from "@shared/messages";
 import type { ClientMeta, CacheTTLMinutes } from "@shared/types";
-import { DEFAULT_UI_WIDTH, DEFAULT_UI_HEIGHT, clampUiSize } from "@shared/constants";
-
-const DEFAULT_CACHE_TTL_MINUTES: CacheTTLMinutes = 5;
-const CACHE_TTL_OPTIONS: CacheTTLMinutes[] = [5, 10, 15, 30];
+import { DEFAULT_UI_WIDTH, DEFAULT_UI_HEIGHT, clampUiSize, DEFAULT_CACHE_TTL_MINUTES, CACHE_TTL_OPTIONS } from "@shared/constants";
+import { resolveStoredFigmaAuth } from "@shared/figmaAuth";
+import {
+  normalizeMotionPreference,
+  normalizeThemePreference,
+} from "@shared/preferences";
 
 figma.showUI(__html__, {
   width: DEFAULT_UI_WIDTH,
@@ -83,29 +85,29 @@ async function sendInitData() {
     figma.clientStorage.getAsync("cacheTTL"),
   ]);
 
-  let authMethod: "pat" | "oauth" | null =
-    authMethodRaw === "oauth" || authMethodRaw === "pat" ? authMethodRaw : null;
-  if (!authMethod && pat) authMethod = "pat";
-  if (!authMethod && figmaAccessToken) authMethod = "oauth";
+  const auth = resolveStoredFigmaAuth({
+    authMethodRaw,
+    pat,
+    figmaAccessToken,
+    figmaRefreshToken,
+    figmaTokenExpiresAt,
+  });
 
   const msg: InitDataMessage = {
     type: "INIT_DATA",
-    pat: authMethod === "pat" ? pat ?? null : null,
-    figmaAccessToken: authMethod === "oauth" ? figmaAccessToken ?? null : null,
-    figmaRefreshToken: authMethod === "oauth" ? figmaRefreshToken ?? null : null,
-    figmaTokenExpiresAt:
-      authMethod === "oauth" && typeof figmaTokenExpiresAt === "number"
-        ? figmaTokenExpiresAt
-        : null,
-    authMethod,
+    pat: auth.pat,
+    figmaAccessToken: auth.figmaAccessToken,
+    figmaRefreshToken: auth.figmaRefreshToken,
+    figmaTokenExpiresAt: auth.figmaTokenExpiresAt,
+    authMethod: auth.authMethod,
     fileKey: fileKey ?? null,
     fileUrl: fileUrl ?? null,
     userName: userName ?? null,
     userAvatarUrl: userAvatarUrl ?? null,
     userId: userId ?? null,
     showThreadElbows: showThreadElbows === true,
-    themePreference: (["system", "light", "dark"].includes(themePreference) ? themePreference : "system") as "system" | "light" | "dark",
-    motionPreference: (["system", "reduce", "allow"].includes(motionPreference) ? motionPreference : "system") as "system" | "reduce" | "allow",
+    themePreference: normalizeThemePreference(themePreference),
+    motionPreference: normalizeMotionPreference(motionPreference),
     cacheTTLMinutes: normalizeCacheTTL(cacheTTL),
     currentPageId: figma.currentPage.id,
   };

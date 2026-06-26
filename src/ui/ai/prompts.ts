@@ -5,6 +5,7 @@ import type {
   AIProvider,
   SummaryWordLimit,
 } from "@shared/types";
+import { normalizeAssignee } from "@ui/lib/assignee";
 
 export function buildSystemPrompt(summaryWordLimit: SummaryWordLimit): string {
   return `You are an assistant that analyzes Figma design comment threads.
@@ -259,14 +260,6 @@ const VALID_TASK_TYPES = new Set([
   "general",
 ]);
 
-function normalizeAssignee(assignee?: string): string | null {
-  if (!assignee || typeof assignee !== "string") return null;
-  const cleaned = assignee.trim().replace(/^@+/, "");
-  if (!cleaned || cleaned.toLowerCase() === "unassigned") {
-    return null;
-  }
-  return cleaned;
-}
 function extractJSON(text: string): RawAIResponse | null {
   const fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
   if (fenceMatch) {
@@ -400,6 +393,7 @@ export function parseAIResponse(
       description: t.description!,
       assignee: normalizeAssignee(
         typeof t.assignee === "string" ? t.assignee : undefined,
+        { rejectUnassigned: true },
       ),
       status: "pending" as const,
       sourceCommentId: threadId,

@@ -2,11 +2,12 @@ import type { MouseEvent, ReactNode } from "react";
 import {
   ChevronDown,
   ChevronRight,
+  ExternalLink,
   Loader2,
   LogOut,
   type LucideIcon,
 } from "lucide-react";
-import { FIGMA_PAT_REQUIRED_SCOPES } from "@shared/figmaPat";
+import { FIGMA_PAT_HELP_URL, FIGMA_PAT_REQUIRED_SCOPES } from "@shared/figmaPat";
 import { UserAvatar } from "@ui/components/common/UserAvatar";
 import { BodyText, MetaText } from "@ui/components/common/typography";
 import {
@@ -15,6 +16,7 @@ import {
   Panel,
   TextLink,
 } from "@ui/components/common/uiPrimitives";
+import { openExternalUrl } from "@ui/lib/openExternal";
 import { cn } from "@ui/lib/cn";
 
 export function PatScopesList({ className = "" }: { className?: string }) {
@@ -216,27 +218,58 @@ export function PatSectionHeading({
   );
 }
 
-export function AuthPatTokenGuide({
-  helpHref,
-  onHelpClick,
-  helpLabel,
+export function PatTokenGuide({
+  variant = "compact",
+  className = "",
   children,
 }: {
-  helpHref: string;
-  onHelpClick: (e: MouseEvent<HTMLAnchorElement>) => void;
-  helpLabel: ReactNode;
-  children: ReactNode;
+  variant?: "onboarding" | "compact";
+  className?: string;
+  children?: ReactNode;
 }) {
+  const helpLink = (
+    <PatHelpLink
+      href={FIGMA_PAT_HELP_URL}
+      className={cn("text-xs block", variant === "onboarding" ? "mt-1" : "mb-4")}
+      onClick={(e: MouseEvent<HTMLAnchorElement>) => {
+        e.preventDefault();
+        openExternalUrl(FIGMA_PAT_HELP_URL);
+      }}
+    >
+      How to generate a personal access token
+      <ExternalLink size={variant === "onboarding" ? 10 : 12} />
+    </PatHelpLink>
+  );
+
+  if (variant === "onboarding") {
+    return (
+      <div
+        className={cn(
+          "text-xs text-figma-text-secondary mb-3 space-y-1.5",
+          className,
+        )}
+      >
+        <p className="font-medium text-figma-text-secondary">
+          How to get your token:
+        </p>
+        <p className="text-figma-text-tertiary">
+          Follow Figma&apos;s guide to create a token named &quot;Bottom Line&quot;
+          and enable these permissions:
+        </p>
+        <PatScopesList className="text-figma-text-tertiary" />
+        <p className="text-figma-text-tertiary">
+          Copy the token and paste it below.
+        </p>
+        {helpLink}
+        {children}
+      </div>
+    );
+  }
+
   return (
     <>
       <PatScopesList className="mb-4" />
-      <PatHelpLink
-        href={helpHref}
-        className="mb-4 block text-xs"
-        onClick={onHelpClick}
-      >
-        {helpLabel}
-      </PatHelpLink>
+      {helpLink}
       {children}
     </>
   );

@@ -1,11 +1,12 @@
 import { useState, useCallback } from "react";
+import { useShallow } from "zustand/react/shallow";
 import { useAuthStore } from "@ui/store/authStore";
+import { isFigmaOAuthConfigured } from "@ui/lib/figmaOAuth";
+import { useFigmaOAuthSignIn } from "@ui/hooks/useFigmaOAuthSignIn";
 import {
-  isFigmaOAuthConfigured,
-  beginOAuthSession,
-  pollOAuthUntilComplete,
-} from "@ui/lib/figmaOAuth";
-import { openExternalUrl } from "@ui/lib/openExternal";
+  getAuthConnectionSubtitle,
+  getAuthTokenTypeLabel,
+} from "@shared/figmaAuth";
 import { FIGMA_PAT_HELP_URL } from "@shared/figmaPat";
 import { FieldError } from "@ui/components/common/FieldError";
 import {
@@ -32,14 +33,27 @@ export function AuthTab() {
     authMethod,
     user,
     validateAndSetToken,
-    applyOAuthSession,
     isValidating,
     validationError,
     logout,
-  } = useAuthStore();
+  } = useAuthStore(
+    useShallow((s) => ({
+      pat: s.pat,
+      figmaAccessToken: s.figmaAccessToken,
+      authMethod: s.authMethod,
+      user: s.user,
+      validateAndSetToken: s.validateAndSetToken,
+      isValidating: s.isValidating,
+      validationError: s.validationError,
+      logout: s.logout,
+    })),
+  );
 
   const oauthAvailable = isFigmaOAuthConfigured();
-  const [oauthBusy, setOauthBusy] = useState(false);
+  const { oauthBusy, signInWithFigma } = useFigmaOAuthSignIn(
+    undefined,
+    "Figma account reconnected",
+  );
   const [editing, setEditing] = useState(false);
   const [newPat, setNewPat] = useState("");
   const [showToken, setShowToken] = useState(false);
@@ -70,36 +84,8 @@ export function AuthTab() {
     }
   }, [newPat, validateAndSetToken]);
 
-  const handleSignInWithFigma = useCallback(async () => {
-    useAuthStore.setState({ validationError: null });
-    setOauthBusy(true);
-    try {
-      const { sessionId, authorizeUrl } = await beginOAuthSession();
-      openExternalUrl(authorizeUrl);
-      const result = await pollOAuthUntilComplete(sessionId);
-      await applyOAuthSession({
-        access_token: result.access_token,
-        refresh_token: result.refresh_token,
-        expires_in: result.expires_in,
-      });
-      showToast("Figma account reconnected", "success");
-    } catch (e) {
-      useAuthStore.setState({
-        validationError:
-          e instanceof Error ? e.message : "Sign in with Figma failed.",
-      });
-    } finally {
-      setOauthBusy(false);
-    }
-  }, [applyOAuthSession]);
-
-  const connectionSubtitle =
-    authMethod === "oauth"
-      ? "Signed in with Figma"
-      : "Using personal access token";
-
-  const tokenTypeLabel =
-    authMethod === "oauth" ? "OAuth" : "Personal access token";
+  const connectionSubtitle = getAuthConnectionSubtitle(authMethod);
+  const tokenTypeLabel = getAuthTokenTypeLabel(authMethod);
 
   return (
     <>
@@ -121,7 +107,7 @@ export function AuthTab() {
                   <OAuthSignInButton
                     busy={oauthBusy}
                     disabled={isValidating}
-                    onClick={() => void handleSignInWithFigma()}
+                    onClick={() => void signInWithFigma()}
                     label="Sign in again with Figma"
                     controlSize="sm"
                     onSurface

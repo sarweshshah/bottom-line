@@ -1,4 +1,5 @@
 import { Monitor, Sun, Moon, Zap, ZapOff } from "lucide-react";
+import { useShallow } from "zustand/react/shallow";
 import { useAuthStore } from "@ui/store/authStore";
 import type { MotionPreference, ThemePreference } from "@shared/types";
 import {
@@ -37,7 +38,16 @@ export function DisplayTab() {
     setThemePreference,
     motionPreference,
     setMotionPreference,
-  } = useAuthStore();
+  } = useAuthStore(
+    useShallow((s) => ({
+      showThreadElbows: s.showThreadElbows,
+      setShowThreadElbows: s.setShowThreadElbows,
+      themePreference: s.themePreference,
+      setThemePreference: s.setThemePreference,
+      motionPreference: s.motionPreference,
+      setMotionPreference: s.setMotionPreference,
+    })),
+  );
 
   return (
     <>

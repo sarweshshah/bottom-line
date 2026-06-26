@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type { FigmaUser, ThemePreference, MotionPreference, FigmaAuthMethod } from "@shared/types";
 import type { InitDataMessage } from "@shared/messages";
+import { resolveStoredFigmaAuth } from "@shared/figmaAuth";
 import { deleteStorage, getStorage, setStorage } from "@ui/lib/storage";
 import { validateToken, getFileName, FigmaApiError } from "@ui/api/figmaApi";
 import { isFigmaOAuthConfigured, refreshOAuthAccessToken } from "@ui/lib/figmaOAuth";
@@ -54,16 +55,20 @@ function resolveAuthFromInit(data: InitDataMessage): Pick<
   AuthState,
   "pat" | "figmaAccessToken" | "refreshToken" | "tokenExpiresAt" | "authMethod"
 > {
-  let authMethod = data.authMethod;
-  if (!authMethod && data.pat) authMethod = "pat";
-  if (!authMethod && data.figmaAccessToken) authMethod = "oauth";
+  const auth = resolveStoredFigmaAuth({
+    authMethodRaw: data.authMethod,
+    pat: data.pat,
+    figmaAccessToken: data.figmaAccessToken,
+    figmaRefreshToken: data.figmaRefreshToken,
+    figmaTokenExpiresAt: data.figmaTokenExpiresAt,
+  });
 
   return {
-    pat: authMethod === "pat" ? data.pat : null,
-    figmaAccessToken: authMethod === "oauth" ? data.figmaAccessToken : null,
-    refreshToken: authMethod === "oauth" ? data.figmaRefreshToken : null,
-    tokenExpiresAt: authMethod === "oauth" ? data.figmaTokenExpiresAt : null,
-    authMethod,
+    pat: auth.pat,
+    figmaAccessToken: auth.figmaAccessToken,
+    refreshToken: auth.figmaRefreshToken,
+    tokenExpiresAt: auth.figmaTokenExpiresAt,
+    authMethod: auth.authMethod,
   };
 }
 
