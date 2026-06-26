@@ -45,8 +45,8 @@ body,
   line-height: 1.3;
   font-weight: 500;
   white-space: nowrap;
-  color: var(--bl-comp-tooltip-text);
-  background: var(--bl-comp-tooltip-bg);
+  color: var(--bl-sem-tooltip-text);
+  background: var(--bl-sem-tooltip-bg);
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.15s;
@@ -83,7 +83,7 @@ body,
   background-clip: padding-box;
   background-origin: padding-box;
   animation: ai-shimmer 10s linear infinite;
-  box-shadow: none;
+  box-shadow: var(--bl-sem-shadow-none);
   filter: none;
   border: none;
 }
@@ -103,35 +103,35 @@ body,
 }
 
 .bg-ai-shimmer {
-  background-color: var(--bl-ai-bg);
+  background-color: var(--bl-sem-ai-bg);
   /* No white sheen — only pastel stops so cycling stays smooth with no bright streak */
   background-image: linear-gradient(
     90deg,
-    var(--bl-ai-shimmer-c0) 0%,
-    var(--bl-ai-shimmer-c1) 5%,
-    var(--bl-ai-shimmer-c2) 10%,
-    var(--bl-ai-shimmer-c3) 14%,
-    var(--bl-ai-shimmer-c4) 18%,
-    var(--bl-ai-shimmer-c5) 21%,
-    var(--bl-ai-shimmer-c4) 23%,
-    var(--bl-ai-shimmer-c3) 25%,
-    var(--bl-ai-shimmer-c4) 28%,
-    var(--bl-ai-shimmer-c3) 32%,
-    var(--bl-ai-shimmer-c2) 38%,
-    var(--bl-ai-shimmer-c1) 44%,
-    var(--bl-ai-shimmer-c0) 50%,
-    var(--bl-ai-shimmer-c1) 55%,
-    var(--bl-ai-shimmer-c2) 60%,
-    var(--bl-ai-shimmer-c3) 64%,
-    var(--bl-ai-shimmer-c4) 68%,
-    var(--bl-ai-shimmer-c5) 71%,
-    var(--bl-ai-shimmer-c4) 73%,
-    var(--bl-ai-shimmer-c3) 75%,
-    var(--bl-ai-shimmer-c4) 78%,
-    var(--bl-ai-shimmer-c3) 82%,
-    var(--bl-ai-shimmer-c2) 88%,
-    var(--bl-ai-shimmer-c1) 94%,
-    var(--bl-ai-shimmer-c0) 100%
+    var(--bl-sem-ai-shimmer-c0) 0%,
+    var(--bl-sem-ai-shimmer-c1) 5%,
+    var(--bl-sem-ai-shimmer-c2) 10%,
+    var(--bl-sem-ai-shimmer-c3) 14%,
+    var(--bl-sem-ai-shimmer-c4) 18%,
+    var(--bl-sem-ai-shimmer-c5) 21%,
+    var(--bl-sem-ai-shimmer-c4) 23%,
+    var(--bl-sem-ai-shimmer-c3) 25%,
+    var(--bl-sem-ai-shimmer-c4) 28%,
+    var(--bl-sem-ai-shimmer-c3) 32%,
+    var(--bl-sem-ai-shimmer-c2) 38%,
+    var(--bl-sem-ai-shimmer-c1) 44%,
+    var(--bl-sem-ai-shimmer-c0) 50%,
+    var(--bl-sem-ai-shimmer-c1) 55%,
+    var(--bl-sem-ai-shimmer-c2) 60%,
+    var(--bl-sem-ai-shimmer-c3) 64%,
+    var(--bl-sem-ai-shimmer-c4) 68%,
+    var(--bl-sem-ai-shimmer-c5) 71%,
+    var(--bl-sem-ai-shimmer-c4) 73%,
+    var(--bl-sem-ai-shimmer-c3) 75%,
+    var(--bl-sem-ai-shimmer-c4) 78%,
+    var(--bl-sem-ai-shimmer-c3) 82%,
+    var(--bl-sem-ai-shimmer-c2) 88%,
+    var(--bl-sem-ai-shimmer-c1) 94%,
+    var(--bl-sem-ai-shimmer-c0) 100%
   );
   background-size: 200% 100%;
   background-repeat: no-repeat;
@@ -146,34 +146,34 @@ body,
 
 /* Bolder static gradient for Summarize CTA — pair with .bg-ai-shimmer-static */
 .bg-ai-shimmer-cta {
-  background-color: var(--bl-ai-cta-bg);
+  background-color: var(--bl-sem-ai-cta-bg);
   background-image: linear-gradient(
     90deg in oklch,
-    var(--bl-ai-cta-c0) 0%,
-    var(--bl-ai-cta-c1) 5%,
-    var(--bl-ai-cta-c2) 10%,
-    var(--bl-ai-cta-c3) 14%,
-    var(--bl-ai-cta-c4) 18%,
-    var(--bl-ai-cta-c5) 21%,
-    var(--bl-ai-cta-c4) 23%,
-    var(--bl-ai-cta-c3) 25%,
-    var(--bl-ai-cta-c4) 28%,
-    var(--bl-ai-cta-c3) 32%,
-    var(--bl-ai-cta-c2) 38%,
-    var(--bl-ai-cta-c1) 44%,
-    var(--bl-ai-cta-c0) 50%,
-    var(--bl-ai-cta-c1) 55%,
-    var(--bl-ai-cta-c2) 60%,
-    var(--bl-ai-cta-c3) 64%,
-    var(--bl-ai-cta-c4) 68%,
-    var(--bl-ai-cta-c5) 71%,
-    var(--bl-ai-cta-c4) 73%,
-    var(--bl-ai-cta-c3) 75%,
-    var(--bl-ai-cta-c4) 78%,
-    var(--bl-ai-cta-c3) 82%,
-    var(--bl-ai-cta-c2) 88%,
-    var(--bl-ai-cta-c1) 94%,
-    var(--bl-ai-cta-c0) 100%
+    var(--bl-sem-ai-cta-c0) 0%,
+    var(--bl-sem-ai-cta-c1) 5%,
+    var(--bl-sem-ai-cta-c2) 10%,
+    var(--bl-sem-ai-cta-c3) 14%,
+    var(--bl-sem-ai-cta-c4) 18%,
+    var(--bl-sem-ai-cta-c5) 21%,
+    var(--bl-sem-ai-cta-c4) 23%,
+    var(--bl-sem-ai-cta-c3) 25%,
+    var(--bl-sem-ai-cta-c4) 28%,
+    var(--bl-sem-ai-cta-c3) 32%,
+    var(--bl-sem-ai-cta-c2) 38%,
+    var(--bl-sem-ai-cta-c1) 44%,
+    var(--bl-sem-ai-cta-c0) 50%,
+    var(--bl-sem-ai-cta-c1) 55%,
+    var(--bl-sem-ai-cta-c2) 60%,
+    var(--bl-sem-ai-cta-c3) 64%,
+    var(--bl-sem-ai-cta-c4) 68%,
+    var(--bl-sem-ai-cta-c5) 71%,
+    var(--bl-sem-ai-cta-c4) 73%,
+    var(--bl-sem-ai-cta-c3) 75%,
+    var(--bl-sem-ai-cta-c4) 78%,
+    var(--bl-sem-ai-cta-c3) 82%,
+    var(--bl-sem-ai-cta-c2) 88%,
+    var(--bl-sem-ai-cta-c1) 94%,
+    var(--bl-sem-ai-cta-c0) 100%
   );
   background-size: 200% 100%;
   background-repeat: no-repeat;
@@ -293,21 +293,11 @@ body,
 }
 
 .empty-state-halo {
-  box-shadow:
-    0 0 0 1px color-mix(in oklch, var(--bl-violet-500) 10%, transparent),
-    0 4px 12px -8px color-mix(in oklch, var(--bl-violet-500) 12%, transparent);
-}
-
-.figma-dark .empty-state-halo {
-  box-shadow:
-    0 0 0 1px color-mix(in oklch, var(--bl-violet-400) 12%, transparent),
-    0 4px 12px -8px color-mix(in oklch, var(--bl-violet-400) 14%, transparent);
+  box-shadow: var(--bl-sem-shadow-halo);
 }
 
 .empty-state-halo-error {
-  box-shadow:
-    0 0 0 1px color-mix(in oklch, var(--bl-danger-500) 12%, transparent),
-    0 4px 12px -8px color-mix(in oklch, var(--bl-danger-500) 14%, transparent);
+  box-shadow: var(--bl-sem-shadow-halo-error);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -333,8 +323,8 @@ body,
 
 :root[data-motion="reduce"] .ai-summary-line-enter { animation: none; }
 
-/* Opaque accent tint for sticky surfaces (accent-subtle is translucent). */
+/* Opaque accent tint (accent-subtle is translucent). Uses sem surface so chips read on canvas/gradient in both themes. */
 .bg-accent-subtle-opaque {
-  background-color: var(--figma-color-bg);
-  background-image: linear-gradient(var(--bl-accent-subtle), var(--bl-accent-subtle));
+  background-color: var(--bl-sem-bg-surface);
+  background-image: linear-gradient(var(--bl-sem-accent-subtle), var(--bl-sem-accent-subtle));
 }

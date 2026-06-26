@@ -17,7 +17,7 @@ const PAT_TRANSPARENCY_ITEMS = [
 
 export function PatTransparencyList({ className = "" }: { className?: string }) {
   return (
-    <ul className={cn("space-y-0.5 text-[10px] leading-tight text-figma-bg", className)}>
+    <ul className={cn("space-y-0.5 text-[10px] leading-tight text-inherit", className)}>
       {PAT_TRANSPARENCY_ITEMS.map(({ allow, label }) => (
         <li key={label} className="flex items-start gap-1.5">
           {allow ? (
@@ -50,7 +50,7 @@ export function SetupReadyBanner({
   description?: string;
 }) {
   return (
-    <div className="mt-6 p-4 rounded-md onboarding-hero-gradient border border-figma-border/50 text-center">
+    <div className="mt-6 p-4 rounded-md onboarding-hero-gradient border border-sem-border-faint text-center">
       <CheckCircle2 size={28} className="text-accent mx-auto mb-2" />
       <p className="text-sm font-medium text-figma-text mb-1">{title}</p>
       <p className="text-xs text-figma-text-tertiary">{description}</p>

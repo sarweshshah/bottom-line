@@ -32,7 +32,7 @@ describe("getAvatarColor", () => {
 
   it("uses CSS variables from the brand palette image", () => {
     for (const color of AVATAR_PALETTE) {
-      expect(color.startsWith("var(--bl-comp-avatar-")).toBe(true);
+      expect(color.startsWith("var(--bl-palette-image-")).toBe(true);
     }
   });
 });

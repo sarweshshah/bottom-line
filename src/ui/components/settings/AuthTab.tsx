@@ -14,6 +14,8 @@ import {
   ExpandableDisclosure,
   OAuthSignInButton,
   PatScopesList,
+  PatTokenFields,
+  PatTokenSection,
   ValidatingIndicator,
 } from "@ui/components/common/authUi";
 import {
@@ -143,48 +145,50 @@ export function AuthTab() {
 
           {(authMethod === "pat" ||
             (authMethod === "oauth" && showPatAdvanced)) && (
-            <>
+            <PatTokenSection>
               <PatScopesList />
 
-              {!editing ? (
-                <SettingsFieldGroup>
-                  <SettingsMaskedField
-                    revealed={showToken}
-                    onToggleReveal={() => setShowToken(!showToken)}
-                    displayValue={displaySecret}
-                    maskedValue={maskedCredential || "—"}
-                    onAction={() => {
-                      setEditing(true);
-                      setNewPat("");
-                    }}
-                    actionLabel={
-                      authMethod === "oauth" ? "Save" : "Change token"
-                    }
-                    revealDisabled={!displaySecret}
-                    revealTooltip={{ show: "Show token", hide: "Hide token" }}
-                  />
-                </SettingsFieldGroup>
-              ) : (
-                <SettingsFieldGroup>
-                  <SettingsConfirmField
-                    value={newPat}
-                    onChange={(e) => setNewPat(e.target.value)}
-                    onConfirm={() => void handleSaveToken()}
-                    onCancel={() => {
-                      setEditing(false);
-                      setNewPat("");
-                    }}
-                    confirmDisabled={!newPat.trim() || isValidating}
-                    placeholder="figd_xxxxxxxxxxxxxxxx"
-                    autoFocus
-                  />
-                  {isValidating && <ValidatingIndicator />}
-                  {validationError && (
-                    <FieldError>{validationError}</FieldError>
-                  )}
-                </SettingsFieldGroup>
-              )}
-            </>
+              <PatTokenFields>
+                {!editing ? (
+                  <SettingsFieldGroup>
+                    <SettingsMaskedField
+                      revealed={showToken}
+                      onToggleReveal={() => setShowToken(!showToken)}
+                      displayValue={displaySecret}
+                      maskedValue={maskedCredential || "—"}
+                      onAction={() => {
+                        setEditing(true);
+                        setNewPat("");
+                      }}
+                      actionLabel={
+                        authMethod === "oauth" ? "Save" : "Change token"
+                      }
+                      revealDisabled={!displaySecret}
+                      revealTooltip={{ show: "Show token", hide: "Hide token" }}
+                    />
+                  </SettingsFieldGroup>
+                ) : (
+                  <SettingsFieldGroup>
+                    <SettingsConfirmField
+                      value={newPat}
+                      onChange={(e) => setNewPat(e.target.value)}
+                      onConfirm={() => void handleSaveToken()}
+                      onCancel={() => {
+                        setEditing(false);
+                        setNewPat("");
+                      }}
+                      confirmDisabled={!newPat.trim() || isValidating}
+                      placeholder="figd_xxxxxxxxxxxxxxxx"
+                      autoFocus
+                    />
+                    {isValidating && <ValidatingIndicator />}
+                    {validationError && (
+                      <FieldError>{validationError}</FieldError>
+                    )}
+                  </SettingsFieldGroup>
+                )}
+              </PatTokenFields>
+            </PatTokenSection>
           )}
         </SettingsSectionBody>
       </SettingsSection>

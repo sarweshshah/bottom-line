@@ -189,7 +189,7 @@ export function OnboardingStepHeader({
 }) {
   return (
     <div className="flex items-center gap-3 mb-5">
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-figma-border/50 bg-accent-subtle-opaque">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent-subtle-opaque">
         <Icon size={18} className="text-accent" />
       </div>
       <div>
@@ -210,7 +210,7 @@ export function FeatureCard({
   description: string;
 }) {
   return (
-    <div className="flex items-start gap-3 text-left p-2.5 rounded-md bg-figma-bg-secondary/60 border border-figma-border/50">
+    <div className="flex items-start gap-3 text-left p-2.5 rounded-md bg-sem-surface shadow-sem-card">
       <div className="mt-0.5 p-1.5 rounded-md bg-accent/10">
         <Icon size={14} className="text-accent" />
       </div>

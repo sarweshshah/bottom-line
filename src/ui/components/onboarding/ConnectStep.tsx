@@ -52,7 +52,33 @@ export function ConnectStep({ onNext, onBack }: ConnectStepProps) {
           subtitle={`Step 1 of ${ONBOARDING_CONFIG_STEPS} · Sign in to access your comments`}
         />
 
+        {user && (
+          <AccountCard
+            spaced
+            handle={user.handle}
+            imgUrl={user.img_url}
+            colorKey={user.id}
+            avatarSize={40}
+            subtitle={getAuthConnectionSubtitle(authMethod)}
+            onLogout={() => void useAuthStore.getState().logout()}
+            footer={
+              authMethod === "oauth" && oauthAvailable ? (
+                <OAuthSignInButton
+                  busy={oauthBusy}
+                  disabled={isValidating}
+                  controlSize="sm"
+                  onSurface
+                  stacked
+                  label="Sign in again with Figma"
+                  onClick={() => void signInWithFigma()}
+                />
+              ) : undefined
+            }
+          />
+        )}
+
         <FigmaAuthConnectFields
+          className={user ? "mt-3" : undefined}
           variant="onboarding"
           oauthAvailable={oauthAvailable}
           oauthBusy={oauthBusy}
@@ -79,31 +105,6 @@ export function ConnectStep({ onNext, onBack }: ConnectStepProps) {
             />
           }
         />
-
-        {user && (
-          <AccountCard
-            spaced
-            handle={user.handle}
-            imgUrl={user.img_url}
-            colorKey={user.id}
-            avatarSize={40}
-            subtitle={getAuthConnectionSubtitle(authMethod)}
-            onLogout={() => void useAuthStore.getState().logout()}
-            footer={
-              authMethod === "oauth" && oauthAvailable ? (
-                <OAuthSignInButton
-                  busy={oauthBusy}
-                  disabled={isValidating}
-                  controlSize="sm"
-                  onSurface
-                  stacked
-                  label="Sign in again with Figma"
-                  onClick={() => void signInWithFigma()}
-                />
-              ) : undefined
-            }
-          />
-        )}
 
         {validationError && (
           <OnboardingErrorBlock>

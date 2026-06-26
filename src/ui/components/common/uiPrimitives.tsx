@@ -49,7 +49,7 @@ function buttonClass(
 
   switch (variant) {
     case "primary":
-      return `${base} bg-accent-bg text-white shadow-sm hover:bg-accent-hover active:scale-[0.98]`;
+      return `${base} bg-accent-bg text-white shadow-sem-sm hover:bg-accent-hover active:scale-[0.98]`;
     case "secondary":
       return `${base} bg-figma-bg-secondary text-figma-text-secondary hover:text-figma-text`;
     case "bordered":
@@ -268,7 +268,8 @@ export function InfoTooltip({
         className={cn(
           "pointer-events-none absolute left-1/2 top-full z-50 mt-1 w-max max-w-[min(260px,calc(100vw-2.5rem))] -translate-x-1/2",
           "scale-95 opacity-0 transition duration-150",
-          "rounded-md border border-white/[0.18] bg-figma-text py-2 pl-2.5 pr-3.5 text-left font-normal text-figma-bg shadow-[0_4px_20px_rgba(0,0,0,0.22)] [html.figma-dark_&]:border-black/[0.14]",
+          "rounded-md border border-sem-border-faint bg-sem-surface py-2 pl-2.5 pr-3.5 text-left text-xs font-normal text-figma-text shadow-sem-tooltip",
+          "[html.figma-dark_&]:border-white/10 [html.figma-dark_&]:bg-[var(--bl-sem-tooltip-bg)] [html.figma-dark_&]:text-[var(--bl-sem-tooltip-text)]",
           "group-hover:pointer-events-auto group-hover:scale-100 group-hover:opacity-100",
           "group-focus-within:pointer-events-auto group-focus-within:scale-100 group-focus-within:opacity-100",
         )}
@@ -328,9 +329,9 @@ export function FilterChip({
       className={cn(
         "flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-md transition-all duration-150",
         active
-          ? "bg-accent-bg text-white shadow-sm"
+          ? "bg-accent-bg text-white shadow-sem-sm"
           : tone === "sort"
-            ? "bg-figma-bg-secondary text-figma-text-secondary hover:text-figma-text shadow-none"
+            ? "bg-figma-bg-secondary text-figma-text-secondary hover:text-figma-text shadow-sem-none"
             : "bg-figma-bg-secondary text-figma-text-secondary hover:text-figma-text",
         className,
       )}
@@ -362,7 +363,7 @@ export function IconFilterChip({
       className={cn(
         "flex items-center gap-0.5 p-1.5 rounded-md transition-colors",
         engaged
-          ? "bg-accent-bg text-white shadow-sm [&_svg]:text-white"
+          ? "bg-accent-bg text-white shadow-sem-sm [&_svg]:text-white"
           : "text-figma-text-secondary hover:text-figma-text bg-figma-bg-secondary",
         loading && "cursor-wait",
         className,
@@ -404,7 +405,7 @@ export function SegmentedControl<T extends string | number>({
             onClick={() => onChange(opt.value)}
             icon={Icon ? <Icon size={12} /> : undefined}
             className={cn(
-              variant === "inline" && "py-1.5 tabular-nums rounded-none shadow-none",
+              variant === "inline" && "py-1.5 tabular-nums rounded-none shadow-sem-none",
               variant === "inline" && !isActive && "bg-transparent hover:bg-figma-bg-secondary",
               variant === "spread" && "flex-1 justify-center gap-1.5 py-2.5",
               variant === "inline" && index > 0 && "border-l border-figma-border",

@@ -1,0 +1,106 @@
+/**
+ * Tier 2 — Semantic: role tokens (surfaces, text, borders, icons, accent, patterns).
+ * Light defaults in :root; dark overrides in semantics-dark.css.
+ */
+
+:root {
+  /* ─── Surfaces & text (light) ─── */
+  --bl-sem-bg-canvas: var(--bl-neutral-50);
+  --bl-sem-bg-surface: #FFFFFF;
+  --bl-sem-bg-surface-raised: var(--bl-neutral-100);
+  --bl-sem-bg-hover: var(--bl-neutral-100);
+  --bl-sem-bg-selected: var(--bl-violet-50);
+  --bl-sem-bg-inverse: var(--bl-neutral-950);
+
+  --bl-sem-text-primary: var(--bl-neutral-950);
+  --bl-sem-text-secondary: var(--bl-neutral-600);
+  --bl-sem-text-tertiary: var(--bl-neutral-400);
+  --bl-sem-text-disabled: var(--bl-neutral-300);
+  --bl-sem-text-inverse: var(--bl-neutral-50);
+  --bl-sem-text-accent: var(--bl-violet-600);
+  --bl-sem-accent-text-hover: var(--bl-violet-700);
+
+  --bl-sem-border-default: var(--bl-neutral-300);
+  --bl-sem-border-strong: var(--bl-neutral-400);
+  --bl-sem-border-subtle: var(--bl-neutral-200);
+  --bl-sem-border-faint: color-mix(
+    in oklch,
+    var(--bl-sem-border-subtle) 35%,
+    var(--bl-sem-bg-canvas)
+  );
+  --bl-sem-border-accent: var(--bl-violet-500);
+
+  --bl-sem-icon-primary: var(--bl-neutral-700);
+  --bl-sem-icon-secondary: var(--bl-neutral-500);
+  --bl-sem-icon-tertiary: var(--bl-neutral-400);
+
+  --bl-sem-accent: var(--bl-violet-500);
+  --bl-sem-accent-hover: var(--bl-violet-600);
+  --bl-sem-accent-subtle: color-mix(in oklch, var(--bl-violet-500) 14%, transparent);
+  --bl-sem-accent-ring: color-mix(in oklch, var(--bl-violet-500) 30%, transparent);
+
+  --bl-sem-success: var(--bl-success-500);
+  --bl-sem-success-subtle: var(--bl-success-50);
+  --bl-sem-danger: var(--bl-danger-500);
+  --bl-sem-danger-subtle: var(--bl-danger-50);
+  --bl-sem-warning: var(--bl-warning-500);
+  --bl-sem-warning-subtle: var(--bl-warning-50);
+
+  --bl-sem-danger-soft-bg: color-mix(in oklch, var(--bl-danger-500) 10%, transparent);
+  --bl-sem-danger-soft-border: color-mix(in oklch, var(--bl-danger-500) 30%, transparent);
+  --bl-sem-warning-soft-bg: color-mix(in oklch, var(--bl-warning-500) 10%, transparent);
+  --bl-sem-warning-soft-border: color-mix(in oklch, var(--bl-warning-500) 30%, transparent);
+
+  /* ─── Status ─── */
+  --bl-sem-status-open: var(--bl-violet-500);
+  --bl-sem-status-open-bg: color-mix(in oklch, var(--bl-violet-500) 12%, transparent);
+  --bl-sem-status-open-text: var(--bl-violet-700);
+  --bl-sem-status-open-glow: color-mix(in oklch, var(--bl-violet-400) 50%, transparent);
+
+  --bl-sem-status-read: var(--bl-warning-500);
+  --bl-sem-status-read-bg: var(--bl-warning-50);
+  --bl-sem-status-read-text: var(--bl-warning-700);
+  --bl-sem-status-read-glow: color-mix(in oklch, var(--bl-warning-400) 50%, transparent);
+
+  --bl-sem-status-done: var(--bl-success-500);
+  --bl-sem-status-done-bg: var(--bl-success-50);
+  --bl-sem-status-done-text: var(--bl-success-700);
+  --bl-sem-status-done-glow: color-mix(in oklch, var(--bl-success-400) 50%, transparent);
+
+  /* ─── Tags ─── */
+  --bl-sem-tag-revision-bg: color-mix(in oklch, var(--bl-warning-500) 14%, transparent);
+  --bl-sem-tag-revision-text: var(--bl-warning-700);
+  --bl-sem-tag-approval-bg: var(--bl-violet-50);
+  --bl-sem-tag-approval-text: var(--bl-violet-700);
+  --bl-sem-tag-blocker-bg: color-mix(in oklch, var(--bl-danger-500) 12%, transparent);
+  --bl-sem-tag-blocker-text: var(--bl-danger-700);
+  --bl-sem-tag-question-bg: color-mix(in oklch, var(--bl-violet-500) 10%, transparent);
+  --bl-sem-tag-question-text: var(--bl-violet-700);
+
+  /* ─── Thread / chrome ─── */
+  --bl-sem-addressed-bg: color-mix(in oklch, var(--bl-violet-500) 8%, transparent);
+  --bl-sem-addressed-border: color-mix(in oklch, var(--bl-violet-500) 35%, transparent);
+  --bl-sem-elbow: color-mix(in oklch, var(--bl-neutral-400) 55%, transparent);
+
+  /* Tooltips — theme-agnostic (always ink on light text) */
+  --bl-sem-tooltip-bg: var(--bl-ink);
+  --bl-sem-tooltip-text: var(--bl-neutral-50);
+
+  /* ─── AI surfaces — violet → cyan OKLCH hue sweep ─── */
+  --bl-sem-ai-bg: color-mix(in oklch, var(--bl-violet-50) 60%, transparent);
+  --bl-sem-ai-bg-a: color-mix(in oklch, var(--bl-violet-50) 50%, transparent);
+  --bl-sem-ai-bg-b: color-mix(in oklch, var(--bl-violet-100) 40%, transparent);
+  --bl-sem-ai-shimmer-c0: #F2F2FA;
+  --bl-sem-ai-shimmer-c1: #EEEEF8;
+  --bl-sem-ai-shimmer-c2: #E8E8F4;
+  --bl-sem-ai-shimmer-c3: #DEE0F2;
+  --bl-sem-ai-shimmer-c4: #DAE8F7;
+  --bl-sem-ai-shimmer-c5: #DDEFF0;
+  --bl-sem-ai-cta-bg: #CACAEB;
+  --bl-sem-ai-cta-c0: #C4C4E8;
+  --bl-sem-ai-cta-c1: #BDBDE4;
+  --bl-sem-ai-cta-c2: #B8C4E8;
+  --bl-sem-ai-cta-c3: #B0D0F0;
+  --bl-sem-ai-cta-c4: #B2DDE8;
+  --bl-sem-ai-cta-c5: #B8E4E2;
+}

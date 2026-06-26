@@ -1,0 +1,79 @@
+/**
+ * Tier 1 — Primitives: raw color ramps (theme-agnostic).
+ * Anchor colors: neutral-50/700/950, brand #3E3E9D (violet-500), ink.
+ * Functional ramps: success H=164°, danger H=27°, warning H=78°.
+ */
+
+:root {
+  /* ─── Neutral (oklch H≈283°) ─── */
+  --bl-neutral-50: #F1F2F6;
+  --bl-neutral-100: #E6E7F4;
+  --bl-neutral-200: #D1D3E5;
+  --bl-neutral-300: #B7B8D1;
+  --bl-neutral-400: #9495B4;
+  --bl-neutral-500: #767798;
+  --bl-neutral-600: #595A7C;
+  --bl-neutral-700: #3B3B68;
+  --bl-neutral-800: #2A294B;
+  --bl-neutral-900: #1C1C36;
+  --bl-neutral-950: #1A1A2E;
+
+  /* ─── Violet / brand (anchor: #3E3E9D @ 500) ─── */
+  --bl-violet-50: #F2F2FA;
+  --bl-violet-100: #E4E4F4;
+  --bl-violet-200: #CACAEB;
+  --bl-violet-300: #A0A0D8;
+  --bl-violet-400: #7070B0;
+  --bl-violet-500: #3E3E9D;
+  --bl-violet-600: #353585;
+  --bl-violet-700: #2B2B6E;
+  --bl-violet-800: #222257;
+  --bl-violet-900: #191941;
+  --bl-violet-950: #11112E;
+
+  /* ─── Success (oklch H=164°) ─── */
+  --bl-success-50: #D1F5E3;
+  --bl-success-100: #B4EDD2;
+  --bl-success-200: #8ADFB9;
+  --bl-success-300: #3BD59D;
+  --bl-success-400: #00BB85;
+  --bl-success-500: #00A575;
+  --bl-success-600: #008A61;
+  --bl-success-700: #006F4E;
+  --bl-success-800: #00563B;
+  --bl-success-900: #003D29;
+
+  /* ─── Danger (oklch H=27°) ─── */
+  --bl-danger-50: #FFF2F0;
+  --bl-danger-100: #FEDBD6;
+  --bl-danger-200: #FFC8C1;
+  --bl-danger-300: #FF968A;
+  --bl-danger-400: #EF675C;
+  --bl-danger-500: #DB423C;
+  --bl-danger-600: #BA2B28;
+  --bl-danger-700: #971B1A;
+  --bl-danger-800: #721212;
+  --bl-danger-900: #4F0A0A;
+
+  /* ─── Warning (oklch H=78°) ─── */
+  --bl-warning-50: #FDF4E7;
+  --bl-warning-100: #FBE5C3;
+  --bl-warning-200: #F8D193;
+  --bl-warning-300: #F2B95A;
+  --bl-warning-400: #DF9C00;
+  --bl-warning-500: #C78B00;
+  --bl-warning-600: #A17000;
+  --bl-warning-700: #835A00;
+  --bl-warning-800: #674600;
+  --bl-warning-900: #4C3200;
+
+  /* ─── Ink (warm near-black, oklch H≈19°) ─── */
+  --bl-ink: #1A0F0F;
+
+  /* ─── Brand palette image (canonical swatches) ─── */
+  --bl-palette-image-neutral: #F1F2F6;
+  --bl-palette-image-slate: #3B3B68;
+  --bl-palette-image-ink: #1A0F0F;
+  --bl-palette-image-lavender: #746EC4;
+  --bl-palette-image-navy: #1A1A2E;
+}

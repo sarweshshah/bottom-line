@@ -1,0 +1,23 @@
+/**
+ * Tier 2 — Effects: shadows and elevation.
+ * Light defaults in :root; card, halo, halo-error, sm/lg/xl/tooltip flip in semantics-dark.css.
+ */
+
+:root {
+  --bl-sem-shadow-none: none;
+  --bl-sem-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --bl-sem-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --bl-sem-shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --bl-sem-shadow-tooltip: 0 4px 20px rgba(0, 0, 0, 0.22);
+  --bl-sem-shadow-card: 0 0 3px 0 color-mix(in oklch, var(--bl-neutral-950) 8%, transparent);
+  --bl-sem-shadow-halo:
+    0 0 0 1px color-mix(in oklch, var(--bl-violet-500) 10%, transparent),
+    0 4px 12px -8px color-mix(in oklch, var(--bl-violet-500) 12%, transparent);
+  --bl-sem-shadow-halo-error:
+    0 0 0 1px color-mix(in oklch, var(--bl-danger-500) 12%, transparent),
+    0 4px 12px -8px color-mix(in oklch, var(--bl-danger-500) 14%, transparent);
+
+  --bl-sem-shadow-status-open: 0 0 6px var(--bl-sem-status-open-glow);
+  --bl-sem-shadow-status-read: 0 0 6px var(--bl-sem-status-read-glow);
+  --bl-sem-shadow-status-done: 0 0 6px var(--bl-sem-status-done-glow);
+}

@@ -211,11 +211,40 @@ export function PatSectionHeading({
   tooltip?: ReactNode;
 }) {
   return (
-    <h3 className="text-xs font-medium text-figma-text-secondary mb-2 flex items-center gap-1.5 flex-wrap">
+    <h3 className="text-xs font-medium text-figma-text flex items-center gap-1.5 flex-wrap">
       {title}
       {tooltip}
     </h3>
   );
+}
+
+export function PatTokenSection({
+  className = "",
+  children,
+}: {
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <div
+      className={cn(
+        "rounded-md border border-sem-border-faint bg-sem-surface shadow-sem-card p-3 space-y-3",
+        className,
+      )}
+    >
+      {children}
+    </div>
+  );
+}
+
+export function PatTokenFields({
+  className = "",
+  children,
+}: {
+  className?: string;
+  children: ReactNode;
+}) {
+  return <div className={cn("pt-2", className)}>{children}</div>;
 }
 
 export function PatTokenGuide({
@@ -230,7 +259,7 @@ export function PatTokenGuide({
   const helpLink = (
     <PatHelpLink
       href={FIGMA_PAT_HELP_URL}
-      className={cn("text-xs block", variant === "onboarding" ? "mt-1" : "mb-4")}
+      className={cn("text-xs block", variant === "onboarding" && "mt-1")}
       onClick={(e: MouseEvent<HTMLAnchorElement>) => {
         e.preventDefault();
         openExternalUrl(FIGMA_PAT_HELP_URL);
@@ -243,23 +272,14 @@ export function PatTokenGuide({
 
   if (variant === "onboarding") {
     return (
-      <div
-        className={cn(
-          "text-xs text-figma-text-secondary mb-3 space-y-1.5",
-          className,
-        )}
-      >
-        <p className="font-medium text-figma-text-secondary">
-          How to get your token:
-        </p>
+      <div className={cn("text-xs text-figma-text-secondary space-y-1.5", className)}>
+        <p className="font-medium text-figma-text-secondary">How to get your token:</p>
         <p className="text-figma-text-tertiary">
           Follow Figma&apos;s guide to create a token named &quot;Bottom Line&quot;
           and enable these permissions:
         </p>
         <PatScopesList className="text-figma-text-tertiary" />
-        <p className="text-figma-text-tertiary">
-          Copy the token and paste it below.
-        </p>
+        <p className="text-figma-text-tertiary">Copy the token and paste it below.</p>
         {helpLink}
         {children}
       </div>
@@ -267,11 +287,11 @@ export function PatTokenGuide({
   }
 
   return (
-    <>
-      <PatScopesList className="mb-4" />
+    <div className={cn("space-y-3", className)}>
+      <PatScopesList />
       {helpLink}
       {children}
-    </>
+    </div>
   );
 }
 

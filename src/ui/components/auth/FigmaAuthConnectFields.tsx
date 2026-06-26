@@ -5,15 +5,17 @@ import {
   ConnectedStatus,
   ExpandableDisclosure,
   OAuthSignInButton,
+  PatTokenFields,
   PatTokenGuide,
+  PatTokenSection,
   ValidatingIndicator,
 } from "@ui/components/common/authUi";
 import { SecretField } from "@ui/components/common/uiPrimitives";
 import {
   OnboardingFieldStack,
   OnboardingHint,
-  OnboardingSpacedBlock,
 } from "@ui/components/onboarding/onboardingPrimitives";
+import { cn } from "@ui/lib/cn";
 
 type FigmaAuthConnectFieldsProps = {
   variant: "onboarding" | "reconnect";
@@ -31,6 +33,7 @@ type FigmaAuthConnectFieldsProps = {
   user: FigmaUser | null;
   tokenValid?: boolean;
   patHeading?: ReactNode;
+  className?: string;
 };
 
 export function FigmaAuthConnectFields({
@@ -49,6 +52,7 @@ export function FigmaAuthConnectFields({
   user,
   tokenValid = false,
   patHeading,
+  className = "",
 }: FigmaAuthConnectFieldsProps) {
   const showOAuth = oauthAvailable && (variant === "reconnect" || !user);
   const patPlaceholder =
@@ -57,63 +61,72 @@ export function FigmaAuthConnectFields({
       : "Paste your new token here";
 
   const patFields = (
-    <OnboardingFieldStack>
-      <SecretField
-        value={pat}
-        onChange={(e) => onPatChange(e.target.value)}
-        show={showToken}
-        onToggleShow={() => onToggleShowToken()}
-        placeholder={patPlaceholder}
-      />
-      {isValidating && authMethod !== "oauth" && (
-        <ValidatingIndicator
-          label={variant === "reconnect" ? "Validating token..." : undefined}
+    <PatTokenFields>
+      <OnboardingFieldStack>
+        <SecretField
+          value={pat}
+          onChange={(e) => onPatChange(e.target.value)}
+          show={showToken}
+          onToggleShow={() => onToggleShowToken()}
+          placeholder={patPlaceholder}
         />
-      )}
-      {variant === "onboarding" && user && authMethod === "pat" && (
-        <ConnectedStatus
-          icon={CheckCircle2}
-          message={`Connected as ${user.handle}`}
-        />
-      )}
-      {variant === "reconnect" && tokenValid && authMethod === "pat" && (
-        <ConnectedStatus icon={CheckCircle2} message="Token is valid" />
-      )}
-    </OnboardingFieldStack>
+        {isValidating && authMethod !== "oauth" && (
+          <ValidatingIndicator
+            label={variant === "reconnect" ? "Validating token..." : undefined}
+          />
+        )}
+        {variant === "onboarding" && user && authMethod === "pat" && (
+          <ConnectedStatus
+            icon={CheckCircle2}
+            message={`Connected as ${user.handle}`}
+          />
+        )}
+        {variant === "reconnect" && tokenValid && authMethod === "pat" && (
+          <ConnectedStatus icon={CheckCircle2} message="Token is valid" />
+        )}
+      </OnboardingFieldStack>
+    </PatTokenFields>
   );
 
   return (
-    <>
-      {showOAuth && (
-        <OnboardingSpacedBlock spacing={variant === "reconnect" ? "lg" : undefined}>
-          <OAuthSignInButton
-            busy={oauthBusy}
-            disabled={isValidating}
-            onClick={onOAuthClick}
-          />
-          {variant === "onboarding" && (
-            <OnboardingHint>
-              Opens your browser to sign in. Return here when the tab says you
-              can close it.
-            </OnboardingHint>
-          )}
-        </OnboardingSpacedBlock>
+    <div
+      className={cn(
+        "flex flex-col gap-3",
+        variant === "reconnect" && "mb-4",
+        className,
       )}
-
-      {oauthAvailable && (
-        <OnboardingSpacedBlock spacing={variant === "onboarding" ? "sm" : undefined}>
-          <ExpandableDisclosure
-            open={showPatAdvanced}
-            onToggle={onTogglePatAdvanced}
-            align={variant === "reconnect" ? "center" : "start"}
-          >
-            Use a personal access token instead
-          </ExpandableDisclosure>
-        </OnboardingSpacedBlock>
+    >
+      {(showOAuth || oauthAvailable) && (
+        <div className="flex flex-col gap-2">
+          {showOAuth && (
+            <>
+              <OAuthSignInButton
+                busy={oauthBusy}
+                disabled={isValidating}
+                onClick={onOAuthClick}
+              />
+              {variant === "onboarding" && (
+                <OnboardingHint>
+                  Opens your browser to sign in. Return here when the tab says you
+                  can close it.
+                </OnboardingHint>
+              )}
+            </>
+          )}
+          {oauthAvailable && (
+            <ExpandableDisclosure
+              open={showPatAdvanced}
+              onToggle={onTogglePatAdvanced}
+              align={variant === "reconnect" ? "center" : "start"}
+            >
+              Use a personal access token instead
+            </ExpandableDisclosure>
+          )}
+        </div>
       )}
 
       {showPatAdvanced && (
-        <>
+        <PatTokenSection>
           {patHeading}
           {variant === "onboarding" ? (
             <>
@@ -123,7 +136,7 @@ export function FigmaAuthConnectFields({
           ) : (
             <PatTokenGuide variant="compact">{patFields}</PatTokenGuide>
           )}
-        </>
+        </PatTokenSection>
       )}
 
       {variant === "reconnect" && authMethod === "oauth" && user && (
@@ -134,6 +147,6 @@ export function FigmaAuthConnectFields({
           spaced
         />
       )}
-    </>
+    </div>
   );
 }

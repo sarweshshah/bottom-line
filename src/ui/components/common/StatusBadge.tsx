@@ -6,17 +6,17 @@ const config: Record<
 > = {
   open: {
     label: "OPEN",
-    dotClass: "bg-status-open shadow-status-open",
+    dotClass: "bg-status-open shadow-sem-status-open",
     bgClass: "bg-status-open-bg text-status-open-text",
   },
   read: {
     label: "READ",
-    dotClass: "bg-status-read shadow-status-read",
+    dotClass: "bg-status-read shadow-sem-status-read",
     bgClass: "bg-status-read-bg text-status-read-text",
   },
   resolved: {
     label: "DONE",
-    dotClass: "bg-status-resolved shadow-status-done",
+    dotClass: "bg-status-resolved shadow-sem-status-done",
     bgClass: "bg-status-resolved-bg text-status-resolved-text",
   },
 };

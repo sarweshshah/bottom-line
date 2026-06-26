@@ -1,9 +1,9 @@
-/** Non-white avatar colors from the brand palette image (tokens.css). */
+/** Non-white avatar colors from the brand palette image (tokens/primitives.css). */
 export const AVATAR_PALETTE = [
-  "var(--bl-comp-avatar-slate)",
-  "var(--bl-comp-avatar-ink)",
-  "var(--bl-comp-avatar-lavender)",
-  "var(--bl-comp-avatar-navy)",
+  "var(--bl-palette-image-slate)",
+  "var(--bl-palette-image-ink)",
+  "var(--bl-palette-image-lavender)",
+  "var(--bl-palette-image-navy)",
 ] as const;
 
 export type AvatarColor = (typeof AVATAR_PALETTE)[number];
@@ -13,7 +13,7 @@ const MIN_ADJACENT_COLOR_DISTANCE = 55;
 
 /**
  * Pairwise distances between --bl-palette-image-* swatches.
- * Keep in sync with tokens.css when palette image colors change.
+ * Keep in sync with tokens/primitives.css when palette image colors change.
  */
 const PALETTE_DISTANCE_MATRIX: readonly (readonly number[])[] = [
   [0, 52, 73, 43],

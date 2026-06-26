@@ -1,0 +1,127 @@
+/**
+ * Semantic + effect dark overrides.
+ * Applied via .figma-dark on the document root (includes Figma bridge vars).
+ */
+
+.figma-dark {
+  /* ─── Figma surface vars — neutral gray dark, contrast without purple wash ─── */
+  --figma-color-bg: #222226;
+  --figma-color-bg-secondary: #323238;
+  --figma-color-bg-tertiary: #404048;
+  --figma-color-bg-hover: #3a3a42;
+  --figma-color-bg-selected: #454562;
+  --figma-color-text: #f2f0f5;
+  --figma-color-text-secondary: #d1d3e5;
+  --figma-color-text-tertiary: #b7b8d1;
+  --figma-color-text-disabled: #9495b4;
+  --figma-color-border: #45454c;
+  --figma-color-border-strong: #5c5866;
+  --figma-color-icon: #f2f0f5;
+  --figma-color-icon-secondary: #d1d3e5;
+  --figma-color-icon-tertiary: #b7b8d1;
+
+  /* ─── Semantic overrides (dark) ─── */
+  --bl-sem-bg-canvas: #222226;
+  --bl-sem-bg-surface: #323238;
+  --bl-sem-bg-surface-raised: #404048;
+  --bl-sem-bg-hover: #3a3a42;
+  --bl-sem-bg-selected: #454562;
+  --bl-sem-bg-inverse: #f2f0f5;
+
+  --bl-sem-text-primary: #f2f0f5;
+  --bl-sem-text-secondary: #d1d3e5;
+  --bl-sem-text-tertiary: #b7b8d1;
+  --bl-sem-text-disabled: #9495b4;
+  --bl-sem-text-inverse: #222226;
+  --bl-sem-text-accent: var(--bl-violet-200);
+  --bl-sem-accent-text-hover: var(--bl-violet-100);
+
+  --bl-sem-border-default: #45454c;
+  --bl-sem-border-strong: #5c5866;
+  --bl-sem-border-subtle: #404048;
+  --bl-sem-border-faint: color-mix(
+    in oklch,
+    var(--bl-sem-border-subtle) 18%,
+    var(--bl-sem-bg-canvas)
+  );
+  --bl-sem-border-accent: var(--bl-violet-500);
+
+  --bl-sem-icon-primary: #f2f0f5;
+  --bl-sem-icon-secondary: #d1d3e5;
+  --bl-sem-icon-tertiary: #b7b8d1;
+
+  --bl-sem-accent: var(--bl-violet-500);
+  --bl-sem-accent-hover: var(--bl-violet-600);
+  --bl-sem-accent-subtle: color-mix(in oklch, var(--bl-violet-500) 30%, transparent);
+  --bl-sem-accent-ring: color-mix(in oklch, var(--bl-violet-500) 30%, transparent);
+
+  --bl-sem-success: var(--bl-success-300);
+  --bl-sem-success-subtle: color-mix(in oklch, var(--bl-success-500) 15%, transparent);
+  --bl-sem-danger: var(--bl-danger-300);
+  --bl-sem-danger-subtle: color-mix(in oklch, var(--bl-danger-500) 12%, transparent);
+  --bl-sem-warning: var(--bl-warning-300);
+  --bl-sem-warning-subtle: color-mix(in oklch, var(--bl-warning-500) 12%, transparent);
+
+  --bl-sem-danger-soft-bg: color-mix(in oklch, var(--bl-danger-500) 12%, transparent);
+  --bl-sem-danger-soft-border: color-mix(in oklch, var(--bl-danger-500) 30%, transparent);
+  --bl-sem-warning-soft-bg: color-mix(in oklch, var(--bl-warning-500) 12%, transparent);
+  --bl-sem-warning-soft-border: color-mix(in oklch, var(--bl-warning-500) 30%, transparent);
+
+  --bl-sem-status-open: var(--bl-violet-500);
+  --bl-sem-status-open-bg: color-mix(in oklch, var(--bl-violet-500) 18%, transparent);
+  --bl-sem-status-open-text: var(--bl-violet-200);
+  --bl-sem-status-open-glow: color-mix(in oklch, var(--bl-violet-500) 40%, transparent);
+
+  --bl-sem-status-read: var(--bl-warning-300);
+  --bl-sem-status-read-bg: color-mix(in oklch, var(--bl-warning-500) 18%, transparent);
+  --bl-sem-status-read-text: var(--bl-warning-300);
+  --bl-sem-status-read-glow: color-mix(in oklch, var(--bl-warning-400) 40%, transparent);
+
+  --bl-sem-status-done: var(--bl-success-300);
+  --bl-sem-status-done-bg: color-mix(in oklch, var(--bl-success-500) 18%, transparent);
+  --bl-sem-status-done-text: var(--bl-success-300);
+  --bl-sem-status-done-glow: color-mix(in oklch, var(--bl-success-400) 40%, transparent);
+
+  --bl-sem-tag-revision-bg: color-mix(in oklch, var(--bl-warning-500) 16%, transparent);
+  --bl-sem-tag-revision-text: var(--bl-warning-300);
+  --bl-sem-tag-approval-bg: color-mix(in oklch, var(--bl-violet-700) 40%, transparent);
+  --bl-sem-tag-approval-text: var(--bl-violet-300);
+  --bl-sem-tag-blocker-bg: color-mix(in oklch, var(--bl-danger-500) 12%, transparent);
+  --bl-sem-tag-blocker-text: var(--bl-danger-300);
+  --bl-sem-tag-question-bg: color-mix(in oklch, var(--bl-violet-500) 15%, transparent);
+  --bl-sem-tag-question-text: var(--bl-violet-300);
+
+  --bl-sem-addressed-bg: color-mix(in oklch, var(--bl-violet-500) 8%, transparent);
+  --bl-sem-addressed-border: color-mix(in oklch, var(--bl-violet-500) 35%, transparent);
+  --bl-sem-elbow: color-mix(in oklch, var(--bl-neutral-500) 45%, transparent);
+
+  --bl-sem-ai-bg: color-mix(in oklch, var(--bl-violet-600) 8%, transparent);
+  --bl-sem-ai-bg-a: color-mix(in oklch, var(--bl-violet-600) 7%, transparent);
+  --bl-sem-ai-bg-b: color-mix(in oklch, var(--bl-violet-700) 5%, transparent);
+  --bl-sem-ai-shimmer-c0: color-mix(in oklch, var(--bl-violet-900) 20%, transparent);
+  --bl-sem-ai-shimmer-c1: color-mix(in oklch, var(--bl-violet-800) 16%, transparent);
+  --bl-sem-ai-shimmer-c2: color-mix(in oklch, var(--bl-violet-700) 14%, transparent);
+  --bl-sem-ai-shimmer-c3: color-mix(in oklch, var(--bl-violet-600) 12%, transparent);
+  --bl-sem-ai-shimmer-c4: color-mix(in oklch, oklch(0.55 0.08 278) 10%, transparent);
+  --bl-sem-ai-shimmer-c5: color-mix(in oklch, oklch(0.55 0.07 250) 9%, transparent);
+  --bl-sem-ai-cta-bg: color-mix(in oklch, var(--bl-violet-700) 35%, transparent);
+  --bl-sem-ai-cta-c0: color-mix(in oklch, var(--bl-violet-800) 42%, transparent);
+  --bl-sem-ai-cta-c1: color-mix(in oklch, var(--bl-violet-700) 38%, transparent);
+  --bl-sem-ai-cta-c2: color-mix(in oklch, var(--bl-violet-600) 34%, transparent);
+  --bl-sem-ai-cta-c3: color-mix(in oklch, oklch(0.45 0.10 278) 32%, transparent);
+  --bl-sem-ai-cta-c4: color-mix(in oklch, oklch(0.48 0.08 250) 26%, transparent);
+  --bl-sem-ai-cta-c5: color-mix(in oklch, oklch(0.50 0.07 230) 24%, transparent);
+
+  /* ─── Effect overrides (dark) ─── */
+  --bl-sem-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.35);
+  --bl-sem-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.45), 0 4px 6px -4px rgb(0 0 0 / 0.35);
+  --bl-sem-shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.55), 0 8px 10px -6px rgb(0 0 0 / 0.45);
+  --bl-sem-shadow-tooltip: 0 4px 20px rgba(0, 0, 0, 0.45);
+  --bl-sem-shadow-card: 0 0 8px -2px rgba(0, 0, 0, 0.35);
+  --bl-sem-shadow-halo:
+    0 0 0 1px color-mix(in oklch, var(--bl-violet-400) 12%, transparent),
+    0 4px 12px -8px color-mix(in oklch, var(--bl-violet-400) 14%, transparent);
+  --bl-sem-shadow-halo-error:
+    0 0 0 1px color-mix(in oklch, var(--bl-danger-400) 14%, transparent),
+    0 4px 12px -8px color-mix(in oklch, var(--bl-danger-400) 18%, transparent);
+}

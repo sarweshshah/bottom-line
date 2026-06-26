@@ -20,7 +20,7 @@ export function Modal({
     >
       <div
         className={cn(
-          "bg-figma-bg rounded-xl shadow-xl w-[340px] max-w-[90vw] border border-figma-border overflow-hidden",
+          "bg-figma-bg rounded-xl shadow-sem-xl w-[340px] max-w-[90vw] border border-figma-border overflow-hidden",
           className,
         )}
         onClick={(e) => e.stopPropagation()}
@@ -124,7 +124,7 @@ export function DropdownMenuPanel({
   return (
     <div
       className={cn(
-        "absolute top-full mt-1 bg-figma-bg border border-figma-border rounded-md shadow-lg z-20",
+        "absolute top-full mt-1 bg-figma-bg border border-figma-border rounded-md shadow-sem-lg z-20",
         align === "right" ? "right-0" : "left-0",
         className,
       )}

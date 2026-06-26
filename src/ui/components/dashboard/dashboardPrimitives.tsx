@@ -363,7 +363,7 @@ export function SummarizeCtaButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="summarize-cta-button flex items-center gap-2 px-3 py-2 rounded-md text-xs font-medium bg-ai-shimmer-cta text-figma-text shadow-none hover:opacity-90 active:opacity-85 transition-opacity duration-150 disabled:opacity-40"
+      className="summarize-cta-button flex items-center gap-2 px-3 py-2 rounded-md text-xs font-medium bg-ai-shimmer-cta text-figma-text shadow-sem-none hover:opacity-90 active:opacity-85 transition-opacity duration-150 disabled:opacity-40"
     >
       {children}
     </button>
