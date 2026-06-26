@@ -53,6 +53,7 @@ interface AIState {
   setCloudAiConsented: (consented: boolean, includesImages: boolean) => void;
 
   getApiKeyForProvider: (provider?: AIProvider) => string;
+  hasConfiguredProvider: () => boolean;
   needsConsent: () => boolean;
 
   setThreadLoading: (threadId: string) => void;
@@ -151,6 +152,16 @@ export const useAIStore = create<AIState>((set, get) => ({
       default:
         return "";
     }
+  },
+
+  hasConfiguredProvider: () => {
+    const { provider, customConfig } = get();
+    if (provider === "custom") {
+      return Boolean(
+        customConfig.baseUrl.trim() && customConfig.modelName.trim(),
+      );
+    }
+    return Boolean(get().getApiKeyForProvider(provider));
   },
 
   needsConsent: () => {

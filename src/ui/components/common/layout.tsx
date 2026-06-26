@@ -139,11 +139,11 @@ export function OnboardingFooter({
   children: ReactNode;
 }) {
   return (
-    <div className="px-5 py-4 border-t border-figma-border">
-      {stepIndicator}
-      <div className={cn("flex gap-2", stepIndicator ? "mt-3" : "")}>
-        {children}
-      </div>
+    <div className="w-full shrink-0 border-t border-figma-border bg-figma-bg px-5 pb-4 pt-3">
+      {stepIndicator ? (
+        <div className="mb-3 flex justify-center">{stepIndicator}</div>
+      ) : null}
+      <div className="flex w-full items-stretch gap-2">{children}</div>
     </div>
   );
 }

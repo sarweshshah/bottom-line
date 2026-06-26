@@ -4,7 +4,6 @@ import {
   Link,
   ShieldCheck,
   ArrowRight,
-  ArrowLeft,
   MessageSquare,
   Sparkles,
   CheckSquare,
@@ -20,6 +19,7 @@ import {
 } from "@ui/components/common/authUi";
 import {
   OnboardingContinueButton,
+  OnboardingBackButton,
   OnboardingErrorBlock,
   OnboardingFeatureList,
   OnboardingFieldStack,
@@ -47,7 +47,9 @@ import {
   InfoTooltip,
   SecretField,
 } from "@ui/components/common/uiPrimitives";
+import { AiProviderConfigFields } from "@ui/components/ai/AiProviderConfigFields";
 import { useAuthStore } from "@ui/store/authStore";
+import { useAIStore } from "@ui/store/aiStore";
 import { parseFileKey, isValidFigmaUrl } from "@ui/lib/parseFileUrl";
 import {
   isFigmaOAuthConfigured,
@@ -56,6 +58,9 @@ import {
 } from "@ui/lib/figmaOAuth";
 import { openExternalUrl } from "@ui/lib/openExternal";
 import pluginLogo from "@ui/assets/plugin-logo.png";
+
+const ONBOARDING_TOTAL_STEPS = 4;
+const ONBOARDING_CONFIG_STEPS = 3;
 
 const FEATURES = [
   {
@@ -98,8 +103,18 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
         </OnboardingFeatureList>
       </OnboardingWelcomeBody>
 
-      <OnboardingFooter stepIndicator={<StepIndicator current={0} total={3} />}>
-        <Button variant="primary" controlSize="md" fullWidth onClick={onNext}>
+      <OnboardingFooter
+        stepIndicator={
+          <StepIndicator current={0} total={ONBOARDING_TOTAL_STEPS} />
+        }
+      >
+        <Button
+          variant="primary"
+          controlSize="md"
+          fullWidth
+          className="min-h-10"
+          onClick={onNext}
+        >
           Get Started
           <ArrowRight size={14} />
         </Button>
@@ -172,7 +187,7 @@ function ConnectStep({
         <OnboardingStepHeader
           icon={ShieldCheck}
           title="Connect to Figma"
-          subtitle="Step 1 of 2 · Sign in to access your comments"
+          subtitle={`Step 1 of ${ONBOARDING_CONFIG_STEPS} · Sign in to access your comments`}
         />
 
         {oauthAvailable && !user && (
@@ -270,11 +285,73 @@ function ConnectStep({
         )}
       </OnboardingStepBody>
 
-      <OnboardingFooter stepIndicator={<StepIndicator current={1} total={3} />}>
-        <Button variant="bordered" controlSize="md" onClick={onBack}>
-          <ArrowLeft size={14} />
-        </Button>
+      <OnboardingFooter
+        stepIndicator={
+          <StepIndicator current={1} total={ONBOARDING_TOTAL_STEPS} />
+        }
+      >
+        <OnboardingBackButton onClick={onBack} />
         <OnboardingContinueButton disabled={!user} onClick={onNext}>
+          Continue
+          <ArrowRight size={14} />
+        </OnboardingContinueButton>
+      </OnboardingFooter>
+    </OnboardingStep>
+  );
+}
+
+function AiProviderStep({
+  onNext,
+  onBack,
+}: {
+  onNext: () => void;
+  onBack: () => void;
+}) {
+  const hasConfiguredProvider = useAIStore((s) => s.hasConfiguredProvider());
+  const imageAnalysisEnabled = useAIStore((s) => s.imageAnalysisEnabled);
+  const setCloudAiConsented = useAIStore((s) => s.setCloudAiConsented);
+
+  const handleContinue = useCallback(() => {
+    setCloudAiConsented(true, imageAnalysisEnabled);
+    onNext();
+  }, [imageAnalysisEnabled, onNext, setCloudAiConsented]);
+
+  return (
+    <OnboardingStep>
+      <OnboardingStepBody>
+        <OnboardingStepHeader
+          icon={Sparkles}
+          title="Connect Your AI Provider"
+          subtitle={`Step 2 of ${ONBOARDING_CONFIG_STEPS} · Enable summaries and task extraction`}
+        />
+
+        <OnboardingIntroText>
+          Choose a provider and paste your API key. Comment text from threads
+          you summarize is sent to that provider only — your Figma token is
+          never shared.
+        </OnboardingIntroText>
+
+        <OnboardingFieldStack>
+          <AiProviderConfigFields mode="compact" />
+          {hasConfiguredProvider && (
+            <ConnectedStatus
+              icon={CheckCircle2}
+              message="AI provider configured"
+            />
+          )}
+        </OnboardingFieldStack>
+      </OnboardingStepBody>
+
+      <OnboardingFooter
+        stepIndicator={
+          <StepIndicator current={2} total={ONBOARDING_TOTAL_STEPS} />
+        }
+      >
+        <OnboardingBackButton onClick={onBack} />
+        <OnboardingContinueButton
+          disabled={!hasConfiguredProvider}
+          onClick={handleContinue}
+        >
           Continue
           <ArrowRight size={14} />
         </OnboardingContinueButton>
@@ -330,7 +407,7 @@ function LinkFileStep({
         <OnboardingStepHeader
           icon={Link}
           title="Link Your File"
-          subtitle="Step 2 of 2 · Choose which file to analyze"
+          subtitle={`Step ${ONBOARDING_CONFIG_STEPS} of ${ONBOARDING_CONFIG_STEPS} · Choose which file to analyze`}
         />
 
         <OnboardingIntroText>
@@ -353,10 +430,12 @@ function LinkFileStep({
         {fileKey && !urlError && <SetupReadyBanner />}
       </OnboardingStepBody>
 
-      <OnboardingFooter stepIndicator={<StepIndicator current={2} total={3} />}>
-        <Button variant="bordered" controlSize="md" onClick={onBack}>
-          <ArrowLeft size={14} />
-        </Button>
+      <OnboardingFooter
+        stepIndicator={
+          <StepIndicator current={3} total={ONBOARDING_TOTAL_STEPS} />
+        }
+      >
+        <OnboardingBackButton onClick={onBack} />
         <OnboardingContinueButton disabled={!canSubmit} onClick={() => void handleSubmit()}>
           Launch Bottom Line
           <Sparkles size={14} />
@@ -379,8 +458,14 @@ export function SetupScreen() {
         />
       )}
       {step === 2 && (
-        <LinkFileStep
+        <AiProviderStep
+          onNext={() => setStep(3)}
           onBack={() => setStep(1)}
+        />
+      )}
+      {step === 3 && (
+        <LinkFileStep
+          onBack={() => setStep(2)}
           onFinish={() => {}}
         />
       )}

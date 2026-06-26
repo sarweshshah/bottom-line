@@ -18,8 +18,9 @@ On first launch, complete the setup screen:
 1. **Sign in**
    - **Sign in with Figma** (recommended when OAuth is enabled) — opens your browser to authorize read-only access to comments and file metadata. Return to Figma when prompted; the plugin picks up the session automatically.
    - **Personal access token** — expand “Use a personal access token” and paste a [Figma PAT](https://www.figma.com/settings) with permission to read the file and its comments. The token stays in Figma client storage on your machine.
-2. **File URL** — Paste the full URL of the file you have open (must match the file you are working in). The plugin extracts the file key from the URL.
-3. Select **Continue** to open the dashboard.
+2. **AI provider** — Choose Anthropic, OpenAI, Gemini, or a custom OpenAI-compatible endpoint and paste your API key. Summaries and task extraction require this step.
+3. **File URL** — Paste the full URL of the file you have open (must match the file you are working in). The plugin extracts the file key from the URL.
+4. Select **Launch Bottom Line** to open the dashboard.
 
 If your session expires, the plugin shows a reconnect screen with the same sign-in options.
 

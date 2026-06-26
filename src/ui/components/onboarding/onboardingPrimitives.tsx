@@ -1,5 +1,5 @@
 import type { ButtonHTMLAttributes, MouseEvent, ReactNode } from "react";
-import { Check, CheckCircle2, ExternalLink, X } from "lucide-react";
+import { Check, CheckCircle2, ExternalLink, X, ArrowLeft } from "lucide-react";
 import { PatHelpLink, PatScopesList } from "@ui/components/common/authUi";
 import { HeroLayout } from "@ui/components/common/layout";
 import { BodyText } from "@ui/components/common/typography";
@@ -244,7 +244,7 @@ export function OnboardingStep({
     <div
       className={cn(
         "onboarding-step-enter flex flex-col h-full",
-        variant === "welcome" && "items-center text-center",
+        variant === "welcome" && "text-center",
         className,
       )}
     >
@@ -300,8 +300,18 @@ export function OnboardingFeatureList({
   );
 }
 
-export function OnboardingIntroText({ children }: { children: ReactNode }) {
-  return <OnboardingBodyText className="mb-4">{children}</OnboardingBodyText>;
+export function OnboardingIntroText({
+  className = "",
+  children,
+}: {
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <OnboardingBodyText className={cn("mb-3", className)}>
+      {children}
+    </OnboardingBodyText>
+  );
 }
 
 export function OnboardingFileUrlInput({
@@ -378,8 +388,31 @@ export function OnboardingContinueButton({
   ...props
 }: ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
-    <Button variant="primary" controlSize="md" className="flex-1" {...props}>
+    <Button
+      variant="primary"
+      controlSize="md"
+      className="min-h-10 flex-1"
+      {...props}
+    >
       {children}
+    </Button>
+  );
+}
+
+export function OnboardingBackButton({
+  onClick,
+  ...props
+}: ButtonHTMLAttributes<HTMLButtonElement>) {
+  return (
+    <Button
+      variant="bordered"
+      controlSize="md"
+      onClick={onClick}
+      className="min-h-10 shrink-0 px-3"
+      aria-label="Go back"
+      {...props}
+    >
+      <ArrowLeft size={14} />
     </Button>
   );
 }

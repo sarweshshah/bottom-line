@@ -40,7 +40,7 @@ function buttonClass(
 
   const sizeClass =
     size === "md"
-      ? "py-2.5 text-sm rounded-md"
+      ? "px-4 py-2.5 text-sm rounded-md"
       : size === "compact"
         ? "px-3 py-1.5 text-xs rounded-md"
         : "px-2.5 py-2 text-xs rounded-md";
