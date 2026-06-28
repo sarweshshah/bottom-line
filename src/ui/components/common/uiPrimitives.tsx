@@ -3,8 +3,11 @@ import type {
   InputHTMLAttributes,
   ReactNode,
 } from "react";
+import { useCallback, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Eye, EyeOff, Info, type LucideIcon } from "lucide-react";
 import { cn } from "@ui/lib/cn";
+import { useAnchoredOverlayPosition } from "@ui/hooks/useAnchoredOverlayPosition";
 
 export type ButtonVariant =
   | "primary"
@@ -24,42 +27,102 @@ function buttonClass(
   joined: boolean,
 ): string {
   if (joined) {
-    const base =
-      "flex h-full shrink-0 items-center text-xs font-medium leading-none disabled:opacity-40 border-l border-figma-border transition-all duration-150";
     switch (variant) {
       case "primary":
-        return `${base} px-2.5 bg-accent-bg text-white hover:bg-accent-hover`;
+        return cn(
+          "flex h-full shrink-0 items-center", // layout
+          "px-2.5", // size
+          "text-xs font-medium leading-none text-white", // typography
+          "bg-accent-bg", // bg
+          "border-l border-figma-border", // border
+          "transition-all duration-150", // transition / animation
+          "hover:bg-accent-hover disabled:opacity-40", // interactive states
+        );
       case "secondary":
-        return `${base} px-2.5 bg-figma-bg-secondary text-figma-text-secondary hover:text-figma-text`;
+        return cn(
+          "flex h-full shrink-0 items-center", // layout
+          "px-2.5", // size
+          "text-xs font-medium leading-none text-figma-text-secondary", // typography
+          "bg-figma-bg-secondary", // bg
+          "border-l border-figma-border", // border
+          "transition-all duration-150", // transition / animation
+          "hover:text-figma-text disabled:opacity-40", // interactive states
+        );
       case "icon":
-        return "flex h-full shrink-0 items-center justify-center border-l border-figma-border px-2 text-figma-icon-secondary hover:bg-figma-bg-secondary hover:text-figma-icon disabled:opacity-40 transition-colors";
+        return cn(
+          "flex h-full shrink-0 items-center justify-center", // layout
+          "px-2", // size
+          "text-figma-icon-secondary", // typography
+          "border-l border-figma-border", // border
+          "transition-colors", // transition / animation
+          "hover:bg-figma-bg-secondary hover:text-figma-icon disabled:opacity-40", // interactive states
+        );
       default:
         return "";
     }
   }
 
-  const sizeClass =
-    size === "md"
-      ? "px-4 py-2.5 text-sm rounded-md"
-      : size === "compact"
-        ? "px-3 py-1.5 text-xs rounded-md"
-        : "px-2.5 py-2 text-xs rounded-md";
+  const sizeClass = cn(
+    size === "md" ? "px-4 py-2.5" : size === "compact" ? "px-3 py-1.5" : "px-2.5 py-2", // size
+    size === "md" ? "text-sm" : "text-xs", // typography
+    "rounded-md", // corner radius
+  );
 
-  const base = `${sizeClass} font-medium disabled:opacity-40 transition-all duration-150`;
+  const base = cn(
+    sizeClass,
+    "font-medium", // typography
+    "transition-all duration-150", // transition / animation
+    "disabled:opacity-40", // interactive states
+  );
 
   switch (variant) {
     case "primary":
-      return `${base} bg-accent-bg text-white shadow-sem-sm hover:bg-accent-hover active:scale-[0.98]`;
+      return cn(
+        base,
+        "text-white", // typography
+        "bg-accent-bg", // bg
+        "shadow-sem-sm", // shadow
+        "active:scale-[0.98]", // transition / animation
+        "hover:bg-accent-hover", // interactive states
+      );
     case "secondary":
-      return `${base} bg-figma-bg-secondary text-figma-text-secondary hover:text-figma-text`;
+      return cn(
+        base,
+        "text-figma-text-secondary", // typography
+        "bg-figma-bg-secondary", // bg
+        "hover:text-figma-text", // interactive states
+      );
     case "bordered":
-      return `${base} bg-figma-bg-secondary border border-figma-border text-figma-text hover:bg-figma-bg-tertiary hover:border-figma-border-strong disabled:cursor-not-allowed`;
+      return cn(
+        base,
+        "text-figma-text", // typography
+        "bg-figma-bg-secondary", // bg
+        "border border-figma-border", // border
+        "hover:bg-figma-bg-tertiary hover:border-figma-border-strong disabled:cursor-not-allowed", // interactive states
+      );
     case "danger":
-      return `${base} text-danger bg-danger-bg hover:opacity-90`;
+      return cn(
+        base,
+        "text-danger", // typography
+        "bg-danger-bg", // bg
+        "hover:opacity-90", // interactive states
+      );
     case "icon":
-      return "p-1 rounded-md text-figma-icon-tertiary hover:bg-figma-bg-secondary hover:text-figma-icon transition-colors disabled:opacity-40";
+      return cn(
+        "p-1", // size
+        "text-figma-icon-tertiary", // typography
+        "rounded-md", // corner radius
+        "transition-colors", // transition / animation
+        "hover:bg-figma-bg-secondary hover:text-figma-icon disabled:opacity-40", // interactive states
+      );
     case "ghost":
-      return "p-1.5 rounded-md text-figma-icon-tertiary hover:bg-figma-bg-tertiary hover:text-figma-icon transition-colors";
+      return cn(
+        "p-1.5", // size
+        "text-figma-icon-tertiary", // typography
+        "rounded-md", // corner radius
+        "transition-colors", // transition / animation
+        "hover:bg-figma-bg-tertiary hover:text-figma-icon", // interactive states
+      );
     default:
       return base;
   }
@@ -67,21 +130,40 @@ function buttonClass(
 
 function inputClass(size: ControlSize, joined: boolean): string {
   if (joined) {
-    return "h-full min-w-0 flex-1 bg-figma-bg px-2.5 text-xs leading-none text-figma-text placeholder:text-figma-text-tertiary border-0 focus:outline-none focus:ring-0";
+    return cn(
+      "h-full min-w-0 flex-1", // layout
+      "px-2.5", // size
+      "text-xs leading-none text-figma-text placeholder:text-figma-text-tertiary", // typography
+      "bg-figma-bg", // bg
+      "border-0", // border
+      "focus:outline-none focus:ring-0", // interactive states
+    );
   }
 
-  const focus =
-    "focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent-ring";
+  const focus = cn(
+    "focus:border-accent", // border
+    "focus:outline-none focus:ring-1 focus:ring-accent-ring", // interactive states
+  );
 
   if (size === "md") {
     return cn(
-      "w-full bg-figma-bg-secondary border border-figma-border rounded-md px-3 py-2 text-xs text-figma-text placeholder:text-figma-text-disabled",
+      "w-full", // layout
+      "px-3 py-2", // size
+      "text-xs text-figma-text placeholder:text-figma-text-disabled", // typography
+      "bg-figma-bg-secondary", // bg
+      "border border-figma-border", // border
+      "rounded-md", // corner radius
       focus,
     );
   }
 
   return cn(
-    "w-full bg-figma-bg text-figma-text border border-figma-border rounded-md px-2.5 py-1.5 text-xs placeholder:text-figma-text-tertiary",
+    "w-full", // layout
+    "px-2.5 py-1.5", // size
+    "text-xs text-figma-text placeholder:text-figma-text-tertiary", // typography
+    "bg-figma-bg", // bg
+    "border border-figma-border", // border
+    "rounded-md", // corner radius
     focus,
   );
 }
@@ -105,7 +187,7 @@ export function Button({
       type="button"
       className={cn(
         buttonClass(variant, controlSize, joined),
-        fullWidth && "w-full",
+        fullWidth && "w-full", // state variants
         (variant === "primary" || variant === "bordered") &&
           controlSize === "md" &&
           "flex items-center justify-center gap-2",
@@ -153,19 +235,31 @@ export function SecretField({
   const iconSize = controlSize === "md" ? 14 : 12;
 
   return (
-    <div className={cn("relative", className)}>
+    <div
+      className={cn(
+        "relative", // layout
+        className,
+      )}
+    >
       <Input
         type={show ? "text" : "password"}
         value={value}
         onChange={onChange}
         controlSize={controlSize}
-        className={cn("pr-9", inputClassName)}
+        className={cn(
+          "pr-9", // size
+          inputClassName,
+        )}
         {...props}
       />
       <button
         type="button"
         onClick={onToggleShow}
-        className="absolute right-2 top-1/2 -translate-y-1/2 text-figma-icon-tertiary hover:text-figma-icon-secondary"
+        className={cn(
+          "absolute right-2 top-1/2 -translate-y-1/2", // layout
+          "text-figma-icon-tertiary", // typography
+          "hover:text-figma-icon-secondary", // interactive states
+        )}
       >
         {show ? <EyeOff size={iconSize} /> : <Eye size={iconSize} />}
       </button>
@@ -181,7 +275,10 @@ export function Panel({
   return (
     <div
       className={cn(
-        "bg-figma-bg-secondary border border-figma-border rounded-md p-3",
+        "p-3", // size
+        "bg-figma-bg-secondary", // bg
+        "border border-figma-border", // border
+        "rounded-md", // corner radius
         className,
       )}
       {...props}
@@ -199,7 +296,8 @@ export function DetailSection({
   return (
     <div
       className={cn(
-        "pl-4 pr-3.5 pt-3 pb-4 border-b border-figma-border",
+        "pl-4 pr-3.5 pt-3 pb-4", // size
+        "border-b border-figma-border", // border
         className,
       )}
       {...props}
@@ -217,7 +315,12 @@ export function ReplyThreadItem({
 }: React.HTMLAttributes<HTMLDivElement> & { isLast?: boolean }) {
   return (
     <div
-      className={cn("relative pl-7", !isLast && "pb-3", className)}
+      className={cn(
+        "relative", // layout
+        "pl-7", // size
+        !isLast && "pb-3", // state variants
+        className,
+      )}
       {...props}
     >
       {children}
@@ -233,13 +336,114 @@ export function TextLink({
   return (
     <a
       className={cn(
-        "inline-flex items-center gap-1 text-accent hover:text-accent-text-hover hover:underline",
+        "inline-flex items-center gap-1", // layout
+        "text-accent", // typography
+        "hover:text-accent-text-hover hover:underline", // interactive states
         className,
       )}
       {...props}
     >
       {children}
     </a>
+  );
+}
+
+const dataTooltipPanelClass = cn(
+  "w-max max-w-[min(280px,calc(100vw-2rem))] py-3 px-3", // size
+  "text-xs font-normal text-figma-text text-left", // typography
+  "bg-sem-surface", // bg
+  "shadow-sem-tooltip", // shadow
+  "border border-sem-border-faint", // border
+  "rounded-md", // corner radius
+  "transition duration-150", // transition / animation
+  "[html.figma-dark_&]:border-white/10 [html.figma-dark_&]:bg-[var(--bl-sem-tooltip-bg)] [html.figma-dark_&]:text-[var(--bl-sem-tooltip-text)]", // theme overrides
+);
+
+const TOOLTIP_HOVER_BRIDGE_MS = 80;
+
+export function DataTooltip({
+  content,
+  align = "center",
+  position = "top",
+  className = "",
+  tooltipId,
+  children,
+}: {
+  content: ReactNode;
+  align?: "left" | "right" | "center";
+  position?: "top" | "bottom";
+  className?: string;
+  tooltipId?: string;
+  children: ReactNode;
+}) {
+  const triggerRef = useRef<HTMLSpanElement>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
+  const closeTimerRef = useRef<number | undefined>(undefined);
+  const [open, setOpen] = useState(false);
+
+  const coords = useAnchoredOverlayPosition({
+    open,
+    triggerRef,
+    overlayRef: tooltipRef,
+    align,
+    placement: position,
+  });
+
+  const showTooltip = useCallback(() => {
+    window.clearTimeout(closeTimerRef.current);
+    setOpen(true);
+  }, []);
+
+  const hideTooltip = useCallback(() => {
+    closeTimerRef.current = window.setTimeout(() => setOpen(false), TOOLTIP_HOVER_BRIDGE_MS);
+  }, []);
+
+  return (
+    <>
+      <span
+        ref={triggerRef}
+        className={cn(
+          "relative inline-flex", // layout
+          className,
+        )}
+        onMouseEnter={showTooltip}
+        onMouseLeave={hideTooltip}
+        onFocus={showTooltip}
+        onBlur={(e) => {
+          if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+            hideTooltip();
+          }
+        }}
+        onMouseDown={(e) => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {children}
+      </span>
+      {open &&
+        createPortal(
+          <div
+            ref={tooltipRef}
+            id={tooltipId}
+            role="tooltip"
+            style={{
+              position: "fixed",
+              top: coords?.top ?? -9999,
+              left: coords?.left ?? -9999,
+              zIndex: 9999,
+              visibility: coords ? "visible" : "hidden",
+            }}
+            className={cn(
+              dataTooltipPanelClass,
+              coords ? "scale-100 opacity-100" : "scale-95 opacity-0", // state variants
+            )}
+            onMouseEnter={showTooltip}
+            onMouseLeave={hideTooltip}
+          >
+            {content}
+          </div>,
+          document.body,
+        )}
+    </>
   );
 }
 
@@ -253,30 +457,26 @@ export function InfoTooltip({
   content: ReactNode;
 }) {
   return (
-    <span className="relative inline-flex group">
+    <DataTooltip
+      align="center"
+      position="bottom"
+      tooltipId={id}
+      content={content}
+    >
       <button
         type="button"
-        className="rounded p-0.5 text-figma-icon-tertiary hover:text-figma-icon-secondary focus:outline-none focus-visible:ring-1 focus-visible:ring-accent-ring"
+        className={cn(
+          "p-0.5", // size
+          "text-figma-icon-tertiary", // typography
+          "rounded", // corner radius
+          "hover:text-figma-icon-secondary focus:outline-none focus-visible:ring-1 focus-visible:ring-accent-ring", // interactive states
+        )}
         aria-label={label}
         aria-describedby={id}
       >
         <Info size={13} strokeWidth={2} aria-hidden />
       </button>
-      <div
-        id={id}
-        role="tooltip"
-        className={cn(
-          "pointer-events-none absolute left-1/2 top-full z-50 mt-1 w-max max-w-[min(260px,calc(100vw-2.5rem))] -translate-x-1/2",
-          "scale-95 opacity-0 transition duration-150",
-          "rounded-md border border-sem-border-faint bg-sem-surface py-2 pl-2.5 pr-3.5 text-left text-xs font-normal text-figma-text shadow-sem-tooltip",
-          "[html.figma-dark_&]:border-white/10 [html.figma-dark_&]:bg-[var(--bl-sem-tooltip-bg)] [html.figma-dark_&]:text-[var(--bl-sem-tooltip-text)]",
-          "group-hover:pointer-events-auto group-hover:scale-100 group-hover:opacity-100",
-          "group-focus-within:pointer-events-auto group-focus-within:scale-100 group-focus-within:opacity-100",
-        )}
-      >
-        {content}
-      </div>
-    </span>
+    </DataTooltip>
   );
 }
 
@@ -293,13 +493,38 @@ export function IconButton({
       type="button"
       className={cn(
         variant === "danger" &&
-          "p-1.5 rounded-md text-figma-icon-secondary hover:bg-danger-bg hover:text-danger transition-colors shrink-0",
+          cn(
+            "shrink-0", // layout
+            "p-1.5", // size
+            "text-figma-icon-secondary", // typography
+            "rounded-md", // corner radius
+            "transition-colors", // transition / animation
+            "hover:bg-danger-bg hover:text-danger", // interactive states
+          ),
         variant === "toolbar" &&
-          "p-1 rounded-md text-figma-icon-tertiary hover:bg-figma-bg-secondary hover:text-figma-icon transition-colors disabled:opacity-40",
+          cn(
+            "p-1", // size
+            "text-figma-icon-tertiary", // typography
+            "rounded-md", // corner radius
+            "transition-colors", // transition / animation
+            "hover:bg-figma-bg-secondary hover:text-figma-icon disabled:opacity-40", // interactive states
+          ),
         variant === "nav" &&
-          "flex h-9 w-9 shrink-0 items-center justify-center text-figma-icon-secondary hover:bg-figma-bg-hover transition-colors",
+          cn(
+            "flex shrink-0 items-center justify-center", // layout
+            "h-9 w-9", // size
+            "text-figma-icon-secondary", // typography
+            "transition-colors", // transition / animation
+            "hover:bg-figma-bg-hover", // interactive states
+          ),
         variant === "default" &&
-          "p-1.5 rounded-md text-figma-icon-tertiary hover:bg-figma-bg-tertiary hover:text-figma-icon transition-colors",
+          cn(
+            "p-1.5", // size
+            "text-figma-icon-tertiary", // typography
+            "rounded-md", // corner radius
+            "transition-colors", // transition / animation
+            "hover:bg-figma-bg-tertiary hover:text-figma-icon", // interactive states
+          ),
         className,
       )}
       {...props}
@@ -327,12 +552,29 @@ export function FilterChip({
       type="button"
       onClick={onClick}
       className={cn(
-        "flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-md transition-all duration-150",
+        "flex items-center gap-1", // layout
+        "px-2.5 py-1", // size
+        "text-xs font-medium", // typography
+        "rounded-md", // corner radius
+        "transition-all duration-150", // transition / animation
         active
-          ? "bg-accent-bg text-white shadow-sem-sm"
+          ? cn( // state variants
+              "bg-accent-bg", // bg
+              "text-white", // typography
+              "shadow-sem-sm", // shadow
+            )
           : tone === "sort"
-            ? "bg-figma-bg-secondary text-figma-text-secondary hover:text-figma-text shadow-sem-none"
-            : "bg-figma-bg-secondary text-figma-text-secondary hover:text-figma-text",
+            ? cn(
+                "bg-figma-bg-secondary", // bg
+                "text-figma-text-secondary", // typography
+                "shadow-sem-none", // shadow
+                "hover:text-figma-text", // interactive states
+              )
+            : cn(
+                "bg-figma-bg-secondary", // bg
+                "text-figma-text-secondary", // typography
+                "hover:text-figma-text", // interactive states
+              ),
         className,
       )}
       {...props}
@@ -361,10 +603,21 @@ export function IconFilterChip({
       type="button"
       onClick={onClick}
       className={cn(
-        "flex items-center gap-0.5 p-1.5 rounded-md transition-colors",
+        "flex items-center gap-0.5", // layout
+        "p-1.5", // size
+        "rounded-md", // corner radius
+        "transition-colors", // transition / animation
         engaged
-          ? "bg-accent-bg text-white shadow-sem-sm [&_svg]:text-white"
-          : "text-figma-text-secondary hover:text-figma-text bg-figma-bg-secondary",
+          ? cn( // state variants
+              "bg-accent-bg", // bg
+              "text-white [&_svg]:text-white", // typography
+              "shadow-sem-sm", // shadow
+            )
+          : cn(
+              "text-figma-text-secondary", // typography
+              "bg-figma-bg-secondary", // bg
+              "hover:text-figma-text", // interactive states
+            ),
         loading && "cursor-wait",
         className,
       )}
@@ -390,8 +643,14 @@ export function SegmentedControl<T extends string | number>({
 }) {
   const wrapperClass =
     variant === "inline"
-      ? "inline-flex shrink-0 overflow-hidden rounded-md border border-figma-border"
-      : "flex items-center gap-1.5";
+      ? cn(
+          "inline-flex shrink-0 overflow-hidden", // layout
+          "border border-figma-border", // border
+          "rounded-md", // corner radius
+        )
+      : cn(
+          "flex items-center gap-1.5", // layout
+        );
 
   return (
     <div className={cn(wrapperClass, className)}>
@@ -405,10 +664,29 @@ export function SegmentedControl<T extends string | number>({
             onClick={() => onChange(opt.value)}
             icon={Icon ? <Icon size={12} /> : undefined}
             className={cn(
-              variant === "inline" && "py-1.5 tabular-nums rounded-none shadow-sem-none",
-              variant === "inline" && !isActive && "bg-transparent hover:bg-figma-bg-secondary",
-              variant === "spread" && "flex-1 justify-center gap-1.5 py-2.5",
-              variant === "inline" && index > 0 && "border-l border-figma-border",
+              variant === "inline" &&
+                cn( // state variants
+                  "py-1.5", // size
+                  "tabular-nums", // typography
+                  "shadow-sem-none", // shadow
+                  "rounded-none", // corner radius
+                ),
+              variant === "inline" &&
+                !isActive &&
+                cn(
+                  "bg-transparent", // bg
+                  "hover:bg-figma-bg-secondary", // interactive states
+                ),
+              variant === "spread" &&
+                cn(
+                  "flex-1 justify-center gap-1.5", // layout
+                  "py-2.5", // size
+                ),
+              variant === "inline" &&
+                index > 0 &&
+                cn(
+                  "border-l border-figma-border", // border
+                ),
             )}
           >
             {opt.label}
@@ -427,7 +705,12 @@ export function InputGroup({
   return (
     <div
       className={cn(
-        "flex h-8 items-stretch overflow-hidden rounded-md border border-figma-border focus-within:border-accent focus-within:ring-1 focus-within:ring-accent-ring transition-colors",
+        "flex items-stretch overflow-hidden", // layout
+        "h-8", // size
+        "border border-figma-border", // border
+        "rounded-md", // corner radius
+        "transition-colors", // transition / animation
+        "focus-within:border-accent focus-within:ring-1 focus-within:ring-accent-ring", // interactive states
         className,
       )}
       {...props}
@@ -445,7 +728,10 @@ export function InputDisplay({
   return (
     <div
       className={cn(
-        "flex h-full min-w-0 flex-1 items-center bg-figma-bg px-2.5 text-xs leading-none",
+        "flex h-full min-w-0 flex-1 items-center", // layout
+        "px-2.5", // size
+        "text-xs leading-none", // typography
+        "bg-figma-bg", // bg
         className,
       )}
       {...props}

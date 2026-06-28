@@ -27,8 +27,12 @@ export function TaskTypeBadge({
   return (
     <span
       className={cn(
-        "inline-block text-[9px] px-1.5 py-0.5 rounded-full font-medium",
-        TASK_TYPE_STYLES[type],
+        "inline-block", // layout
+        "px-1.5 py-0.5", // size
+        "text-[9px] font-medium", // typography
+        "rounded-full", // corner radius
+        TASK_TYPE_STYLES[type], // state variants
+        // className
         className,
       )}
     >

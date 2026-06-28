@@ -69,7 +69,7 @@ export function ViewSwitcherBar({
                 variant="nav"
                 onClick={onToggleBulk}
                 className={cn(
-                  bulkMode && "bg-accent-subtle text-accent",
+                  bulkMode && "bg-accent-subtle text-accent", // state variants
                   !bulkMode && "text-figma-icon-secondary",
                 )}
                 data-tooltip={bulkMode ? "Exit select mode" : "Select threads"}
@@ -82,7 +82,9 @@ export function ViewSwitcherBar({
                 variant="nav"
                 onClick={onRefresh}
                 disabled={isLoading}
-                className="disabled:opacity-40"
+                className={cn(
+                  "disabled:opacity-40", // interactive states
+                )}
                 data-tooltip="Refresh comments"
                 data-tooltip-align="right"
                 data-tooltip-pos="bottom"

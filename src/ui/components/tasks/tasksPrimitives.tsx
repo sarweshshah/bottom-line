@@ -20,7 +20,14 @@ export function TasksViewShell({
   children: ReactNode;
 }) {
   return (
-    <AppScreenBody className={cn("min-h-0", className)}>{children}</AppScreenBody>
+    <AppScreenBody
+      className={cn(
+        "min-h-0", // layout
+        className,
+      )}
+    >
+      {children}
+    </AppScreenBody>
   );
 }
 
@@ -38,7 +45,11 @@ export function TaskCheckbox({
       type="button"
       onClick={onToggle}
       className={cn(
-        "shrink-0 mt-0.5 text-figma-icon-secondary hover:text-figma-icon transition-colors",
+        "shrink-0", // layout
+        "mt-0.5", // size
+        "text-figma-icon-secondary", // typography
+        "transition-colors", // transition / animation
+        "hover:text-figma-icon", // interactive states
         className,
       )}
     >
@@ -61,10 +72,10 @@ export function TaskDescription({
   return (
     <p
       className={cn(
-        "text-[11px] leading-relaxed",
+        "text-[11px] leading-relaxed", // typography
         done
           ? "text-figma-text-disabled line-through"
-          : "text-figma-text",
+          : "text-figma-text", // state variants
       )}
     >
       {children}
@@ -95,8 +106,9 @@ export function TaskRow({
         {meta || trailing ? (
           <div
             className={cn(
-              "flex items-center mt-0.5",
-              trailing ? "justify-between gap-2" : "gap-2",
+              "flex items-center", // layout
+              "mt-0.5", // size
+              trailing ? "justify-between gap-2" : "gap-2", // state variants
             )}
           >
             {meta && (
@@ -125,7 +137,14 @@ export function TaskGroupHeader({
     <button
       type="button"
       onClick={onToggle}
-      className="w-full flex items-center px-4 py-2 bg-figma-bg-secondary border-b border-figma-border text-left hover:bg-figma-bg-tertiary transition-colors"
+      className={cn(
+        "w-full flex items-center text-left", // layout
+        "px-4 py-2", // size
+        "bg-figma-bg-secondary", // bg
+        "border-b border-figma-border", // border
+        "transition-colors", // transition / animation
+        "hover:bg-figma-bg-tertiary", // interactive states
+      )}
     >
       <div className="flex items-center gap-1.5 min-w-0">
         {collapsed ? (
@@ -195,7 +214,14 @@ export function TaskThreadLinkButton({ onClick }: { onClick: () => void }) {
 export function TasksEmptyState() {
   return (
     <HeroLayout className="flex-1">
-      <div className="w-10 h-10 rounded-full bg-accent-subtle flex items-center justify-center mb-3">
+      <div
+        className={cn(
+          "w-10 h-10 flex items-center justify-center", // layout
+          "mb-3", // size
+          "bg-accent-subtle", // bg
+          "rounded-full", // corner radius
+        )}
+      >
         <Sparkles size={20} className="text-accent" />
       </div>
       <p className="text-sm font-medium text-figma-text mb-1">No tasks yet</p>

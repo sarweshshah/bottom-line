@@ -7,7 +7,11 @@ import { SectionLabel } from "@ui/components/common/typography";
 /** Fixed 36px chrome bar — keeps header height stable across light/dark themes. */
 export function appHeaderBarClass(className?: string) {
   return cn(
-    "flex items-stretch h-9 shrink-0 border-b border-figma-border bg-figma-bg",
+    "flex items-stretch shrink-0", // layout
+    "h-9", // size
+    "bg-figma-bg", // bg
+    "border-b border-figma-border", // border
+    // className
     className,
   );
 }
@@ -38,7 +42,11 @@ export function ScreenHeader({
           {backIcon}
         </IconButton>
       )}
-      <div className="flex items-center flex-1 min-w-0 pl-2 pr-2.5">
+      <div
+        className={cn(
+          "flex items-center flex-1 min-w-0 pl-2 pr-2.5", // layout
+        )}
+      >
         <SectionLabel>{title}</SectionLabel>
       </div>
       {trailing}
@@ -66,10 +74,14 @@ export function TabSegment({
       type="button"
       onClick={onClick}
       className={cn(
-        "relative flex items-center gap-1.5 px-3 h-full font-mono text-[9px] uppercase tracking-widest leading-none shrink-0 transition-colors",
+        "relative flex items-center gap-1.5 shrink-0", // layout
+        "px-3 h-full", // size
+        "font-mono text-[9px] uppercase tracking-widest leading-none", // typography
+        "transition-colors", // transition / animation
         active
           ? "bg-accent-subtle text-accent font-semibold"
-          : "text-figma-text-secondary font-medium hover:bg-figma-bg-hover hover:text-figma-text",
+          : "text-figma-text-secondary font-medium hover:bg-figma-bg-hover hover:text-figma-text", // state variants
+        // className
         className,
       )}
     >
@@ -78,10 +90,12 @@ export function TabSegment({
       {count !== undefined && (
         <span
           className={cn(
-            "text-[10px] font-semibold px-1.5 py-0.5 rounded-full leading-none",
+            "px-1.5 py-0.5", // size
+            "text-[10px] font-semibold leading-none", // typography
+            "rounded-full", // corner radius
             active
               ? "bg-accent-bg text-white"
-              : "bg-figma-bg-tertiary text-figma-text-tertiary",
+              : "bg-figma-bg-tertiary text-figma-text-tertiary", // state variants
           )}
         >
           {count}
@@ -99,8 +113,22 @@ export function TabBar({
   children: ReactNode;
 }) {
   return (
-    <div className={appHeaderBarClass(cn("overflow-x-auto", className))}>
-      <div className="flex items-stretch self-stretch min-w-0">{children}</div>
+    <div
+      className={appHeaderBarClass(
+        cn(
+          "overflow-x-auto", // layout
+          // className
+          className,
+        ),
+      )}
+    >
+      <div
+        className={cn(
+          "flex items-stretch self-stretch min-w-0", // layout
+        )}
+      >
+        {children}
+      </div>
     </div>
   );
 }
@@ -114,17 +142,24 @@ export function StepIndicator({
   total: number;
 }) {
   return (
-    <div className="flex items-center justify-center gap-1.5">
+    <div
+      className={cn(
+        "flex items-center justify-center gap-1.5", // layout
+      )}
+    >
       {Array.from({ length: total }, (_, i) => (
         <div
           key={i}
           className={cn(
-            "h-1.5 shrink-0 rounded-full transition-all duration-300",
+            "shrink-0", // layout
+            "h-1.5", // size
+            "rounded-full", // corner radius
+            "transition-all duration-300", // transition / animation
             i === current
               ? "w-6 bg-accent-bg"
               : i < current
                 ? "w-1.5 bg-accent-bg"
-                : "w-1.5 bg-figma-border",
+                : "w-1.5 bg-figma-border", // state variants
           )}
         />
       ))}
@@ -140,11 +175,29 @@ export function OnboardingFooter({
   children: ReactNode;
 }) {
   return (
-    <div className="w-full shrink-0 border-t border-figma-border bg-figma-bg px-5 pb-4 pt-3">
+    <div
+      className={cn(
+        "w-full shrink-0 px-5 pb-4 pt-3", // layout
+        "bg-figma-bg", // bg
+        "border-t border-figma-border", // border
+      )}
+    >
       {stepIndicator ? (
-        <div className="mb-3 flex justify-center">{stepIndicator}</div>
+        <div
+          className={cn(
+            "mb-3 flex justify-center", // layout
+          )}
+        >
+          {stepIndicator}
+        </div>
       ) : null}
-      <div className="flex w-full items-stretch gap-2">{children}</div>
+      <div
+        className={cn(
+          "flex w-full items-stretch gap-2", // layout
+        )}
+      >
+        {children}
+      </div>
     </div>
   );
 }
@@ -161,17 +214,37 @@ export function CenteredAlertHeader({
   description: string;
 }) {
   return (
-    <div className="flex flex-col items-center text-center mb-6">
+    <div
+      className={cn(
+        "flex flex-col items-center text-center mb-6", // layout
+      )}
+    >
       <div
         className={cn(
-          "w-12 h-12 rounded-full border flex items-center justify-center mb-3",
+          "flex items-center justify-center mb-3", // layout
+          "w-12 h-12", // size
+          "border", // border
+          "rounded-full", // corner radius
+          // className
           iconClassName,
         )}
       >
         <Icon size={24} />
       </div>
-      <h1 className="text-lg font-semibold text-figma-text mb-1">{title}</h1>
-      <p className="text-sm text-figma-text-secondary max-w-[280px]">
+      <h1
+        className={cn(
+          "mb-1", // layout
+          "text-lg font-semibold text-figma-text", // typography
+        )}
+      >
+        {title}
+      </h1>
+      <p
+        className={cn(
+          "max-w-[280px]", // size
+          "text-sm text-figma-text-secondary", // typography
+        )}
+      >
         {description}
       </p>
     </div>
@@ -188,13 +261,36 @@ export function OnboardingStepHeader({
   subtitle: string;
 }) {
   return (
-    <div className="flex items-center gap-3 mb-5">
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent-subtle-opaque">
+    <div
+      className={cn(
+        "flex items-center gap-3 mb-5", // layout
+      )}
+    >
+      <div
+        className={cn(
+          "flex items-center justify-center shrink-0", // layout
+          "h-9 w-9", // size
+          "bg-accent-subtle-opaque", // bg
+          "rounded-full", // corner radius
+        )}
+      >
         <Icon size={18} className="text-accent" />
       </div>
       <div>
-        <h2 className="text-base font-semibold text-figma-text">{title}</h2>
-        <p className="text-xs text-figma-text-tertiary">{subtitle}</p>
+        <h2
+          className={cn(
+            "text-base font-semibold text-figma-text", // typography
+          )}
+        >
+          {title}
+        </h2>
+        <p
+          className={cn(
+            "text-xs text-figma-text-tertiary", // typography
+          )}
+        >
+          {subtitle}
+        </p>
       </div>
     </div>
   );
@@ -210,13 +306,37 @@ export function FeatureCard({
   description: string;
 }) {
   return (
-    <div className="flex items-start gap-3 text-left p-2.5 rounded-md bg-sem-surface shadow-sem-card">
-      <div className="mt-0.5 p-1.5 rounded-md bg-accent-subtle">
+    <div
+      className={cn(
+        "flex items-start gap-3 text-left p-2.5", // layout
+        "bg-sem-surface", // bg
+        "shadow-sem-card", // shadow
+        "rounded-md", // corner radius
+      )}
+    >
+      <div
+        className={cn(
+          "mt-0.5 p-1.5", // layout
+          "bg-accent-subtle", // bg
+          "rounded-md", // corner radius
+        )}
+      >
         <Icon size={14} className="text-accent" />
       </div>
       <div className="min-w-0">
-        <p className="text-xs font-medium text-figma-text">{title}</p>
-        <p className="text-[11px] text-figma-text-tertiary leading-snug mt-0.5">
+        <p
+          className={cn(
+            "text-xs font-medium text-figma-text", // typography
+          )}
+        >
+          {title}
+        </p>
+        <p
+          className={cn(
+            "mt-0.5", // layout
+            "text-[11px] text-figma-text-tertiary leading-snug", // typography
+          )}
+        >
           {description}
         </p>
       </div>
@@ -234,7 +354,9 @@ export function HeroLayout({
   return (
     <div
       className={cn(
-        "empty-state-enter flex flex-1 flex-col items-center justify-center px-6 py-8 text-center",
+        "flex flex-1 flex-col items-center justify-center px-6 py-8 text-center", // layout
+        "empty-state-enter", // transition / animation
+        // className
         className,
       )}
     >
@@ -253,7 +375,10 @@ export function FilterBarShell({
   return (
     <div
       className={cn(
-        "flex items-center gap-1.5 px-2.5 py-3 border-b border-figma-border bg-figma-bg",
+        "flex items-center gap-1.5 px-2.5 py-3", // layout
+        "bg-figma-bg", // bg
+        "border-b border-figma-border", // border
+        // className
         className,
       )}
     >
@@ -269,7 +394,11 @@ export function FilterBarSpacer() {
 export function ToolbarDivider() {
   return (
     <span
-      className="w-px self-stretch bg-figma-border shrink-0"
+      className={cn(
+        "self-stretch shrink-0", // layout
+        "w-px", // size
+        "bg-figma-border", // bg
+      )}
       aria-hidden
     />
   );
@@ -283,7 +412,15 @@ export function InlineButtonRow({
   children: ReactNode;
 }) {
   return (
-    <div className={cn("flex gap-2", className)}>{children}</div>
+    <div
+      className={cn(
+        "flex gap-2", // layout
+        // className
+        className,
+      )}
+    >
+      {children}
+    </div>
   );
 }
 
@@ -295,7 +432,13 @@ export function AuthScreenBody({
   children: ReactNode;
 }) {
   return (
-    <AppScreenBody className={cn("px-5 py-6", className)}>
+    <AppScreenBody
+      className={cn(
+        "px-5 py-6", // layout
+        // className
+        className,
+      )}
+    >
       {children}
     </AppScreenBody>
   );
@@ -309,7 +452,14 @@ export function AppScreenShell({
   children: ReactNode;
 }) {
   return (
-    <div className={cn("flex flex-col h-full bg-figma-bg", className)}>
+    <div
+      className={cn(
+        "flex flex-col h-full", // layout
+        "bg-figma-bg", // bg
+        // className
+        className,
+      )}
+    >
       {children}
     </div>
   );
@@ -323,7 +473,13 @@ export function AppScreenBody({
   children: ReactNode;
 }) {
   return (
-    <div className={cn("flex-1 min-h-0 overflow-y-auto", className)}>
+    <div
+      className={cn(
+        "flex-1 min-h-0 overflow-y-auto", // layout
+        // className
+        className,
+      )}
+    >
       {children}
     </div>
   );

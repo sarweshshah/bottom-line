@@ -22,10 +22,20 @@ import { cn } from "@ui/lib/cn";
 export function PatScopesList({ className = "" }: { className?: string }) {
   return (
     <BodyText className={className}>
-      <p className="leading-snug mb-0.5">
+      <p
+        className={cn(
+          "mb-0.5", // layout
+          "leading-snug", // typography
+        )}
+      >
         When generating a token, enable these permissions:
       </p>
-      <ul className="list-disc list-inside space-y-0 leading-snug">
+      <ul
+        className={cn(
+          "list-disc list-inside space-y-0", // layout
+          "leading-snug", // typography
+        )}
+      >
         {FIGMA_PAT_REQUIRED_SCOPES.map((scope) => (
           <li key={scope}>
             <code className="font-mono text-[10px]">{scope}</code>
@@ -45,7 +55,12 @@ export function ValidatingIndicator({
 }) {
   return (
     <div
-      className={`flex items-center gap-1.5 text-xs text-figma-text-secondary ${className}`}
+      className={cn(
+        "flex items-center gap-1.5", // layout
+        "text-xs text-figma-text-secondary", // typography
+        // className
+        className,
+      )}
     >
       <Loader2 size={12} className="animate-spin" />
       {label}
@@ -71,8 +86,11 @@ export function ExpandableDisclosure({
       type="button"
       onClick={onToggle}
       className={cn(
-        "flex items-center gap-1 text-[11px] text-accent hover:text-accent-text-hover hover:underline",
-        align === "center" && "w-full justify-center",
+        "flex items-center gap-1", // layout
+        "text-[11px] text-accent", // typography
+        "hover:text-accent-text-hover hover:underline", // interactive states
+        align === "center" && "w-full justify-center", // state variants
+        // className
         className,
       )}
     >
@@ -114,13 +132,18 @@ export function OAuthSignInButton({
       onClick={onClick}
       className={cn(
         onSurface &&
-          "!bg-figma-bg hover:!bg-figma-bg-secondary [html.figma-dark_&]:!bg-figma-bg-tertiary [html.figma-dark_&]:hover:!bg-figma-bg-tertiary",
-        stacked && "mt-3",
+          "!bg-figma-bg hover:!bg-figma-bg-secondary [html.figma-dark_&]:!bg-figma-bg-tertiary [html.figma-dark_&]:hover:!bg-figma-bg-tertiary", // theme overrides
+        stacked && "mt-3", // state variants
+        // className
         className,
       )}
     >
       {busy ? (
-        <span className="inline-flex items-center justify-center gap-2">
+        <span
+          className={cn(
+            "inline-flex items-center justify-center gap-2", // layout
+          )}
+        >
           <Loader2 size={controlSize === "md" ? 14 : 12} className="animate-spin" />
           {busyLabel}
         </span>
@@ -155,8 +178,18 @@ export function AccountCard({
   className?: string;
 }) {
   return (
-    <Panel className={cn(spaced && "mt-3", className)}>
-      <div className="flex items-center gap-3">
+    <Panel
+      className={cn(
+        spaced && "mt-3", // state variants
+        // className
+        className,
+      )}
+    >
+      <div
+        className={cn(
+          "flex items-center gap-3", // layout
+        )}
+      >
         <UserAvatar
           handle={handle}
           imgUrl={imgUrl}
@@ -164,8 +197,16 @@ export function AccountCard({
           size={avatarSize}
           className="border border-figma-border"
         />
-        <div className="flex-1 min-w-0">
-          <p className="text-[11px] font-medium text-figma-text truncate">
+        <div
+          className={cn(
+            "flex-1 min-w-0", // layout
+          )}
+        >
+          <p
+            className={cn(
+              "text-[11px] font-medium text-figma-text truncate", // typography
+            )}
+          >
             {handle}
           </p>
           <MetaText className="mt-0.5 truncate">{subtitle}</MetaText>
@@ -211,7 +252,12 @@ export function PatSectionHeading({
   tooltip?: ReactNode;
 }) {
   return (
-    <h3 className="text-xs font-medium text-figma-text flex items-center gap-1.5 flex-wrap">
+    <h3
+      className={cn(
+        "flex items-center gap-1.5 flex-wrap", // layout
+        "text-xs font-medium text-figma-text", // typography
+      )}
+    >
       {title}
       {tooltip}
     </h3>
@@ -228,7 +274,12 @@ export function PatTokenSection({
   return (
     <div
       className={cn(
-        "rounded-md border border-sem-border-faint bg-sem-surface shadow-sem-card p-3 space-y-3",
+        "p-3 space-y-3", // layout
+        "bg-sem-surface", // bg
+        "shadow-sem-card", // shadow
+        "border border-sem-border-faint", // border
+        "rounded-md", // corner radius
+        // className
         className,
       )}
     >
@@ -244,7 +295,17 @@ export function PatTokenFields({
   className?: string;
   children: ReactNode;
 }) {
-  return <div className={cn("pt-2", className)}>{children}</div>;
+  return (
+    <div
+      className={cn(
+        "pt-2", // layout
+        // className
+        className,
+      )}
+    >
+      {children}
+    </div>
+  );
 }
 
 export function PatTokenGuide({
@@ -259,7 +320,11 @@ export function PatTokenGuide({
   const helpLink = (
     <PatHelpLink
       href={FIGMA_PAT_HELP_URL}
-      className={cn("text-xs block", variant === "onboarding" && "mt-1")}
+      className={cn(
+        "block", // layout
+        "text-xs", // typography
+        variant === "onboarding" && "mt-1", // state variants
+      )}
       onClick={(e: MouseEvent<HTMLAnchorElement>) => {
         e.preventDefault();
         openExternalUrl(FIGMA_PAT_HELP_URL);
@@ -272,8 +337,21 @@ export function PatTokenGuide({
 
   if (variant === "onboarding") {
     return (
-      <div className={cn("text-xs text-figma-text-secondary space-y-1.5", className)}>
-        <p className="font-medium text-figma-text-secondary">How to get your token:</p>
+      <div
+        className={cn(
+          "space-y-1.5", // layout
+          "text-xs text-figma-text-secondary", // typography
+          // className
+          className,
+        )}
+      >
+        <p
+          className={cn(
+            "font-medium text-figma-text-secondary", // typography
+          )}
+        >
+          How to get your token:
+        </p>
         <p className="text-figma-text-tertiary">
           Follow Figma&apos;s guide to create a token named &quot;Bottom Line&quot;
           and enable these permissions:
@@ -287,7 +365,13 @@ export function PatTokenGuide({
   }
 
   return (
-    <div className={cn("space-y-3", className)}>
+    <div
+      className={cn(
+        "space-y-3", // layout
+        // className
+        className,
+      )}
+    >
       <PatScopesList />
       {helpLink}
       {children}
@@ -311,9 +395,11 @@ export function ConnectedStatus({
   return (
     <div
       className={cn(
-        "flex items-center gap-1.5 text-xs text-status-resolved",
-        align === "center" && "justify-center",
+        "flex items-center gap-1.5", // layout
+        "text-xs text-status-resolved", // typography
+        align === "center" && "justify-center", // state variants
         spaced && "mt-2",
+        // className
         className,
       )}
     >

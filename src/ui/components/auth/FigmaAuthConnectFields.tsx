@@ -91,13 +91,18 @@ export function FigmaAuthConnectFields({
   return (
     <div
       className={cn(
-        "flex flex-col gap-3",
-        variant === "reconnect" && "mb-4",
+        "flex flex-col gap-3", // layout
+        variant === "reconnect" && "mb-4", // state variants
+        // className
         className,
       )}
     >
       {(showOAuth || oauthAvailable) && (
-        <div className="flex flex-col gap-2">
+        <div
+          className={cn(
+            "flex flex-col gap-2", // layout
+          )}
+        >
           {showOAuth && (
             <>
               <OAuthSignInButton

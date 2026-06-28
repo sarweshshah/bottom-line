@@ -102,7 +102,14 @@ export function SettingsSelect({
   return (
     <select
       className={cn(
-        "appearance-none [field-sizing:content] min-w-0 bg-figma-bg text-figma-text border border-figma-border rounded-md pl-2.5 pr-6 py-1 text-xs tabular-nums focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent-ring",
+        "appearance-none min-w-0", // layout
+        "pl-2.5 pr-6 py-1", // size
+        "text-xs tabular-nums text-figma-text", // typography
+        "bg-figma-bg", // bg
+        "border border-figma-border", // border
+        "rounded-md", // corner radius
+        "focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent-ring", // interactive states
+        "[field-sizing:content]", // theme overrides
         className,
       )}
       {...props}
@@ -120,7 +127,10 @@ export function SettingsCard({
   return (
     <div
       className={cn(
-        "rounded-md border border-figma-border bg-accent-subtle p-3",
+        "border border-figma-border", // border
+        "rounded-md", // corner radius
+        "bg-accent-subtle", // bg
+        "p-3", // size
         className,
       )}
       {...props}
@@ -256,7 +266,12 @@ export function SettingsMaskedField({
   return (
     <SettingsInputGroup>
       <InputDisplay>
-        <code className="min-w-0 flex-1 truncate text-xs font-medium text-figma-text-secondary">
+        <code
+          className={cn(
+            "min-w-0 flex-1 truncate", // layout
+            "text-xs font-medium text-figma-text-secondary", // typography
+          )}
+        >
           {revealed ? displayValue : maskedValue}
         </code>
       </InputDisplay>
@@ -337,7 +352,12 @@ export function SettingsSection({
   className?: string;
 }) {
   return (
-    <section className={cn("border-b border-figma-border", className)}>
+    <section
+      className={cn(
+        "border-b border-figma-border", // border
+        className,
+      )}
+    >
       {children}
     </section>
   );
@@ -368,7 +388,10 @@ export function SettingsSectionHeader({
                 e.preventDefault();
                 openExternalUrl(helpUrl);
               }}
-              className="text-accent hover:underline hover:text-accent-text-hover"
+              className={cn(
+                "text-accent", // typography
+                "hover:underline hover:text-accent-text-hover", // interactive states
+              )}
             >
               Learn more
             </a>
@@ -393,8 +416,9 @@ export function SettingsSectionBody({
   return (
     <div
       className={cn(
-        "px-4 pb-5 space-y-3",
-        flushBottom && "!pb-0",
+        "space-y-3", // layout
+        "px-4 pb-5", // size
+        flushBottom && "!pb-0", // state variants
         nested && "pt-4",
         className,
       )}
@@ -423,7 +447,9 @@ export function SettingsCheckbox({
       checked={checked}
       onChange={(e) => onChange(e.target.checked)}
       className={cn(
-        "accent-accent w-3.5 h-3.5 cursor-pointer shrink-0",
+        "shrink-0 cursor-pointer", // layout
+        "w-3.5 h-3.5", // size
+        "accent-accent", // theme overrides
         className,
       )}
     />
@@ -442,7 +468,13 @@ export function SettingsKeyValueRow({
   return (
     <div className="flex items-center justify-between gap-3">
       <MetaText>{label}</MetaText>
-      <div className={cn("min-w-0 truncate max-w-[60%]", valueClassName)}>
+      <div
+        className={cn(
+          "min-w-0 truncate", // layout
+          "max-w-[60%]", // size
+          valueClassName,
+        )}
+      >
         {children}
       </div>
     </div>
@@ -511,14 +543,28 @@ export function SettingsToggleRow({
 
   if (trailing) {
     return (
-      <div className="flex items-center justify-between gap-3 px-4 py-4 hover:bg-figma-bg-hover transition-colors">
+      <div
+        className={cn(
+          "flex items-center justify-between gap-3", // layout
+          "px-4 py-4", // size
+          "transition-colors", // transition / animation
+          "hover:bg-figma-bg-hover", // interactive states
+        )}
+      >
         {inner}
       </div>
     );
   }
 
   return (
-    <label className="flex items-center justify-between gap-3 px-4 py-4 cursor-pointer hover:bg-figma-bg-hover transition-colors">
+    <label
+      className={cn(
+        "flex items-center justify-between gap-3", // layout
+        "px-4 py-4", // size
+        "cursor-pointer hover:bg-figma-bg-hover", // interactive states
+        "transition-colors", // transition / animation
+      )}
+    >
       {inner}
     </label>
   );
@@ -545,7 +591,14 @@ export function SettingsSubsectionHeader({
 
 export function SettingsOptionList({ children }: { children: ReactNode }) {
   return (
-    <div className="rounded-md border border-figma-border overflow-hidden bg-figma-bg-secondary divide-y divide-figma-border">
+    <div
+      className={cn(
+        "overflow-hidden divide-y divide-figma-border", // layout
+        "border border-figma-border", // border
+        "rounded-md", // corner radius
+        "bg-figma-bg-secondary", // bg
+      )}
+    >
       {children}
     </div>
   );
@@ -553,7 +606,14 @@ export function SettingsOptionList({ children }: { children: ReactNode }) {
 
 export function SettingsSelectedBadge() {
   return (
-    <span className="text-[9px] font-semibold px-2 py-1 rounded-full bg-accent-bg text-white tracking-wide leading-none">
+    <span
+      className={cn(
+        "px-2 py-1", // size
+        "text-[9px] font-semibold text-white tracking-wide leading-none", // typography
+        "bg-accent-bg", // bg
+        "rounded-full", // corner radius
+      )}
+    >
       Selected
     </span>
   );
@@ -578,27 +638,30 @@ export function SettingsOptionRow({
         type="button"
         onClick={onSelect}
         className={cn(
-          "group w-full flex items-center gap-2.5 px-3 py-2.5 text-left transition-colors",
-          selected ? "bg-accent-subtle" : "bg-figma-bg hover:bg-figma-bg-hover",
+          "group w-full flex items-center gap-2.5 text-left", // layout
+          "px-3 py-2.5", // size
+          "transition-colors", // transition / animation
+          selected ? "bg-accent-subtle" : "bg-figma-bg hover:bg-figma-bg-hover", // state variants
         )}
       >
         <div className="flex-1 min-w-0">
           <p
             className={cn(
-              "text-[11px]",
+              "text-[11px]", // typography
               selected
                 ? "font-semibold text-accent"
-                : "font-medium text-figma-text-secondary group-hover:text-figma-text",
+                : "font-medium text-figma-text-secondary group-hover:text-figma-text", // state variants
             )}
           >
             {label}
           </p>
           <p
             className={cn(
-              "text-[10px] mt-0.5 leading-snug",
+              "mt-0.5", // size
+              "text-[10px] leading-snug", // typography
               selected
                 ? "text-tag-approval-text"
-                : "text-figma-text-tertiary group-hover:text-figma-text-secondary",
+                : "text-figma-text-tertiary group-hover:text-figma-text-secondary", // state variants
             )}
           >
             {description}
@@ -609,10 +672,10 @@ export function SettingsOptionRow({
           <ChevronDown
             size={12}
             className={cn(
-              "transition-[transform,color] duration-200",
+              "transition-[transform,color] duration-200", // transition / animation
               selected
                 ? "rotate-180 text-accent"
-                : "text-figma-icon-tertiary group-hover:text-figma-icon-secondary",
+                : "text-figma-icon-tertiary group-hover:text-figma-icon-secondary", // state variants
             )}
           />
         </div>
@@ -621,12 +684,20 @@ export function SettingsOptionRow({
       {children && (
         <div
           className={cn(
-            "grid transition-[grid-template-rows] duration-200 ease-out",
-            selected ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
+            "grid", // layout
+            "transition-[grid-template-rows] duration-200 ease-out", // transition / animation
+            selected ? "grid-rows-[1fr]" : "grid-rows-[0fr]", // state variants
           )}
         >
           <div className="overflow-hidden">
-            <div className="px-3 pt-3 pb-4 border-t border-figma-border bg-figma-bg space-y-3">
+            <div
+              className={cn(
+                "space-y-3", // layout
+                "px-3 pt-3 pb-4", // size
+                "bg-figma-bg", // bg
+                "border-t border-figma-border", // border
+              )}
+            >
               {children}
             </div>
           </div>
@@ -664,7 +735,11 @@ export function SettingsInlineLink({
     <a
       href={href}
       onClick={onClick}
-      className="inline-flex items-center gap-1 text-[10px] text-accent hover:text-accent-text-hover hover:underline shrink-0"
+      className={cn(
+        "inline-flex items-center gap-1 shrink-0", // layout
+        "text-[10px] text-accent", // typography
+        "hover:text-accent-text-hover hover:underline", // interactive states
+      )}
     >
       {children}
     </a>
@@ -705,9 +780,11 @@ export function SettingsControlRow({
   );
 
   const className = cn(
-    "setting-reveal flex gap-3",
-    align === "center" ? "items-center justify-between gap-4" : "items-start justify-between",
-    as === "label" && "cursor-pointer",
+    "setting-reveal flex gap-3", // layout
+    align === "center"
+      ? "items-center justify-between gap-4"
+      : "items-start justify-between",
+    as === "label" && "cursor-pointer", // interactive states
   );
 
   if (as === "label") {
@@ -733,7 +810,10 @@ export function SettingsSelectField({
       </SettingsSelect>
       <ChevronDown
         size={12}
-        className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-figma-icon-secondary"
+        className={cn(
+          "pointer-events-none absolute right-2 top-1/2 -translate-y-1/2", // layout
+          "text-figma-icon-secondary", // typography
+        )}
       />
     </div>
   );

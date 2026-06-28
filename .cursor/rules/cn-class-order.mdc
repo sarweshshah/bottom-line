@@ -1,0 +1,46 @@
+---
+description: Split Tailwind cn() arguments by style category with comments
+globs: src/ui/**/*.tsx
+alwaysApply: false
+---
+
+# cn() class order
+
+When building `className` with `cn()`, split Tailwind classes into separate arguments grouped by category. Add a `// category` comment **inline at the end of each argument line**.
+
+## Order
+
+1. **layout** — flex/grid, alignment, gap, flex sizing, overflow, positioning (`relative`, `absolute`, `fixed`, `z-*`, transforms)
+2. **size** — width, height, padding, margin (box dimensions only)
+3. **typography** — font, text color, line height, truncation, text alignment (`text-left`, etc.)
+4. **bg** — background fills
+5. **shadow** — elevation tokens (`shadow-sem-*`)
+6. **border** — borders, dividers
+7. **corner radius** — `rounded-*`
+8. **transition / animation** — `transition`, `duration-*`, `scale-*`, `opacity-*`, `animate-*`
+9. **theme overrides** — dark-mode / `[html.figma-dark_&]:` variants
+10. **interactive states** — `hover:`, `focus:`, `focus-visible:`, `disabled:`, `group-hover:`
+11. **state variants** — conditional classes (`active &&`, ternaries)
+12. **className** — caller override (always last)
+
+Skip categories that have no classes. Do not combine unrelated categories in one string.
+
+## Example
+
+```tsx
+className={cn(
+  "flex items-center gap-1 shrink-0", // layout
+  "px-2.5 py-1", // size
+  "text-xs font-medium text-figma-text text-left", // typography
+  "bg-figma-bg-secondary", // bg
+  "shadow-sem-sm", // shadow
+  "border border-figma-border", // border
+  "rounded-md", // corner radius
+  "transition-colors duration-150", // transition / animation
+  "hover:bg-figma-bg-hover disabled:opacity-40", // interactive states
+  active && "bg-accent-subtle text-accent", // state variants
+  className,
+)}
+```
+
+Convert template-string class builders (e.g. `buttonClass`) to `cn()` when touched.

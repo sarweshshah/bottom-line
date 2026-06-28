@@ -27,7 +27,7 @@ import {
   DropdownMenuItem,
 } from "@ui/components/common/overlays";
 import { FieldLabel } from "@ui/components/common/typography";
-import { Button, IconButton, Input } from "@ui/components/common/uiPrimitives";
+import { Button, DataTooltip, IconButton, Input } from "@ui/components/common/uiPrimitives";
 import { renderMentions } from "@ui/lib/renderMentions";
 import { timeAgo } from "@ui/lib/timeAgo";
 import { cn } from "@ui/lib/cn";
@@ -66,11 +66,19 @@ export function CollapsibleSectionHeader({
   trailing?: ReactNode;
 }) {
   return (
-    <div className={cn("flex items-center justify-between", className)}>
+    <div
+      className={cn(
+        "flex items-center justify-between", // layout
+        className,
+      )}
+    >
       <button
         type="button"
         onClick={onToggle}
-        className="flex items-center gap-1.5 text-xs font-medium text-figma-text"
+        className={cn(
+          "flex items-center gap-1.5", // layout
+          "text-xs font-medium text-figma-text", // typography
+        )}
       >
         <ExpandChevron expanded={expanded} />
         {children}
@@ -90,7 +98,10 @@ export function DashboardPanel({
   return (
     <div
       className={cn(
-        "shrink-0 px-4 py-3 border-b border-figma-border bg-figma-bg-secondary",
+        "shrink-0", // layout
+        "px-4 py-3", // size
+        "bg-figma-bg-secondary", // bg
+        "border-b border-figma-border", // border
         className,
       )}
     >
@@ -107,7 +118,13 @@ export function DashboardSection({
   children: ReactNode;
 }) {
   return (
-    <div className={cn("px-4 py-3 border-b border-figma-border", className)}>
+    <div
+      className={cn(
+        "px-4 py-3", // size
+        "border-b border-figma-border", // border
+        className,
+      )}
+    >
       {children}
     </div>
   );
@@ -130,7 +147,14 @@ export function ThreadDetailHeader({
       title={title}
       trailing={
         trailing ? (
-          <div className="flex items-center pr-2.5 shrink-0">{trailing}</div>
+          <div
+            className={cn(
+              "flex items-center shrink-0", // layout
+              "pr-2.5", // size
+            )}
+          >
+            {trailing}
+          </div>
         ) : undefined
       }
     />
@@ -147,8 +171,20 @@ export function ThreadDetailMetaBar({
   children: ReactNode;
 }) {
   return (
-    <div className="sticky top-0 z-20 px-4 py-3 border-b border-figma-border bg-accent-subtle-opaque">
-      <div className="flex items-center gap-2 mb-2">
+    <div
+      className={cn(
+        "sticky top-0 z-20", // layout
+        "px-4 py-3", // size
+        "bg-accent-subtle-opaque", // bg
+        "border-b border-figma-border", // border
+      )}
+    >
+      <div
+        className={cn(
+          "flex items-center gap-2", // layout
+          "mb-2", // size
+        )}
+      >
         <span className="text-xs text-figma-text-secondary">{dateLabel}</span>
         <span className="text-xs text-figma-text-disabled">&middot;</span>
         <span className="text-xs text-figma-text-secondary">{authorLabel}</span>
@@ -160,7 +196,14 @@ export function ThreadDetailMetaBar({
 
 export function ThreadDetailFooter({ children }: { children: ReactNode }) {
   return (
-    <div className="px-4 py-3 border-t border-figma-border">{children}</div>
+    <div
+      className={cn(
+        "px-4 py-3", // size
+        "border-t border-figma-border", // border
+      )}
+    >
+      {children}
+    </div>
   );
 }
 
@@ -207,15 +250,28 @@ export function CommentBubble({
   createdAt: string;
 }) {
   return (
-    <div className="relative z-10 flex gap-2">
+    <div
+      className={cn(
+        "relative z-10 flex gap-2", // layout
+      )}
+    >
       <UserAvatar
         handle={author.handle}
         imgUrl={author.img_url}
         size={20}
-        className="relative z-10 ring-1 ring-figma-border bg-figma-bg"
+        className={cn(
+          "relative z-10", // layout
+          "bg-figma-bg", // bg
+          "ring-1 ring-figma-border", // border
+        )}
       />
       <div className="flex-1 min-w-0">
-        <div className="flex items-baseline gap-2 mb-0.5">
+        <div
+          className={cn(
+            "flex items-baseline gap-2", // layout
+            "mb-0.5", // size
+          )}
+        >
           <span className="text-sm font-medium text-figma-text">
             {author.handle}
           </span>
@@ -250,7 +306,10 @@ export function WorkflowStateSelector({
         <button
           type="button"
           onClick={() => setOpen(!open)}
-          className="flex items-center gap-1 cursor-pointer"
+          className={cn(
+            "flex items-center gap-1", // layout
+            "cursor-pointer", // interactive states
+          )}
         >
           <StatusBadge status={value} />
           <ChevronDown size={10} className="text-figma-text-tertiary" />
@@ -296,8 +355,8 @@ export function WorkflowStateDropdown({
       onClose={() => setOpen(false)}
       align={align}
       panelClassName={cn(
-        "z-30",
-        placement === "above" && "top-auto bottom-full mb-1 mt-0",
+        "z-30", // layout
+        placement === "above" && "top-auto bottom-full mb-1 mt-0", // state variants
       )}
       trigger={
         <span onClick={() => setOpen(!open)} className="inline-flex">
@@ -328,10 +387,14 @@ export function BulkSelectCheckbox({ selected }: { selected: boolean }) {
   return (
     <span
       className={cn(
-        "w-3.5 h-3.5 rounded border flex items-center justify-center transition-colors",
+        "flex items-center justify-center", // layout
+        "w-3.5 h-3.5", // size
+        "border", // border
+        "rounded", // corner radius
+        "transition-colors", // transition / animation
         selected
           ? "bg-accent-bg border-accent-bg"
-          : "border-figma-border-strong",
+          : "border-figma-border-strong", // state variants
       )}
     >
       {selected && (
@@ -363,7 +426,16 @@ export function SummarizeCtaButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="summarize-cta-button flex items-center gap-2 px-3 py-2 rounded-md text-xs font-medium bg-ai-shimmer-cta text-figma-text shadow-sem-none hover:opacity-90 active:opacity-85 transition-opacity duration-150 disabled:opacity-40"
+      className={cn(
+        "summarize-cta-button flex items-center gap-2", // layout
+        "px-3 py-2", // size
+        "text-xs font-medium text-figma-text", // typography
+        "bg-ai-shimmer-cta", // bg
+        "shadow-sem-none", // shadow
+        "rounded-md", // corner radius
+        "transition-opacity duration-150", // transition / animation
+        "hover:opacity-90 active:opacity-85 disabled:opacity-40", // interactive states
+      )}
     >
       {children}
     </button>
@@ -373,17 +445,36 @@ export function SummarizeCtaButton({
 export function FileNameBar({ fileName }: { fileName: string }) {
   return (
     <div
-      className="shrink-0 flex h-9 items-center gap-2 min-w-0 px-4 border-b border-figma-border bg-accent-subtle"
+      className={cn(
+        "flex h-9 items-center gap-2 min-w-0 shrink-0", // layout
+        "px-4", // size
+        "bg-accent-subtle", // bg
+        "border-b border-figma-border", // border
+      )}
       title={fileName}
     >
-      <span className="shrink-0 font-mono text-[9px] font-bold tracking-widest text-accent uppercase leading-snug">
+      <span
+        className={cn(
+          "shrink-0", // layout
+          "font-mono text-[9px] font-bold tracking-widest text-accent uppercase leading-snug", // typography
+        )}
+      >
         File
       </span>
       <span
-        className="shrink-0 w-px h-3.5 bg-figma-border self-center"
+        className={cn(
+          "shrink-0 self-center", // layout
+          "w-px h-3.5", // size
+          "bg-figma-border", // bg
+        )}
         aria-hidden
       />
-      <span className="text-[11px] text-figma-text-primary truncate min-w-0 leading-snug">
+      <span
+        className={cn(
+          "min-w-0", // layout
+          "text-[11px] text-figma-text-primary truncate leading-snug", // typography
+        )}
+      >
         {fileName}
       </span>
     </div>
@@ -404,10 +495,13 @@ export function ThreadListItemShell({
   children: ReactNode;
 }) {
   const shellClass = cn(
-    "group relative w-full text-left px-4 py-3 border-b border-figma-border transition-colors duration-150",
+    "group relative w-full text-left", // layout
+    "px-4 py-3", // size
+    "border-b border-figma-border", // border
+    "transition-colors duration-150", // transition / animation
     interactive &&
-      "cursor-pointer outline-none hover:bg-figma-bg-hover focus-visible:bg-figma-bg-hover focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent-ring",
-    selected && "bg-accent-subtle",
+      "cursor-pointer outline-none hover:bg-figma-bg-hover focus-visible:bg-figma-bg-hover focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent-ring", // interactive states
+    selected && "bg-accent-subtle", // state variants
     className,
   );
 
@@ -417,8 +511,11 @@ export function ThreadListItemShell({
         <span
           aria-hidden="true"
           className={cn(
-            "pointer-events-none absolute left-0 top-0 -bottom-px w-[3px] origin-top bg-accent-bg transition-transform duration-200 ease-out",
-            selected ? "scale-y-100" : "scale-y-0 group-hover:scale-y-100",
+            "pointer-events-none absolute left-0 top-0 -bottom-px origin-top", // layout
+            "w-[3px]", // size
+            "bg-accent-bg", // bg
+            "transition-transform duration-200 ease-out", // transition / animation
+            selected ? "scale-y-100" : "scale-y-0 group-hover:scale-y-100", // state variants
           )}
         />
       )}
@@ -488,7 +585,14 @@ export function ThreadCardMetaRow({
 
 export function AddressedBadge() {
   return (
-    <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-accent-subtle text-accent tracking-wide">
+    <span
+      className={cn(
+        "px-1.5 py-0.5", // size
+        "text-[9px] font-semibold text-accent tracking-wide", // typography
+        "bg-accent-subtle", // bg
+        "rounded-full", // corner radius
+      )}
+    >
       FOR ME
     </span>
   );
@@ -540,7 +644,14 @@ export function ThreadNavigateAction({
         }
       }}
       aria-disabled={navigating}
-      className="p-1 rounded-md text-figma-icon-tertiary hover:text-accent hover:bg-accent-subtle aria-disabled:opacity-40 transition-colors cursor-pointer"
+      className={cn(
+        "cursor-pointer", // layout
+        "p-1", // size
+        "text-figma-icon-tertiary", // typography
+        "rounded-md", // corner radius
+        "transition-colors", // transition / animation
+        "hover:text-accent hover:bg-accent-subtle aria-disabled:opacity-40", // interactive states
+      )}
       data-tooltip="Navigate to comment"
       data-tooltip-align="right"
     >
@@ -573,7 +684,12 @@ export function ThreadCardSkeletonBody() {
           {Array.from({ length: 3 }, (_, i) => (
             <span
               key={i}
-              className="w-6 h-6 rounded-full bg-figma-bg-tertiary ring-2 ring-figma-bg"
+              className={cn(
+                "w-6 h-6", // size
+                "bg-figma-bg-tertiary", // bg
+                "ring-2 ring-figma-bg", // border
+                "rounded-full", // corner radius
+              )}
             />
           ))}
         </div>
@@ -601,10 +717,11 @@ export function ActivityFilterChip({
       type="button"
       onClick={onClick}
       className={cn(
-        "tabular-nums transition-colors",
+        "tabular-nums", // typography
+        "transition-colors", // transition / animation
         active
           ? "font-semibold text-accent"
-          : "font-medium text-figma-text-secondary hover:text-figma-text",
+          : "font-medium text-figma-text-secondary hover:text-figma-text", // state variants
       )}
       aria-pressed={active}
       data-tooltip={tooltip}
@@ -652,8 +769,10 @@ export function BulkSummaryProgressBar() {
       <div className="flex items-center gap-2.5">
         <span
           className={cn(
-            "shrink-0 flex items-center justify-center w-7 h-7 rounded-md",
-            showErrorOnly ? "bg-danger-bg" : "bg-accent-subtle",
+            "flex items-center justify-center shrink-0", // layout
+            "w-7 h-7", // size
+            "rounded-md", // corner radius
+            showErrorOnly ? "bg-danger-bg" : "bg-accent-subtle", // state variants
           )}
         >
           {showErrorOnly ? (
@@ -683,9 +802,21 @@ export function BulkSummaryProgressBar() {
                   {done}/{total}
                 </span>
               </div>
-              <div className="mt-1.5 h-1.5 rounded-full bg-figma-bg-tertiary overflow-hidden">
+              <div
+                className={cn(
+                  "overflow-hidden", // layout
+                  "mt-1.5 h-1.5", // size
+                  "bg-figma-bg-tertiary", // bg
+                  "rounded-full", // corner radius
+                )}
+              >
                 <div
-                  className="h-full rounded-full bg-accent-bg transition-[width] duration-300 ease-out"
+                  className={cn(
+                    "h-full", // size
+                    "bg-accent-bg", // bg
+                    "rounded-full", // corner radius
+                    "transition-[width] duration-300 ease-out", // transition / animation
+                  )}
                   style={{ width: `${pct}%` }}
                 />
               </div>
@@ -722,7 +853,14 @@ export function BulkActionBar({
   onExit: () => void;
 }) {
   return (
-    <div className="pl-4 pr-2 py-2.5 border-t border-figma-border bg-accent-subtle flex items-center justify-between">
+    <div
+      className={cn(
+        "flex items-center justify-between", // layout
+        "pl-4 pr-2 py-2.5", // size
+        "bg-accent-subtle", // bg
+        "border-t border-figma-border", // border
+      )}
+    >
       <span className="text-xs font-medium text-accent">
         {selectedCount} selected
       </span>
@@ -770,7 +908,13 @@ export function SummaryLoadingShimmer() {
 
 export function SummaryRegeneratingIndicator() {
   return (
-    <div className="flex items-center gap-1.5 text-[10px] text-figma-text-secondary mb-2">
+    <div
+      className={cn(
+        "flex items-center gap-1.5", // layout
+        "mb-2", // size
+        "text-[10px] text-figma-text-secondary", // typography
+      )}
+    >
       <Loader2 size={11} className="animate-spin shrink-0" />
       Regenerating summary…
     </div>
@@ -785,14 +929,28 @@ export function SummaryErrorPanel({
   onRetry: () => void;
 }) {
   return (
-    <div className="flex items-start gap-2 p-2.5 rounded-md bg-danger-bg border border-danger-border">
+    <div
+      className={cn(
+        "flex items-start gap-2", // layout
+        "p-2.5", // size
+        "bg-danger-bg", // bg
+        "border border-danger-border", // border
+        "rounded-md", // corner radius
+      )}
+    >
       <AlertCircle size={14} className="text-danger shrink-0 mt-0.5" />
       <div className="flex-1 min-w-0 flex flex-col">
         <p className="text-xs text-danger leading-relaxed">{error}</p>
         <button
           type="button"
           onClick={onRetry}
-          className="mt-1 text-xs font-medium text-danger underline hover:opacity-80 transition-colors self-start"
+          className={cn(
+            "self-start", // layout
+            "mt-1", // size
+            "text-xs font-medium text-danger underline", // typography
+            "transition-colors", // transition / animation
+            "hover:opacity-80", // interactive states
+          )}
         >
           Retry
         </button>
@@ -806,7 +964,12 @@ export function SummaryOutdatedPrompt({ onRegenerate }: { onRegenerate: () => vo
     <button
       type="button"
       onClick={onRegenerate}
-      className="flex items-center gap-1.5 text-xs text-warning mb-2 hover:opacity-80"
+      className={cn(
+        "flex items-center gap-1.5", // layout
+        "mb-2", // size
+        "text-xs text-warning", // typography
+        "hover:opacity-80", // interactive states
+      )}
     >
       <RefreshCw size={11} className="text-warning" />
       Summary outdated — regenerate?
@@ -839,6 +1002,36 @@ function parseSummaryBullets(summary: string): string[] | null {
   if (lines.length === 0) return null;
   if (!lines.every((line) => /^[-*•]\s+/.test(line))) return null;
   return lines.map((line) => line.replace(/^[-*•]\s+/, "").trim());
+}
+
+export function SummaryRichContent({ result }: { result: SummaryResult }) {
+  const bullets = parseSummaryBullets(result.summary);
+  const segments = bullets ?? splitSummarySegments(result.summary);
+
+  return (
+    <>
+      <p className="text-[11px] font-semibold text-figma-text leading-snug mb-1">
+        {result.topicHeader}
+      </p>
+      {bullets ? (
+        <ul className="list-disc pl-4 space-y-0.5 text-[11px] text-figma-text leading-relaxed">
+          {bullets.map((bullet, index) => (
+            <li key={`${index}-${bullet}`}>{bullet}</li>
+          ))}
+        </ul>
+      ) : segments.length === 1 ? (
+        <p className="text-[11px] text-figma-text leading-relaxed whitespace-pre-line">
+          {result.summary}
+        </p>
+      ) : (
+        <div className="text-[11px] text-figma-text leading-relaxed space-y-0.5">
+          {segments.map((segment, index) => (
+            <p key={`${index}-${segment}`}>{segment}</p>
+          ))}
+        </div>
+      )}
+    </>
+  );
 }
 
 export function AnimatedSummaryContent({ result }: { result: SummaryResult }) {
@@ -915,7 +1108,11 @@ export function AnimatedSummaryContent({ result }: { result: SummaryResult }) {
 export function SummaryTooShortNotice({ message }: { message: string }) {
   return (
     <DashboardSection className="!py-3">
-      <div className="flex items-center gap-1.5 text-xs text-figma-text-secondary">
+    <div
+      className={cn(
+        "flex items-center gap-1.5 text-xs text-figma-text-secondary", // layout
+      )}
+    >
         <Sparkles size={12} />
         {message}
       </div>
@@ -925,7 +1122,12 @@ export function SummaryTooShortNotice({ message }: { message: string }) {
 
 export function ThreadReplyCount({ count }: { count: number }) {
   return (
-    <span className="flex items-center gap-1 text-[11px] text-figma-text-tertiary">
+    <span
+      className={cn(
+        "flex items-center gap-1", // layout
+        "text-[11px] text-figma-text-tertiary", // typography
+      )}
+    >
       <MessageCircle size={10} />
       {count}
     </span>
@@ -949,7 +1151,12 @@ export function ActivityPanelHeader({
 }) {
   return (
     <>
-      <span className="flex items-center gap-1.5 text-xs font-semibold text-figma-text truncate">
+      <span
+        className={cn(
+          "flex items-center gap-1.5 truncate", // layout
+          "text-xs font-semibold text-figma-text", // typography
+        )}
+      >
         <Icon size={12} className="shrink-0 text-figma-icon-secondary" />
         {title}
       </span>
@@ -960,7 +1167,12 @@ export function ActivityPanelHeader({
 
 export function ActivityFilterList({ children }: { children: ReactNode }) {
   return (
-    <div className="mt-1 flex flex-wrap items-center gap-1 text-[10px] leading-none">
+    <div
+      className={cn(
+        "mt-1 flex flex-wrap items-center gap-1", // layout
+        "text-[10px] leading-none", // typography
+      )}
+    >
       {children}
     </div>
   );
@@ -1064,7 +1276,10 @@ export function DashboardToolbarShell({
   return (
     <div
       className={appHeaderBarClass(
-        cn("justify-between", hasFileName && "border-b-0"),
+        cn(
+          "justify-between", // layout
+          hasFileName && "border-b-0", // state variants
+        ),
       )}
     >
       <div className="flex items-stretch self-stretch">{tabs}</div>
@@ -1080,7 +1295,10 @@ export const ThreadListScrollBody = forwardRef<
   return (
     <div
       ref={ref}
-      className={cn("thread-list flex-1 overflow-y-auto min-h-0", className)}
+      className={cn(
+        "thread-list flex-1 overflow-y-auto min-h-0", // layout
+        className,
+      )}
     >
       {children}
     </div>
@@ -1164,7 +1382,16 @@ export function CollapsibleSectionContent({
   className?: string;
   children: ReactNode;
 }) {
-  return <div className={cn("mt-2", className)}>{children}</div>;
+  return (
+    <div
+      className={cn(
+        "mt-2", // size
+        className,
+      )}
+    >
+      {children}
+    </div>
+  );
 }
 
 export function SummarizeCtaLabel({
@@ -1247,15 +1474,21 @@ export function FilterCustomDateRangePanel({
   );
 }
 
-export function ThreadCardSummaryIndicator() {
+export function ThreadCardSummaryIndicator({
+  result,
+}: {
+  result: SummaryResult;
+}) {
   return (
-    <span
-      className="flex items-center text-figma-icon-tertiary"
-      data-tooltip="Summary available"
-      data-tooltip-align="right"
+    <DataTooltip
+      align="right"
+      position="top"
+      content={<SummaryRichContent result={result} />}
     >
-      <Sparkles size={11} />
-    </span>
+      <span className="flex items-center text-figma-icon-tertiary">
+        <Sparkles size={11} />
+      </span>
+    </DataTooltip>
   );
 }
 
@@ -1266,7 +1499,16 @@ export function CommentThreadContainer({
   className?: string;
   children: ReactNode;
 }) {
-  return <div className={cn("relative", className)}>{children}</div>;
+  return (
+    <div
+      className={cn(
+        "relative", // layout
+        className,
+      )}
+    >
+      {children}
+    </div>
+  );
 }
 
 export function CommentThreadRoot({
@@ -1286,7 +1528,16 @@ export function CommentReplyList({
   className?: string;
   children: ReactNode;
 }) {
-  return <div className={cn("mb-3", className)}>{children}</div>;
+  return (
+    <div
+      className={cn(
+        "mb-3", // size
+        className,
+      )}
+    >
+      {children}
+    </div>
+  );
 }
 
 export function TaskListStack({
@@ -1296,5 +1547,14 @@ export function TaskListStack({
   className?: string;
   children: ReactNode;
 }) {
-  return <div className={cn("space-y-2", className)}>{children}</div>;
+  return (
+    <div
+      className={cn(
+        "space-y-2", // layout
+        className,
+      )}
+    >
+      {children}
+    </div>
+  );
 }

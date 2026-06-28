@@ -17,7 +17,13 @@ const PAT_TRANSPARENCY_ITEMS = [
 
 export function PatTransparencyList({ className = "" }: { className?: string }) {
   return (
-    <ul className={cn("space-y-0.5 text-[10px] leading-tight text-inherit", className)}>
+    <ul
+      className={cn(
+        "space-y-0.5", // layout
+        "text-[10px] leading-tight text-inherit", // typography
+        className,
+      )}
+    >
       {PAT_TRANSPARENCY_ITEMS.map(({ allow, label }) => (
         <li key={label} className="flex items-start gap-1.5">
           {allow ? (
@@ -50,7 +56,15 @@ export function SetupReadyBanner({
   description?: string;
 }) {
   return (
-    <div className="mt-6 p-4 rounded-md onboarding-hero-gradient border border-sem-border-faint text-center">
+    <div
+      className={cn(
+        "mt-6 p-4", // size
+        "text-center", // typography
+        "onboarding-hero-gradient", // bg
+        "border border-sem-border-faint", // border
+        "rounded-md", // corner radius
+      )}
+    >
       <CheckCircle2 size={28} className="text-accent mx-auto mb-2" />
       <p className="text-sm font-medium text-figma-text mb-1">{title}</p>
       <p className="text-xs text-figma-text-tertiary">{description}</p>
@@ -76,7 +90,7 @@ export function OnboardingBodyText({
   return (
     <p
       className={cn(
-        "text-xs text-figma-text-secondary leading-relaxed",
+        "text-xs text-figma-text-secondary leading-relaxed", // typography
         className,
       )}
     >
@@ -99,7 +113,13 @@ export function WelcomeHero({
   className?: string;
 }) {
   return (
-    <div className={cn("flex flex-col items-center text-center", className)}>
+    <div
+      className={cn(
+        "flex flex-col items-center", // layout
+        "text-center", // typography
+        className,
+      )}
+    >
       <div className="empty-state-halo mb-6 rounded-2xl overflow-hidden">
         <img
           src={logoSrc}
@@ -165,7 +185,10 @@ export function AboutLinkRow({
           )}
           <a
             href={link.href}
-            className="text-[11px] text-accent hover:text-accent-text-hover hover:underline"
+            className={cn(
+              "text-[11px] text-accent", // typography
+              "hover:text-accent-text-hover hover:underline", // interactive states
+            )}
             onClick={link.onClick}
           >
             {link.label}
@@ -186,7 +209,8 @@ export function OnboardingScreen({
   return (
     <div
       className={cn(
-        "flex flex-col h-full bg-figma-bg onboarding-hero-gradient",
+        "flex flex-col h-full", // layout
+        "bg-figma-bg onboarding-hero-gradient", // bg
         className,
       )}
     >
@@ -207,8 +231,8 @@ export function OnboardingStep({
   return (
     <div
       className={cn(
-        "flex flex-col h-full",
-        variant === "welcome" && "text-center",
+        "flex flex-col h-full", // layout
+        variant === "welcome" && "text-center", // state variants
         className,
       )}
     >
@@ -225,7 +249,13 @@ export function OnboardingStepBody({
   children: ReactNode;
 }) {
   return (
-    <div className={cn("onboarding-step-enter flex-1 overflow-y-auto px-5 py-5", className)}>
+    <div
+      className={cn(
+        "onboarding-step-enter flex-1 overflow-y-auto", // layout
+        "px-5 py-5", // size
+        className,
+      )}
+    >
       {children}
     </div>
   );
@@ -241,7 +271,8 @@ export function OnboardingWelcomeBody({
   return (
     <div
       className={cn(
-        "onboarding-step-enter flex-1 flex flex-col items-center justify-center px-5",
+        "onboarding-step-enter flex-1 flex flex-col items-center justify-center", // layout
+        "px-5", // size
         className,
       )}
     >
@@ -258,7 +289,13 @@ export function OnboardingFeatureList({
   children: ReactNode;
 }) {
   return (
-    <div className={cn("w-full max-w-[260px] space-y-3 mb-8", className)}>
+    <div
+      className={cn(
+        "w-full space-y-3", // layout
+        "max-w-[260px] mb-8", // size
+        className,
+      )}
+    >
       {children}
     </div>
   );
@@ -272,7 +309,12 @@ export function OnboardingIntroText({
   children: ReactNode;
 }) {
   return (
-    <OnboardingBodyText className={cn("mb-3", className)}>
+    <OnboardingBodyText
+      className={cn(
+        "mb-3", // size
+        className,
+      )}
+    >
       {children}
     </OnboardingBodyText>
   );
@@ -307,7 +349,14 @@ export function OnboardingFieldStack({
   children: ReactNode;
 }) {
   return (
-    <div className={cn("flex flex-col gap-2", className)}>{children}</div>
+    <div
+      className={cn(
+        "flex flex-col gap-2", // layout
+        className,
+      )}
+    >
+      {children}
+    </div>
   );
 }
 
@@ -322,7 +371,16 @@ export function OnboardingSpacedBlock({
 }) {
   const spacingClass =
     spacing === "sm" ? "mt-2" : spacing === "lg" ? "mt-3 mb-4" : "mb-3";
-  return <div className={cn(spacingClass, className)}>{children}</div>;
+  return (
+    <div
+      className={cn(
+        spacingClass, // size
+        className,
+      )}
+    >
+      {children}
+    </div>
+  );
 }
 
 export function OnboardingErrorBlock({
@@ -335,7 +393,12 @@ export function OnboardingErrorBlock({
   children: ReactNode;
 }) {
   return (
-    <div className={cn(spacing === "lg" ? "mt-3" : "mt-2", className)}>
+    <div
+      className={cn(
+        spacing === "lg" ? "mt-3" : "mt-2", // size
+        className,
+      )}
+    >
       {children}
     </div>
   );
@@ -355,7 +418,9 @@ export function OnboardingContinueButton({
     <Button
       variant="primary"
       controlSize="md"
-      className="min-h-10 flex-1"
+      className={cn(
+        "min-h-10 flex-1", // layout
+      )}
       {...props}
     >
       {children}
@@ -372,7 +437,10 @@ export function OnboardingBackButton({
       variant="bordered"
       controlSize="md"
       onClick={onClick}
-      className="min-h-10 shrink-0 px-3"
+      className={cn(
+        "min-h-10 shrink-0", // layout
+        "px-3", // size
+      )}
       aria-label="Go back"
       {...props}
     >

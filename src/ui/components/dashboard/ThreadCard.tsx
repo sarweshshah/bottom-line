@@ -41,8 +41,8 @@ export function ThreadCard({
     thread.clientMeta,
     thread.id,
   );
-  const hasSummary = useAIStore((s) =>
-    Boolean(s.threadSummaries.get(thread.id)?.result),
+  const summaryResult = useAIStore(
+    (s) => s.threadSummaries.get(thread.id)?.result ?? null,
   );
 
   const handleClick = () => {
@@ -73,7 +73,9 @@ export function ThreadCard({
           trailing={
             <>
               {threadHasImages(thread) && <ThreadCardImageIndicator />}
-              {hasSummary && <ThreadCardSummaryIndicator />}
+              {summaryResult && (
+                <ThreadCardSummaryIndicator result={summaryResult} />
+              )}
               <ThreadReplyCount count={thread.replyCount + 1} />
               {thread.clientMeta && !bulkMode && (
                 <ThreadNavigateAction
