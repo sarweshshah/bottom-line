@@ -260,6 +260,7 @@ export function DashboardLayout() {
 
       {activeTab === "threads" && (
         <>
+          <FilterBar />
           {isActivityCardVisible && (
             <ActivitySummaryPanel
               summary={activitySummary}
@@ -268,7 +269,6 @@ export function DashboardLayout() {
               onDismiss={() => setActivityDismissed(true)}
             />
           )}
-          <FilterBar />
           <BulkSummaryProgressBar />
           <ThreadList
             filteredThreads={filteredThreads}
