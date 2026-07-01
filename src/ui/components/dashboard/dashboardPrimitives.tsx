@@ -1004,6 +1004,23 @@ function parseSummaryBullets(summary: string): string[] | null {
   return lines.map((line) => line.replace(/^[-*•]\s+/, "").trim());
 }
 
+export function ThreadCardSummaryPreview({ result }: { result: SummaryResult }) {
+  const bullets = parseSummaryBullets(result.summary);
+  const body = bullets ? bullets.join(" · ") : result.summary.trim();
+  const header = result.topicHeader.trim();
+
+  if (!header) return <>{body}</>;
+  if (!body) return <span className="font-semibold">{header}</span>;
+
+  return (
+    <>
+      <span className="font-semibold">{header}</span>
+      {": "}
+      {body}
+    </>
+  );
+}
+
 export function SummaryRichContent({ result }: { result: SummaryResult }) {
   const bullets = parseSummaryBullets(result.summary);
   const segments = bullets ?? splitSummarySegments(result.summary);

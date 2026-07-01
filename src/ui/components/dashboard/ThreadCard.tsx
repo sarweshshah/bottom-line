@@ -13,6 +13,7 @@ import {
   ThreadCardMetaRow,
   ThreadCardPreview,
   ThreadCardSummaryIndicator,
+  ThreadCardSummaryPreview,
   ThreadListItemShell,
   ThreadNavigateAction,
   ThreadReplyCount,
@@ -66,7 +67,13 @@ export function ThreadCard({
           trailing={<StatusBadge status={workflowState} />}
         />
 
-        <ThreadCardPreview>{renderMentions(thread.message)}</ThreadCardPreview>
+        <ThreadCardPreview>
+          {summaryResult ? (
+            <ThreadCardSummaryPreview result={summaryResult} />
+          ) : (
+            renderMentions(thread.message)
+          )}
+        </ThreadCardPreview>
 
         <ThreadCardFooter
           leading={<AvatarGroup users={thread.participants} max={10} size={18} />}
